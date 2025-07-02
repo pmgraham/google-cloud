@@ -101,49 +101,47 @@ def main(request):
     For example, in BigQuery: `my_remote_function(my_column)`
     """
     try:
-        # The request from BigQuery is a JSON object. We need to parse it.
-        # The `silent=True` argument prevents an error if the request body is not JSON.
         request_json = request.get_json(silent=True)
-
-        # BigQuery batches rows into a "calls" field in the JSON payload.
-        # "calls" is a list of lists. Each inner list represents the arguments for one row.
-        # e.g., {"calls": [["value from row 1"], ["value from row 2"]]}
         calls = request_json['calls']
+        replies = [None] * len(calls)  # Pre-allocate list for results to maintain order
 
-        # We will collect our results in this list.
-        replies = []
+        # Determine the number of workers (threads) to use.
+        # This is an I/O-bound task (waiting for Gemini API responses).
+        # Adjust `max_workers` based on testing, Gemini API rate limits,
+        # and Cloud Run instance CPU/memory/concurrency.
+        # Gemini 2.5 Flash has a default rate limit of 10 RPM (Requests Per Minute)
+        # for free tier, and 1,000 RPM for paid tier per project.
+        # Ensure max_workers aligns with your expected throughput and quotas.
+        # A good starting point might be higher than vCPUs for I/O bound tasks.
 
-        # Loop through each "call" from BigQuery. Each "call" corresponds to one row.
-        for call in calls:
-            # -----------------------------------------------------------------
-            # THIS IS WHERE YOU ACCESS THE VALUE FROM THE BIGQUERY ROW.
-            # `call` is a list of arguments from your BigQuery function call.
-            # `call[0]` is the first argument, `call[1]` is the second, and so on.
-            # For a function call like `my_remote_function(my_column)`,
-            # `row_value` will hold the value of `my_column` for the current row.
-            row_value = call[0]
-            # -----------------------------------------------------------------
+        max_workers = 20 # Example: Adjust this value
 
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Store futures along with their original index
+            future_to_index = {}
+            for i, call in enumerate(calls):
+                row_value = call[0]
+                if isinstance(row_value, str):
+                    future = executor.submit(generate, row_value)
+                    future_to_index[future] = i
+                else:
+                    # Handle non-string inputs immediately
+                    replies[i] = "ERROR: INPUT WAS NOT A STRING"
 
-            # --- YOUR CUSTOM LOGIC GOES HERE ---
-            #
-            # For this basic example, we will just process the input string.
-            # You would replace this section with your own code, like calling an external API.
-            #
-            if isinstance(row_value, str):
-                # Example: Convert the text to uppercase.
-                processed_value = generate(row_value) # calling the function from above
-            else:
-                # It's good practice to handle non-string inputs.
-                processed_value = "ERROR: INPUT WAS NOT A STRING"
+            # Process results as they complete
+            for future in as_completed(future_to_index):
+                index = future_to_index[future]
+                try:
+                    processed_value = future.result()
+                    replies[index] = processed_value
+                except Exception as exc:
+                    # Catch exceptions from the generate function itself
+                    print(f"Error processing call at index {index}: {exc}")
+                    replies[index] = f"ERROR: Processing failed - {str(exc)}"
 
-            # Add the processed value to our list of replies.
-            replies.append(processed_value)
-
-        # The function must return a JSON object with a single key, "replies".
-        # The "replies" list must contain one response for each call in the original request.
         return json.dumps({"replies": replies})
 
     except Exception as e:
-        # If an error occurs, return it in a format BigQuery understands.
+        # This catches errors in the main function's logic or unexpected issues
+        print(f"Unhandled error in main function: {e}")
         return json.dumps({"errorMessage": str(e)}), 400
