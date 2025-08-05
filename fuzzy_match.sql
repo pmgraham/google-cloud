@@ -51,7 +51,7 @@ SELECT
   content AS embeddings
 FROM
   ML.GENERATE_TEXT_EMBEDDING(
-    MODEL `my-gcp-project.my-models.customer_text_embedder`,
+    MODEL `my-gcp-project.my-models-dataset.customer_text_embedder`,
     (
       -- This subquery prepares the data for the model.
       -- It selects all original columns and creates a new 'content' column
@@ -76,7 +76,7 @@ SELECT
   content AS embeddings
 FROM
   ML.GENERATE_TEXT_EMBEDDING(
-    MODEL `my-gcp-project.my-models.customer_text_embedder`,
+    MODEL `my-gcp-project.my-models-dataset.customer_text_embedder`,
     (
       -- This subquery prepares the data for the model.
       -- It selects all original columns and creates a new 'content' column
