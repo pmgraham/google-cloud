@@ -37,7 +37,7 @@ VALUES
   
 /*============================================================================================================================*/
 CREATE OR REPLACE MODEL
-  models.customer_text_embedder REMOTE
+  `my-gcp-project.my-models-dataset.customer_text_embedder` REMOTE
 WITH CONNECTION `us.__default_cloudresource_connection__` -- <-- Replace with your actual connection ID
   OPTIONS ( endpoint = 'text-embedding-005' ); -- text-embedding-005 is the latest embeddings model as of now. replace as desired in the future.
 
