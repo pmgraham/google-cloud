@@ -33,7 +33,7 @@ The key steps in the query are:
 You repeat this process for the customers_secondary table to create customers_secondary_embeddings.
 
 ## Step 4: Find the Closest Matches with Vector Search
-This is the final and most important step. You now have two tables with embedding vectors. You can use the VECTOR_SEARCH function to compare the vectors in the secondary table against the vectors in the primary table to find the most similar pairs.
+This is the final and most important step. You now have two tables with embedding vectors. You can use the `VECTOR_SEARCH` function to compare the vectors in the secondary table against the vectors in the primary table to find the most similar pairs.
 
 `VECTOR_SEARCH(...)`: This is the core function.
 
