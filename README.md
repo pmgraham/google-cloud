@@ -26,7 +26,7 @@ The key steps in the query are:
 
   Concatenate Fields: For each customer, combine the relevant text fields (like name, address, and email) into a single string using `CONCAT()`. This gives the model the full context for each customer.
   
-  Call the Model: Use the ML.GENERATE_TEXT_EMBEDDING function, passing it the model you created (customer_text_embedder) and the concatenated text data.
+  Call the Model: Use the `ML.GENERATE_TEXT_EMBEDDING` function, passing it the model you created (customer_text_embedder) and the concatenated text data.
   
   Store the Results: The function returns the original data along with the new embedding. You save this output into a new table (e.g., customers_primary_embeddings).
 
