@@ -381,6 +381,9 @@ def apply_enrichment(
         "partial_failure": len(warnings) > 0
     }
 
+    # Update the stored result so add_calculated_column can use enriched data
+    _last_query_result = result
+
     return result
 
 
