@@ -192,10 +192,16 @@ export function useChartConfig({
         };
 
       case 'pie':
-        const pieData = rows.map((row) => ({
-          name: String(row[xCol] ?? ''),
-          value: Number(row[yCol] ?? 0),
-        }));
+        const pieData = rows.map((row) => {
+          const xVal = row[xCol];
+          const name = typeof xVal === 'object' && xVal !== null && 'value' in xVal
+            ? String((xVal as { value: unknown }).value ?? '')
+            : String(xVal ?? '');
+          return {
+            name,
+            value: extractNumericValue(row[yCol]),
+          };
+        });
 
         return {
           ...baseOptions,
