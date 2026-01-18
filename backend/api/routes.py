@@ -47,14 +47,16 @@ def parse_agent_response(response_text: str) -> dict:
     }
 
     # Check for clarifying questions (look for question marks with options)
-    question_pattern = r"(?:Which|What|Do you|Would you|Should I|Could you)[^?]*\?"
-    if re.search(question_pattern, response_text, re.IGNORECASE):
+    # Extract just the question sentence, not everything before it
+    question_pattern = r"((?:Which|What|Do you|Would you|Should I|Could you|How would)[^?]*\?)"
+    question_match = re.search(question_pattern, response_text, re.IGNORECASE)
+    if question_match:
         # Look for bullet points or numbered options
         options_pattern = r"(?:^|\n)\s*(?:[-*]|\d+[.)])\s*(.+?)(?=\n|$)"
         options = re.findall(options_pattern, response_text)
         if options:
             result["clarifying_question"] = ClarifyingQuestion(
-                question=response_text.split("?")[0] + "?",
+                question=question_match.group(1).strip(),  # Just the question sentence
                 options=[opt.strip() for opt in options[:5]],  # Max 5 options
             )
 

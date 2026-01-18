@@ -5,7 +5,6 @@ import { DataTable } from './DataTable';
 import { ChartView } from './ChartView';
 import { ChartToggle } from './ChartToggle';
 import { SqlViewer } from './SqlViewer';
-import { SummaryCard } from './SummaryCard';
 
 interface ResultsPanelProps {
   message: ChatMessage | null;
@@ -75,9 +74,6 @@ export function ResultsPanel({ message, onClose }: ResultsPanelProps) {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Summary */}
-        <SummaryCard summary={message.content} />
-
         {/* Chart Type Toggle */}
         <div className="flex items-center justify-between">
           <ChartToggle activeChart={chartType} onChange={setChartType} />
