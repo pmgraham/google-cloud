@@ -21,6 +21,18 @@ export function ResultsPanel({ message, onClose }: ResultsPanelProps) {
   const { query_result } = message;
 
   const handleExportCSV = () => {
+    // Helper to extract display value from enriched/calculated objects
+    const getExportValue = (value: unknown): string => {
+      if (value === null || value === undefined) return '';
+      // Handle enriched values (have 'value' and 'source' properties)
+      if (typeof value === 'object' && value !== null && 'value' in value) {
+        const innerValue = (value as { value: unknown }).value;
+        if (innerValue === null || innerValue === undefined) return '';
+        return String(innerValue);
+      }
+      return String(value);
+    };
+
     // Generate CSV content
     const headers = query_result.columns.map((col) => col.name).join(',');
     const rows = query_result.rows
@@ -28,11 +40,12 @@ export function ResultsPanel({ message, onClose }: ResultsPanelProps) {
         query_result.columns
           .map((col) => {
             const value = row[col.name];
-            if (value === null || value === undefined) return '';
-            if (typeof value === 'string' && value.includes(',')) {
-              return `"${value.replace(/"/g, '""')}"`;
+            const exportValue = getExportValue(value);
+            if (exportValue === '') return '';
+            if (exportValue.includes(',') || exportValue.includes('"') || exportValue.includes('\n')) {
+              return `"${exportValue.replace(/"/g, '""')}"`;
             }
-            return String(value);
+            return exportValue;
           })
           .join(',')
       )
