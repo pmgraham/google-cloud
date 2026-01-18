@@ -8,6 +8,9 @@ from .config import settings
 # Cache for schema information to improve response times
 _schema_cache: dict[str, dict] = {}
 
+# Store the last query result for enrichment merging
+_last_query_result: dict[str, Any] | None = None
+
 
 def get_available_tables() -> dict[str, Any]:
     """
@@ -189,6 +192,8 @@ def execute_query_with_metadata(sql: str, max_rows: int = 1000) -> dict[str, Any
             - query_time_ms: Query execution time in milliseconds
             - sql: The executed SQL query
     """
+    global _last_query_result
+
     try:
         client = bigquery.Client(project=settings.google_cloud_project)
 
@@ -226,7 +231,7 @@ def execute_query_with_metadata(sql: str, max_rows: int = 1000) -> dict[str, Any
                     row_dict[key] = value
             rows.append(row_dict)
 
-        return {
+        result = {
             "status": "success",
             "columns": columns,
             "rows": rows,
@@ -234,6 +239,11 @@ def execute_query_with_metadata(sql: str, max_rows: int = 1000) -> dict[str, Any
             "query_time_ms": round((end_time - start_time) * 1000, 2),
             "sql": sql
         }
+
+        # Store for potential enrichment
+        _last_query_result = result.copy()
+
+        return result
     except Exception as e:
         return {
             "status": "error",
@@ -258,11 +268,304 @@ def clear_schema_cache() -> dict[str, str]:
     }
 
 
-# List of all tools to be registered with the agent
+def apply_enrichment(
+    source_column: str,
+    enrichment_data: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """
+    Apply enrichment data to the last query result and return merged results.
+    Call this AFTER the enrichment_agent has returned with the enrichment data.
+
+    Args:
+        source_column: The column name that was enriched (e.g., "state", "city")
+        enrichment_data: List of enrichment objects from the enrichment agent.
+            Each object should have:
+            - original_value: The value that was enriched (e.g., "CA", "Texas")
+            - enriched_fields: Dict of field_name -> {value, source, confidence, freshness, warning}
+
+    Example enrichment_data:
+        [
+            {
+                "original_value": "CA",
+                "enriched_fields": {
+                    "capital": {"value": "Sacramento", "source": "Google", "confidence": "high", "freshness": "static"},
+                    "population": {"value": "39.5 million", "source": "US Census", "confidence": "medium", "freshness": "current"}
+                }
+            },
+            ...
+        ]
+
+    Returns:
+        dict: Merged query result with enrichment columns added, ready for frontend display.
+    """
+    global _last_query_result
+
+    if _last_query_result is None:
+        return {
+            "status": "error",
+            "error": "No query result available to enrich. Run a query first."
+        }
+
+    if not enrichment_data:
+        return {
+            "status": "error",
+            "error": "No enrichment data provided."
+        }
+
+    # Create a deep copy of the last query result
+    import copy
+    result = copy.deepcopy(_last_query_result)
+
+    # Check which enriched columns already exist (to prevent duplicates)
+    existing_columns = {col["name"] for col in result.get("columns", [])}
+
+    # Build a lookup map from original value to enrichment data
+    enrichment_map = {}
+    enriched_field_names = set()
+
+    for item in enrichment_data:
+        original_value = item.get("original_value", "")
+        enriched_fields = item.get("enriched_fields", {})
+        enrichment_map[original_value] = enriched_fields
+        enriched_field_names.update(enriched_fields.keys())
+
+    # Add enriched columns to the schema ONLY if they don't already exist
+    for field_name in sorted(enriched_field_names):
+        col_name = f"_enriched_{field_name}"
+        if col_name not in existing_columns:
+            result["columns"].append({
+                "name": col_name,
+                "type": "STRING",
+                "is_enriched": True
+            })
+
+    # Add enriched data to each row (skip if already enriched with valid data)
+    warnings = []
+    for row in result.get("rows", []):
+        source_value = str(row.get(source_column, ""))
+        enrichment = enrichment_map.get(source_value)
+
+        if enrichment:
+            for field_name in enriched_field_names:
+                col_name = f"_enriched_{field_name}"
+                # Skip if this cell already has valid enriched data
+                existing_value = row.get(col_name)
+                if isinstance(existing_value, dict) and existing_value.get("value") is not None:
+                    continue
+
+                field_data = enrichment.get(field_name)
+                if field_data:
+                    row[col_name] = {
+                        "value": field_data.get("value"),
+                        "source": field_data.get("source"),
+                        "confidence": field_data.get("confidence", "medium"),
+                        "freshness": field_data.get("freshness", "current"),
+                        "warning": field_data.get("warning")
+                    }
+                else:
+                    row[col_name] = {
+                        "value": None,
+                        "source": None,
+                        "confidence": None,
+                        "freshness": None,
+                        "warning": "Field not found in enrichment"
+                    }
+        else:
+            # No enrichment found for this row's source value
+            for field_name in enriched_field_names:
+                col_name = f"_enriched_{field_name}"
+                # Skip if already has data
+                if col_name in row and isinstance(row[col_name], dict) and row[col_name].get("value") is not None:
+                    continue
+                row[col_name] = {
+                    "value": None,
+                    "source": None,
+                    "confidence": None,
+                    "freshness": None,
+                    "warning": f"No enrichment data found for '{source_value}'"
+                }
+            if source_value and source_value not in [w.split("'")[1] for w in warnings if "'" in w]:
+                warnings.append(f"No enrichment data found for '{source_value}'")
+
+    # Add enrichment metadata
+    result["enrichment_metadata"] = {
+        "source_column": source_column,
+        "enriched_fields": list(enriched_field_names),
+        "total_enriched": len(enrichment_map),
+        "warnings": warnings[:5],  # Limit warnings
+        "partial_failure": len(warnings) > 0
+    }
+
+    # Update the stored result so add_calculated_column can use enriched data
+    _last_query_result = result
+
+    return result
+
+
+def add_calculated_column(
+    column_name: str,
+    expression: str,
+    format_type: str = "number"
+) -> dict[str, Any]:
+    """
+    Add a calculated column to the last query result without re-running the query.
+    Use this when the user wants a derived value from existing columns.
+
+    Args:
+        column_name: Name for the new calculated column (e.g., "residents_per_store")
+        expression: Math expression using existing column names (e.g., "population / store_count")
+                   Supported operators: +, -, *, /, %, **
+                   For enriched columns, use the _enriched_ prefix (e.g., "_enriched_population")
+                   To access the value of an enriched column, the expression parser will
+                   automatically extract the 'value' field.
+        format_type: How to format the result - "number", "percent", "currency", or "integer"
+
+    Example expressions:
+        - "population / store_count" → residents per store
+        - "revenue - costs" → profit
+        - "(new_customers / total_customers) * 100" → new customer percentage
+        - "_enriched_population / store_count" → using enriched population data
+
+    Returns:
+        dict: Updated query result with the new calculated column added.
+    """
+    global _last_query_result
+
+    if _last_query_result is None:
+        return {
+            "status": "error",
+            "error": "No query result available. Run a query first."
+        }
+
+    import copy
+    import re
+    result = copy.deepcopy(_last_query_result)
+
+    # Get available column names for validation
+    available_columns = {col["name"] for col in result["columns"]}
+
+    # Check if this calculated column already exists (idempotency)
+    if column_name in available_columns:
+        # Already exists, return the current result without modification
+        return result
+
+    # Parse expression to find column references
+    # Match word characters that could be column names (including _enriched_ prefix)
+    potential_columns = set(re.findall(r'\b([a-zA-Z_][a-zA-Z0-9_]*)\b', expression))
+
+    # Filter to only actual columns (exclude Python keywords and functions)
+    excluded = {'and', 'or', 'not', 'if', 'else', 'True', 'False', 'None', 'in', 'is'}
+    referenced_columns = potential_columns - excluded
+
+    # Check all referenced columns exist
+    missing_columns = referenced_columns - available_columns
+    if missing_columns:
+        return {
+            "status": "error",
+            "error": f"Column(s) not found: {', '.join(missing_columns)}. "
+                     f"Available columns: {', '.join(sorted(available_columns))}"
+        }
+
+    # Add the new column to schema
+    result["columns"].append({
+        "name": column_name,
+        "type": "FLOAT64" if format_type != "integer" else "INTEGER",
+        "is_calculated": True
+    })
+
+    # Calculate values for each row
+    errors = []
+    for i, row in enumerate(result.get("rows", [])):
+        try:
+            # Build a context dict for eval with column values
+            context = {}
+            for col in referenced_columns:
+                value = row.get(col)
+                # Handle enriched columns - extract the value field
+                if isinstance(value, dict) and "value" in value:
+                    value = value["value"]
+                # Convert to float for calculation, handle None
+                if value is None:
+                    context[col] = 0  # or could use None and skip
+                elif isinstance(value, str):
+                    # Try to parse numbers from strings (e.g., "39.5 million")
+                    clean_val = re.sub(r'[^\d.]+', '', value.split()[0] if value else '0')
+                    try:
+                        context[col] = float(clean_val) if clean_val else 0
+                    except ValueError:
+                        context[col] = 0
+                else:
+                    context[col] = float(value)
+
+            # Safely evaluate the expression
+            # Only allow basic math operations
+            allowed_names = {"__builtins__": {}}
+            calculated_value = eval(expression, allowed_names, context)
+
+            # Format the result
+            if format_type == "integer":
+                calculated_value = int(round(calculated_value))
+            elif format_type == "percent":
+                calculated_value = round(calculated_value, 2)
+            elif format_type == "currency":
+                calculated_value = round(calculated_value, 2)
+            else:  # number
+                calculated_value = round(calculated_value, 2) if calculated_value != int(calculated_value) else int(calculated_value)
+
+            row[column_name] = {
+                "value": calculated_value,
+                "expression": expression,
+                "format_type": format_type,
+                "is_calculated": True
+            }
+
+        except ZeroDivisionError:
+            row[column_name] = {
+                "value": None,
+                "expression": expression,
+                "format_type": format_type,
+                "is_calculated": True,
+                "warning": "Division by zero"
+            }
+        except Exception as e:
+            errors.append(f"Row {i}: {str(e)}")
+            row[column_name] = {
+                "value": None,
+                "expression": expression,
+                "format_type": format_type,
+                "is_calculated": True,
+                "warning": str(e)
+            }
+
+    # Add calculation metadata
+    if "calculation_metadata" not in result:
+        result["calculation_metadata"] = {
+            "calculated_columns": [],
+            "warnings": []
+        }
+
+    result["calculation_metadata"]["calculated_columns"].append({
+        "name": column_name,
+        "expression": expression,
+        "format_type": format_type
+    })
+
+    if errors:
+        result["calculation_metadata"]["warnings"].extend(errors[:5])
+
+    # Update the stored result
+    _last_query_result = result
+
+    return result
+
+
+# List of all tools to be registered with the main agent
+# Note: apply_enrichment is NOT included here - it's only for the enrichment sub-agent
 CUSTOM_TOOLS = [
     get_available_tables,
     get_table_schema,
     validate_sql_query,
     execute_query_with_metadata,
-    clear_schema_cache
+    clear_schema_cache,
+    add_calculated_column
 ]

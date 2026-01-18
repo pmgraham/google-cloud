@@ -26,6 +26,30 @@ class ColumnInfo(BaseModel):
     """Information about a data column."""
     name: str
     type: str
+    is_enriched: bool = False
+    is_calculated: bool = False
+
+
+class EnrichmentMetadata(BaseModel):
+    """Metadata about enrichment applied to query results."""
+    source_column: str
+    enriched_fields: list[str]
+    total_enriched: int
+    warnings: list[str] = Field(default_factory=list)
+    partial_failure: bool = False
+
+
+class CalculatedColumnInfo(BaseModel):
+    """Information about a calculated column."""
+    name: str
+    expression: str
+    format_type: str = "number"
+
+
+class CalculationMetadata(BaseModel):
+    """Metadata about calculations applied to query results."""
+    calculated_columns: list[CalculatedColumnInfo] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
 
 
 class QueryResult(BaseModel):
@@ -35,6 +59,8 @@ class QueryResult(BaseModel):
     total_rows: int
     query_time_ms: float
     sql: str
+    enrichment_metadata: Optional[EnrichmentMetadata] = None
+    calculation_metadata: Optional[CalculationMetadata] = None
 
 
 class ClarifyingQuestion(BaseModel):
