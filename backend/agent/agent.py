@@ -6,8 +6,7 @@ from google.adk.agents import Agent
 from .config import settings
 from .prompts import SYSTEM_INSTRUCTION
 from .tools import CUSTOM_TOOLS
-from .enrichment_agent import create_enrichment_agent
-from .enrichment_tools import request_enrichment
+from .enrichment import create_enrichment_agent, request_enrichment
 
 # Set environment variables for Vertex AI
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "true"
