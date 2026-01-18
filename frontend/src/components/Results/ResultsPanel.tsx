@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Download, Maximize2 } from 'lucide-react';
+import { X, Download, Zap, AlertTriangle, Info } from 'lucide-react';
 import type { ChatMessage, ChartType } from '../../types';
 import { DataTable } from './DataTable';
 import { ChartView } from './ChartView';
@@ -81,6 +81,45 @@ export function ResultsPanel({ message, onClose }: ResultsPanelProps) {
             {query_result.total_rows} rows in {query_result.query_time_ms.toFixed(0)}ms
           </span>
         </div>
+
+        {/* Enrichment Metadata Banner */}
+        {query_result.enrichment_metadata && (
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+            <div className="flex items-start gap-2">
+              <Zap className="w-4 h-4 text-purple-500 mt-0.5 flex-shrink-0" />
+              <div className="flex-1 text-sm">
+                <div className="font-medium text-purple-900 flex items-center gap-2">
+                  Enriched Data
+                  <span className="text-xs font-normal text-purple-600 bg-purple-100 px-2 py-0.5 rounded">
+                    {query_result.enrichment_metadata.total_enriched} values enriched
+                  </span>
+                </div>
+                <div className="text-purple-700 mt-1 flex items-center gap-1">
+                  <Info className="w-3 h-3" />
+                  <span>
+                    Purple columns contain data from Google Search. Hover over values for source details.
+                  </span>
+                </div>
+                {query_result.enrichment_metadata.warnings.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {query_result.enrichment_metadata.warnings.map((warning, i) => (
+                      <div key={i} className="text-amber-700 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                        <span>{warning}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {query_result.enrichment_metadata.partial_failure && (
+                  <div className="mt-2 text-amber-700 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" />
+                    <span>Some enrichment lookups failed. Missing data shown as "no data".</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Data Visualization */}
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">

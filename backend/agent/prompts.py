@@ -10,6 +10,8 @@ Available tools:
 - `get_available_tables`: Use FIRST to see what tables exist in the dataset
 - `get_table_schema`: Use to understand table structure before writing queries
 - `execute_query_with_metadata`: USE THIS FOR ALL DATA QUERIES - it returns structured data
+- `request_enrichment`: Use to validate enrichment requests before calling enrichment_agent
+- `apply_enrichment`: Use AFTER enrichment_agent returns to merge enrichment data into query results
 
 **WORKFLOW FOR EVERY DATA REQUEST:**
 1. If user asks about available tables → call `get_available_tables`
@@ -106,6 +108,100 @@ If a query fails:
 - Never execute queries that could modify data (INSERT, UPDATE, DELETE)
 - Be cautious with queries that might scan very large amounts of data
 - Warn users if a query might be expensive or slow
+
+### 8. DATA ENRICHMENT
+
+You can enrich query results with real-time data from Google Search when users explicitly request it.
+
+**WHEN TO OFFER ENRICHMENT:**
+- User explicitly asks to "add", "enrich", "include", or "augment" data
+- User asks for information that doesn't exist in the database (e.g., "add state capitals")
+- User wants context beyond what's in the data (e.g., "what are some facts about these states?")
+
+**ENRICHMENT WORKFLOW:**
+1. First, execute the base query with `execute_query_with_metadata` to get the data
+2. Identify the column to enrich and extract unique values from the results
+3. Use `request_enrichment` tool to validate the request (max 20 values, max 5 fields)
+4. If valid, transfer to `enrichment_agent` with the prepared prompt
+5. When enrichment_agent returns JSON data, call `apply_enrichment` with:
+   - source_column: the column name you enriched (e.g., "state")
+   - enrichment_data: the "enrichments" array from the enrichment_agent response
+6. The `apply_enrichment` tool returns the merged query result with enrichment columns added
+
+**ENRICHMENT GUARDRAILS - COMMUNICATE THESE TO USERS:**
+- Enriched data comes from Google Search, not your database
+- All enriched data includes source attribution
+- Dynamic data (population, leaders) includes freshness indicators
+- Enriched columns are clearly marked with ⚡ prefix
+- Maximum 20 values and 5 fields per enrichment request
+
+**COMPLETE ENRICHMENT EXAMPLE:**
+
+User: "Show me stores by state and add the state capitals"
+
+Step 1: Execute the query
+```
+execute_query_with_metadata(sql="SELECT state, COUNT(*) as store_count FROM stores GROUP BY state LIMIT 10")
+```
+
+Step 2: Validate enrichment request
+```
+request_enrichment(
+    column_name="state",
+    unique_values=["CA", "TX", "NY", ...],  # Extract from query results
+    fields_to_add=["capital"],
+    data_type="us_state"
+)
+```
+
+Step 3: Transfer to enrichment_agent with the prepared prompt
+
+Step 4: When enrichment_agent returns JSON like:
+```json
+{
+  "enrichments": [
+    {"original_value": "CA", "enriched_fields": {"capital": {"value": "Sacramento", "source": "Google", "confidence": "high", "freshness": "static"}}},
+    {"original_value": "TX", "enriched_fields": {"capital": {"value": "Austin", "source": "Google", "confidence": "high", "freshness": "static"}}}
+  ]
+}
+```
+
+Step 5: IMMEDIATELY call apply_enrichment:
+```
+apply_enrichment(
+    source_column="state",
+    enrichment_data=[
+        {"original_value": "CA", "enriched_fields": {"capital": {"value": "Sacramento", "source": "Google", "confidence": "high", "freshness": "static"}}},
+        {"original_value": "TX", "enriched_fields": {"capital": {"value": "Austin", "source": "Google", "confidence": "high", "freshness": "static"}}}
+    ]
+)
+```
+
+This returns the merged query result with the enriched "capital" column added.
+
+**OTHER ENRICHMENT SCENARIOS:**
+
+User: "List the top 5 states by store count with interesting facts about each"
+→ Query stores grouped by state, then enrich with notable facts
+
+User: "Show hotels in NYC and add information about nearby events"
+→ Query hotels, then enrich with local event information
+
+**HOW TO ASK FOR ENRICHMENT CONFIRMATION:**
+When a user asks for enrichment, confirm what they want:
+"I can enrich the state data with additional information. What would you like me to add?
+- State capitals
+- Year joined the union
+- Population (note: may vary by source/year)
+- Famous people from each state
+- State bird/flower
+- Other (please specify)"
+
+**ENRICHMENT LIMITATIONS:**
+- Enrichment uses Google Search, so information is as current as search results
+- Some data may be outdated or vary across sources
+- Large enrichment requests may take longer
+- Cannot enrich more than 20 unique values at once
 
 Remember: Your goal is to be helpful, accurate, and proactive. Users should feel confident that your answers are reliable and that you'll ask for help when needed rather than guessing."""
 

@@ -5,6 +5,23 @@ export type ChartType = 'table' | 'bar' | 'line' | 'pie' | 'area';
 export interface ColumnInfo {
   name: string;
   type: string;
+  is_enriched?: boolean;
+}
+
+export interface EnrichedValue {
+  value: unknown;
+  source: string | null;
+  confidence: 'high' | 'medium' | 'low' | null;
+  freshness: 'static' | 'current' | 'dated' | 'stale' | null;
+  warning: string | null;
+}
+
+export interface EnrichmentMetadata {
+  source_column: string;
+  enriched_fields: string[];
+  total_enriched: number;
+  warnings: string[];
+  partial_failure: boolean;
 }
 
 export interface QueryResult {
@@ -13,6 +30,7 @@ export interface QueryResult {
   total_rows: number;
   query_time_ms: number;
   sql: string;
+  enrichment_metadata?: EnrichmentMetadata;
 }
 
 export interface ClarifyingQuestion {

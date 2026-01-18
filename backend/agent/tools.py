@@ -8,6 +8,9 @@ from .config import settings
 # Cache for schema information to improve response times
 _schema_cache: dict[str, dict] = {}
 
+# Store the last query result for enrichment merging
+_last_query_result: dict[str, Any] | None = None
+
 
 def get_available_tables() -> dict[str, Any]:
     """
@@ -189,6 +192,8 @@ def execute_query_with_metadata(sql: str, max_rows: int = 1000) -> dict[str, Any
             - query_time_ms: Query execution time in milliseconds
             - sql: The executed SQL query
     """
+    global _last_query_result
+
     try:
         client = bigquery.Client(project=settings.google_cloud_project)
 
@@ -226,7 +231,7 @@ def execute_query_with_metadata(sql: str, max_rows: int = 1000) -> dict[str, Any
                     row_dict[key] = value
             rows.append(row_dict)
 
-        return {
+        result = {
             "status": "success",
             "columns": columns,
             "rows": rows,
@@ -234,6 +239,11 @@ def execute_query_with_metadata(sql: str, max_rows: int = 1000) -> dict[str, Any
             "query_time_ms": round((end_time - start_time) * 1000, 2),
             "sql": sql
         }
+
+        # Store for potential enrichment
+        _last_query_result = result.copy()
+
+        return result
     except Exception as e:
         return {
             "status": "error",
@@ -258,11 +268,128 @@ def clear_schema_cache() -> dict[str, str]:
     }
 
 
+def apply_enrichment(
+    source_column: str,
+    enrichment_data: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """
+    Apply enrichment data to the last query result and return merged results.
+    Call this AFTER the enrichment_agent has returned with the enrichment data.
+
+    Args:
+        source_column: The column name that was enriched (e.g., "state", "city")
+        enrichment_data: List of enrichment objects from the enrichment agent.
+            Each object should have:
+            - original_value: The value that was enriched (e.g., "CA", "Texas")
+            - enriched_fields: Dict of field_name -> {value, source, confidence, freshness, warning}
+
+    Example enrichment_data:
+        [
+            {
+                "original_value": "CA",
+                "enriched_fields": {
+                    "capital": {"value": "Sacramento", "source": "Google", "confidence": "high", "freshness": "static"},
+                    "population": {"value": "39.5 million", "source": "US Census", "confidence": "medium", "freshness": "current"}
+                }
+            },
+            ...
+        ]
+
+    Returns:
+        dict: Merged query result with enrichment columns added, ready for frontend display.
+    """
+    global _last_query_result
+
+    if _last_query_result is None:
+        return {
+            "status": "error",
+            "error": "No query result available to enrich. Run a query first."
+        }
+
+    if not enrichment_data:
+        return {
+            "status": "error",
+            "error": "No enrichment data provided."
+        }
+
+    # Create a deep copy of the last query result
+    import copy
+    result = copy.deepcopy(_last_query_result)
+
+    # Build a lookup map from original value to enrichment data
+    enrichment_map = {}
+    enriched_field_names = set()
+
+    for item in enrichment_data:
+        original_value = item.get("original_value", "")
+        enriched_fields = item.get("enriched_fields", {})
+        enrichment_map[original_value] = enriched_fields
+        enriched_field_names.update(enriched_fields.keys())
+
+    # Add enriched columns to the schema
+    for field_name in sorted(enriched_field_names):
+        result["columns"].append({
+            "name": f"_enriched_{field_name}",
+            "type": "STRING",
+            "is_enriched": True
+        })
+
+    # Add enriched data to each row
+    warnings = []
+    for row in result.get("rows", []):
+        source_value = str(row.get(source_column, ""))
+        enrichment = enrichment_map.get(source_value)
+
+        if enrichment:
+            for field_name in enriched_field_names:
+                field_data = enrichment.get(field_name)
+                if field_data:
+                    row[f"_enriched_{field_name}"] = {
+                        "value": field_data.get("value"),
+                        "source": field_data.get("source"),
+                        "confidence": field_data.get("confidence", "medium"),
+                        "freshness": field_data.get("freshness", "current"),
+                        "warning": field_data.get("warning")
+                    }
+                else:
+                    row[f"_enriched_{field_name}"] = {
+                        "value": None,
+                        "source": None,
+                        "confidence": None,
+                        "freshness": None,
+                        "warning": "Field not found in enrichment"
+                    }
+        else:
+            # No enrichment found for this row's source value
+            for field_name in enriched_field_names:
+                row[f"_enriched_{field_name}"] = {
+                    "value": None,
+                    "source": None,
+                    "confidence": None,
+                    "freshness": None,
+                    "warning": f"No enrichment data found for '{source_value}'"
+                }
+            if source_value and source_value not in [w.split("'")[1] for w in warnings if "'" in w]:
+                warnings.append(f"No enrichment data found for '{source_value}'")
+
+    # Add enrichment metadata
+    result["enrichment_metadata"] = {
+        "source_column": source_column,
+        "enriched_fields": list(enriched_field_names),
+        "total_enriched": len(enrichment_map),
+        "warnings": warnings[:5],  # Limit warnings
+        "partial_failure": len(warnings) > 0
+    }
+
+    return result
+
+
 # List of all tools to be registered with the agent
 CUSTOM_TOOLS = [
     get_available_tables,
     get_table_schema,
     validate_sql_query,
     execute_query_with_metadata,
-    clear_schema_cache
+    clear_schema_cache,
+    apply_enrichment
 ]

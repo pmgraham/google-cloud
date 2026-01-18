@@ -27,6 +27,7 @@ from .models import (
     ErrorResponse,
     QueryResult,
     ColumnInfo,
+    EnrichmentMetadata,
     Insight,
     ClarifyingQuestion,
 )
@@ -203,20 +204,29 @@ async def chat(request: ChatRequest):
                 func_responses = event.get_function_responses()
                 if func_responses:
                     for func_response in func_responses:
-                        print(f"Function response found: {func_response.name if hasattr(func_response, 'name') else 'unknown'}")
+                        func_name = func_response.name if hasattr(func_response, 'name') else 'unknown'
+                        print(f"Function response found: {func_name}")
                         # Extract the response data
                         if hasattr(func_response, 'response'):
                             result_data = func_response.response
                             print(f"Response data type: {type(result_data)}, keys: {result_data.keys() if isinstance(result_data, dict) else 'N/A'}")
+                            # Capture query results from execute_query_with_metadata or apply_enrichment
                             if isinstance(result_data, dict) and result_data.get("status") == "success" and "rows" in result_data:
+                                # Handle enrichment metadata if present
+                                enrichment_meta = None
+                                if result_data.get("enrichment_metadata"):
+                                    enrichment_meta = EnrichmentMetadata(**result_data["enrichment_metadata"])
+
                                 query_result = QueryResult(
                                     columns=[ColumnInfo(**col) for col in result_data.get("columns", [])],
                                     rows=result_data.get("rows", []),
                                     total_rows=result_data.get("total_rows", 0),
                                     query_time_ms=result_data.get("query_time_ms", 0),
                                     sql=result_data.get("sql", ""),
+                                    enrichment_metadata=enrichment_meta,
                                 )
-                                print(f"Captured query result with {query_result.total_rows} rows")
+                                print(f"Captured query result with {query_result.total_rows} rows" +
+                                      (f" (enriched with {len(enrichment_meta.enriched_fields)} fields)" if enrichment_meta else ""))
 
         # Combine response
         response_text = "\n".join(response_parts) if response_parts else "I apologize, but I couldn't generate a response. Please try rephrasing your question."
