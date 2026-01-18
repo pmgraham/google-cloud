@@ -539,13 +539,13 @@ def add_calculated_column(
     return result
 
 
-# List of all tools to be registered with the agent
+# List of all tools to be registered with the main agent
+# Note: apply_enrichment is NOT included here - it's only for the enrichment sub-agent
 CUSTOM_TOOLS = [
     get_available_tables,
     get_table_schema,
     validate_sql_query,
     execute_query_with_metadata,
     clear_schema_cache,
-    apply_enrichment,
     add_calculated_column
 ]
