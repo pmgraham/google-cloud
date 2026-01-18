@@ -316,6 +316,9 @@ def apply_enrichment(
     import copy
     result = copy.deepcopy(_last_query_result)
 
+    # Check which enriched columns already exist (to prevent duplicates)
+    existing_columns = {col["name"] for col in result.get("columns", [])}
+
     # Build a lookup map from original value to enrichment data
     enrichment_map = {}
     enriched_field_names = set()
@@ -326,15 +329,17 @@ def apply_enrichment(
         enrichment_map[original_value] = enriched_fields
         enriched_field_names.update(enriched_fields.keys())
 
-    # Add enriched columns to the schema
+    # Add enriched columns to the schema ONLY if they don't already exist
     for field_name in sorted(enriched_field_names):
-        result["columns"].append({
-            "name": f"_enriched_{field_name}",
-            "type": "STRING",
-            "is_enriched": True
-        })
+        col_name = f"_enriched_{field_name}"
+        if col_name not in existing_columns:
+            result["columns"].append({
+                "name": col_name,
+                "type": "STRING",
+                "is_enriched": True
+            })
 
-    # Add enriched data to each row
+    # Add enriched data to each row (skip if already enriched with valid data)
     warnings = []
     for row in result.get("rows", []):
         source_value = str(row.get(source_column, ""))
@@ -342,9 +347,15 @@ def apply_enrichment(
 
         if enrichment:
             for field_name in enriched_field_names:
+                col_name = f"_enriched_{field_name}"
+                # Skip if this cell already has valid enriched data
+                existing_value = row.get(col_name)
+                if isinstance(existing_value, dict) and existing_value.get("value") is not None:
+                    continue
+
                 field_data = enrichment.get(field_name)
                 if field_data:
-                    row[f"_enriched_{field_name}"] = {
+                    row[col_name] = {
                         "value": field_data.get("value"),
                         "source": field_data.get("source"),
                         "confidence": field_data.get("confidence", "medium"),
@@ -352,7 +363,7 @@ def apply_enrichment(
                         "warning": field_data.get("warning")
                     }
                 else:
-                    row[f"_enriched_{field_name}"] = {
+                    row[col_name] = {
                         "value": None,
                         "source": None,
                         "confidence": None,
@@ -362,7 +373,11 @@ def apply_enrichment(
         else:
             # No enrichment found for this row's source value
             for field_name in enriched_field_names:
-                row[f"_enriched_{field_name}"] = {
+                col_name = f"_enriched_{field_name}"
+                # Skip if already has data
+                if col_name in row and isinstance(row[col_name], dict) and row[col_name].get("value") is not None:
+                    continue
+                row[col_name] = {
                     "value": None,
                     "source": None,
                     "confidence": None,
@@ -428,6 +443,11 @@ def add_calculated_column(
 
     # Get available column names for validation
     available_columns = {col["name"] for col in result["columns"]}
+
+    # Check if this calculated column already exists (idempotency)
+    if column_name in available_columns:
+        # Already exists, return the current result without modification
+        return result
 
     # Parse expression to find column references
     # Match word characters that could be column names (including _enriched_ prefix)

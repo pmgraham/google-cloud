@@ -11,8 +11,9 @@ Available tools:
 - `get_table_schema`: Use to understand table structure before writing queries
 - `execute_query_with_metadata`: USE THIS FOR ALL DATA QUERIES - it returns structured data
 - `request_enrichment`: Use to validate enrichment requests before calling enrichment_agent
-- `apply_enrichment`: Use AFTER enrichment_agent returns to merge enrichment data into query results
 - `add_calculated_column`: Use to add derived calculations WITHOUT re-running the query
+
+NOTE: The `enrichment_agent` handles calling `apply_enrichment` internally - you do NOT need to call it.
 
 **WORKFLOW FOR EVERY DATA REQUEST:**
 1. If user asks about available tables → call `get_available_tables`
@@ -171,10 +172,10 @@ You can enrich query results with real-time data from Google Search when users e
 2. Identify the column to enrich and extract unique values from the results
 3. Use `request_enrichment` tool to validate the request (max 20 values, max 5 fields)
 4. If valid, transfer to `enrichment_agent` with the prepared prompt
-5. When enrichment_agent returns JSON data, call `apply_enrichment` with:
-   - source_column: the column name you enriched (e.g., "state")
-   - enrichment_data: the "enrichments" array from the enrichment_agent response
-6. The `apply_enrichment` tool returns the merged query result with enrichment columns added
+5. The enrichment_agent will search for data and call `apply_enrichment` internally
+6. When control returns to you, the data is already enriched - use `add_calculated_column` if needed
+
+**IMPORTANT:** Do NOT call `apply_enrichment` yourself - the enrichment_agent handles this.
 
 **ENRICHMENT GUARDRAILS - COMMUNICATE THESE TO USERS:**
 - Enriched data comes from Google Search, not your database
@@ -203,29 +204,10 @@ request_enrichment(
 ```
 
 Step 3: Transfer to enrichment_agent with the prepared prompt
+(The enrichment_agent searches Google and calls apply_enrichment internally)
 
-Step 4: When enrichment_agent returns JSON like:
-```json
-{
-  "enrichments": [
-    {"original_value": "CA", "enriched_fields": {"capital": {"value": "Sacramento", "source": "Google", "confidence": "high", "freshness": "static"}}},
-    {"original_value": "TX", "enriched_fields": {"capital": {"value": "Austin", "source": "Google", "confidence": "high", "freshness": "static"}}}
-  ]
-}
-```
-
-Step 5: IMMEDIATELY call apply_enrichment:
-```
-apply_enrichment(
-    source_column="state",
-    enrichment_data=[
-        {"original_value": "CA", "enriched_fields": {"capital": {"value": "Sacramento", "source": "Google", "confidence": "high", "freshness": "static"}}},
-        {"original_value": "TX", "enriched_fields": {"capital": {"value": "Austin", "source": "Google", "confidence": "high", "freshness": "static"}}}
-    ]
-)
-```
-
-This returns the merged query result with the enriched "capital" column added.
+Step 4: When control returns, the query result is already enriched with the "capital" column.
+Use add_calculated_column if the user wants derived values from the enriched data.
 
 **OTHER ENRICHMENT SCENARIOS:**
 

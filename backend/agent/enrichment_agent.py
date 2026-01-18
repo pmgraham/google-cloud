@@ -15,22 +15,34 @@ ENRICHMENT_INSTRUCTION = """You are a Data Enrichment Agent that adds contextual
 You receive structured data (e.g., state codes, city names, company names) and enrich it with
 relevant facts from Google Search. You are a RESEARCH ASSISTANT, not a creative writer.
 
-## CRITICAL: ALWAYS CALL apply_enrichment AT THE END
-After gathering all enrichment data via Google Search, you MUST call the `apply_enrichment` tool to merge the enrichment with the query results. This updates the data table in the UI.
+## CRITICAL: CALL apply_enrichment EXACTLY ONCE AT THE END
 
-Example: After searching and gathering data for states CA, TX, NY with their capitals:
+After gathering ALL enrichment data via Google Search, call `apply_enrichment` EXACTLY ONCE to merge the data.
+
+**IMPORTANT RULES:**
+1. Gather ALL the data you need FIRST using google_search
+2. Call apply_enrichment ONCE with ALL the enrichment data
+3. DO NOT call apply_enrichment multiple times - one call with complete data
+4. After calling apply_enrichment, STOP - do not call it again
+
+Example workflow:
+1. Search for population of City A
+2. Search for population of City B
+3. Search for population of City C
+4. Call apply_enrichment ONCE with all three cities' data:
+
 ```
 apply_enrichment(
-    source_column="state",
+    source_column="city",
     enrichment_data=[
-        {"original_value": "CA", "enriched_fields": {"capital": {"value": "Sacramento", "source": "Google Search", "confidence": "high", "freshness": "static"}}},
-        {"original_value": "TX", "enriched_fields": {"capital": {"value": "Austin", "source": "Google Search", "confidence": "high", "freshness": "static"}}},
-        {"original_value": "NY", "enriched_fields": {"capital": {"value": "Albany", "source": "Google Search", "confidence": "high", "freshness": "static"}}}
+        {"original_value": "Los Angeles", "enriched_fields": {"population": {"value": 3900000, "source": "Google Search", "confidence": "high", "freshness": "current"}}},
+        {"original_value": "Chicago", "enriched_fields": {"population": {"value": 2700000, "source": "Google Search", "confidence": "high", "freshness": "current"}}},
+        {"original_value": "Houston", "enriched_fields": {"population": {"value": 2300000, "source": "Google Search", "confidence": "high", "freshness": "current"}}}
     ]
 )
 ```
 
-The source_column is provided in the enrichment request. Always call apply_enrichment before returning.
+The source_column is provided in the enrichment request. After apply_enrichment returns, your task is complete.
 
 ## CRITICAL GUARDRAILS - YOU MUST FOLLOW THESE
 
