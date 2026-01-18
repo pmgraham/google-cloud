@@ -8,8 +8,8 @@ import {
   createColumnHelper,
   SortingState,
 } from '@tanstack/react-table';
-import { ArrowUpDown, ChevronLeft, ChevronRight, Zap, AlertTriangle } from 'lucide-react';
-import type { QueryResult, EnrichedValue } from '../../types';
+import { ArrowUpDown, ChevronLeft, ChevronRight, Zap, Calculator, AlertTriangle } from 'lucide-react';
+import type { QueryResult, EnrichedValue, CalculatedValue } from '../../types';
 
 interface DataTableProps {
   queryResult: QueryResult;
@@ -24,6 +24,32 @@ function isEnrichedValue(value: unknown): value is EnrichedValue {
     'source' in value &&
     'confidence' in value
   );
+}
+
+// Type guard for calculated values
+function isCalculatedValue(value: unknown): value is CalculatedValue {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'is_calculated' in value &&
+    (value as CalculatedValue).is_calculated === true
+  );
+}
+
+// Format calculated values based on format_type
+function formatCalculatedValue(value: number | null, formatType: string): string {
+  if (value === null) return '—';
+
+  switch (formatType) {
+    case 'integer':
+      return Math.round(value).toLocaleString();
+    case 'percent':
+      return `${value.toFixed(1)}%`;
+    case 'currency':
+      return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    default: // number
+      return value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
 }
 
 // Get display name for enriched column (remove _enriched_ prefix)
@@ -61,11 +87,12 @@ export function DataTable({ queryResult }: DataTableProps) {
           header: ({ column }) => (
             <button
               className={`flex items-center gap-1 font-semibold ${
-                col.is_enriched ? 'text-purple-700' : ''
+                col.is_enriched ? 'text-purple-700' : col.is_calculated ? 'text-blue-700' : ''
               }`}
               onClick={() => column.toggleSorting()}
             >
               {col.is_enriched && <Zap className="w-3 h-3 text-purple-500" />}
+              {col.is_calculated && <Calculator className="w-3 h-3 text-blue-500" />}
               {getDisplayName(col.name)}
               <ArrowUpDown className="w-3 h-3 opacity-50" />
             </button>
@@ -138,6 +165,45 @@ export function DataTable({ queryResult }: DataTableProps) {
               );
             }
 
+            // Handle calculated values
+            if (isCalculatedValue(value)) {
+              const displayValue = formatCalculatedValue(value.value, value.format_type);
+
+              return (
+                <div className="group relative">
+                  <div className="flex items-center gap-1.5">
+                    {value.warning && (
+                      <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                    )}
+                    <span className="text-blue-900 font-mono">{displayValue}</span>
+                  </div>
+
+                  {/* Tooltip with calculation info */}
+                  <div className="absolute z-50 hidden group-hover:block bottom-full left-0 mb-2 p-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg min-w-48 max-w-64">
+                    <div className="space-y-1">
+                      <div>
+                        <span className="text-gray-400">Formula:</span>{' '}
+                        <code className="text-blue-300 bg-gray-800 px-1 rounded">{value.expression}</code>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">Format:</span>{' '}
+                        <span className="text-gray-100">{value.format_type}</span>
+                      </div>
+                      {value.warning && (
+                        <div className="text-amber-300 flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3" />
+                          {value.warning}
+                        </div>
+                      )}
+                    </div>
+                    <div className="absolute bottom-0 left-4 transform translate-y-full">
+                      <div className="border-8 border-transparent border-t-gray-900" />
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
             // Handle regular values
             if (value === null || value === undefined) {
               return <span className="text-gray-400 italic">null</span>;
@@ -184,12 +250,15 @@ export function DataTable({ queryResult }: DataTableProps) {
                 {headerGroup.headers.map((header, index) => {
                   const colInfo = queryResult.columns[index];
                   const isEnriched = colInfo?.is_enriched;
+                  const isCalculated = colInfo?.is_calculated;
                   return (
                     <th
                       key={header.id}
                       className={`px-4 py-3 text-left whitespace-nowrap ${
                         isEnriched
                           ? 'bg-purple-50 text-purple-700 border-l border-purple-200 first:border-l-0'
+                          : isCalculated
+                          ? 'bg-blue-50 text-blue-700 border-l border-blue-200 first:border-l-0'
                           : 'bg-gray-50 text-gray-700'
                       }`}
                     >
@@ -208,12 +277,15 @@ export function DataTable({ queryResult }: DataTableProps) {
                 {row.getVisibleCells().map((cell, index) => {
                   const colInfo = queryResult.columns[index];
                   const isEnriched = colInfo?.is_enriched;
+                  const isCalculated = colInfo?.is_calculated;
                   return (
                     <td
                       key={cell.id}
                       className={`px-4 py-3 whitespace-nowrap ${
                         isEnriched
                           ? 'bg-purple-50/50 border-l border-purple-100 first:border-l-0'
+                          : isCalculated
+                          ? 'bg-blue-50/50 border-l border-blue-100 first:border-l-0'
                           : ''
                       }`}
                     >

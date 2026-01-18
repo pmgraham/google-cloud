@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Download, Zap, AlertTriangle, Info } from 'lucide-react';
+import { X, Download, Zap, Calculator, AlertTriangle, Info } from 'lucide-react';
 import type { ChatMessage, ChartType } from '../../types';
 import { DataTable } from './DataTable';
 import { ChartView } from './ChartView';
@@ -114,6 +114,48 @@ export function ResultsPanel({ message, onClose }: ResultsPanelProps) {
                   <div className="mt-2 text-amber-700 flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" />
                     <span>Some enrichment lookups failed. Missing data shown as "no data".</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Calculation Metadata Banner */}
+        {query_result.calculation_metadata && query_result.calculation_metadata.calculated_columns.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex items-start gap-2">
+              <Calculator className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div className="flex-1 text-sm">
+                <div className="font-medium text-blue-900 flex items-center gap-2">
+                  Calculated Columns
+                  <span className="text-xs font-normal text-blue-600 bg-blue-100 px-2 py-0.5 rounded">
+                    {query_result.calculation_metadata.calculated_columns.length} column{query_result.calculation_metadata.calculated_columns.length > 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="text-blue-700 mt-1 flex items-center gap-1">
+                  <Info className="w-3 h-3" />
+                  <span>
+                    Blue columns are calculated from existing data. Hover over values to see formulas.
+                  </span>
+                </div>
+                <div className="mt-2 text-xs text-blue-600">
+                  {query_result.calculation_metadata.calculated_columns.map((col, i) => (
+                    <span key={col.name} className="inline-flex items-center gap-1 mr-3">
+                      <code className="bg-blue-100 px-1 rounded">{col.name}</code>
+                      <span className="text-blue-400">=</span>
+                      <code className="text-blue-800">{col.expression}</code>
+                    </span>
+                  ))}
+                </div>
+                {query_result.calculation_metadata.warnings.length > 0 && (
+                  <div className="mt-2 space-y-1">
+                    {query_result.calculation_metadata.warnings.map((warning, i) => (
+                      <div key={i} className="text-amber-700 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                        <span>{warning}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

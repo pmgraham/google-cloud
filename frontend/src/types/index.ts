@@ -6,6 +6,7 @@ export interface ColumnInfo {
   name: string;
   type: string;
   is_enriched?: boolean;
+  is_calculated?: boolean;
 }
 
 export interface EnrichedValue {
@@ -16,12 +17,31 @@ export interface EnrichedValue {
   warning: string | null;
 }
 
+export interface CalculatedValue {
+  value: number | null;
+  expression: string;
+  format_type: 'number' | 'integer' | 'percent' | 'currency';
+  is_calculated: true;
+  warning?: string;
+}
+
 export interface EnrichmentMetadata {
   source_column: string;
   enriched_fields: string[];
   total_enriched: number;
   warnings: string[];
   partial_failure: boolean;
+}
+
+export interface CalculatedColumnInfo {
+  name: string;
+  expression: string;
+  format_type: string;
+}
+
+export interface CalculationMetadata {
+  calculated_columns: CalculatedColumnInfo[];
+  warnings: string[];
 }
 
 export interface QueryResult {
@@ -31,6 +51,7 @@ export interface QueryResult {
   query_time_ms: number;
   sql: string;
   enrichment_metadata?: EnrichmentMetadata;
+  calculation_metadata?: CalculationMetadata;
 }
 
 export interface ClarifyingQuestion {

@@ -27,6 +27,7 @@ class ColumnInfo(BaseModel):
     name: str
     type: str
     is_enriched: bool = False
+    is_calculated: bool = False
 
 
 class EnrichmentMetadata(BaseModel):
@@ -38,6 +39,19 @@ class EnrichmentMetadata(BaseModel):
     partial_failure: bool = False
 
 
+class CalculatedColumnInfo(BaseModel):
+    """Information about a calculated column."""
+    name: str
+    expression: str
+    format_type: str = "number"
+
+
+class CalculationMetadata(BaseModel):
+    """Metadata about calculations applied to query results."""
+    calculated_columns: list[CalculatedColumnInfo] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
 class QueryResult(BaseModel):
     """Results from a SQL query execution."""
     columns: list[ColumnInfo]
@@ -46,6 +60,7 @@ class QueryResult(BaseModel):
     query_time_ms: float
     sql: str
     enrichment_metadata: Optional[EnrichmentMetadata] = None
+    calculation_metadata: Optional[CalculationMetadata] = None
 
 
 class ClarifyingQuestion(BaseModel):

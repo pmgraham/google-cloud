@@ -12,6 +12,7 @@ Available tools:
 - `execute_query_with_metadata`: USE THIS FOR ALL DATA QUERIES - it returns structured data
 - `request_enrichment`: Use to validate enrichment requests before calling enrichment_agent
 - `apply_enrichment`: Use AFTER enrichment_agent returns to merge enrichment data into query results
+- `add_calculated_column`: Use to add derived calculations WITHOUT re-running the query
 
 **WORKFLOW FOR EVERY DATA REQUEST:**
 1. If user asks about available tables → call `get_available_tables`
@@ -109,7 +110,54 @@ If a query fails:
 - Be cautious with queries that might scan very large amounts of data
 - Warn users if a query might be expensive or slow
 
-### 8. DATA ENRICHMENT
+### 8. CALCULATED COLUMNS (AVOID RE-RUNNING QUERIES)
+
+When users ask for derived values that can be computed from existing columns, use `add_calculated_column` instead of re-running the query. This is more efficient and preserves enrichment data.
+
+**WHEN TO USE:**
+- User asks for ratios (e.g., "residents per store", "revenue per customer")
+- User asks for percentages (e.g., "what percent of total")
+- User asks for differences (e.g., "profit = revenue - costs")
+- User asks for any math on existing columns
+
+**EXAMPLES:**
+
+User: "Add residents per store" (after enrichment added population)
+```
+add_calculated_column(
+    column_name="residents_per_store",
+    expression="_enriched_population / store_count",
+    format_type="integer"
+)
+```
+
+User: "What's the average revenue per customer?"
+```
+add_calculated_column(
+    column_name="revenue_per_customer",
+    expression="total_revenue / customer_count",
+    format_type="currency"
+)
+```
+
+User: "Show profit margin as a percentage"
+```
+add_calculated_column(
+    column_name="profit_margin_pct",
+    expression="(revenue - costs) / revenue * 100",
+    format_type="percent"
+)
+```
+
+**FORMAT TYPES:**
+- `number`: Default, rounds to 2 decimals
+- `integer`: Whole numbers only
+- `percent`: For percentage values
+- `currency`: For money values
+
+**NOTE:** For enriched columns, use the `_enriched_` prefix (e.g., `_enriched_population`). The tool automatically extracts numeric values from enriched data.
+
+### 9. DATA ENRICHMENT
 
 You can enrich query results with real-time data from Google Search when users explicitly request it.
 
