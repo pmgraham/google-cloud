@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { X, Download, Zap, Calculator, AlertTriangle, Info } from 'lucide-react';
 import type { ChatMessage, ChartType } from '../../types';
 import { DataTable } from './DataTable';
 import { ChartView } from './ChartView';
 import { ChartToggle } from './ChartToggle';
+import { MetricSelector } from './MetricSelector';
 import { SqlViewer } from './SqlViewer';
+import { getNumericColumns } from '../../hooks/useChartConfig';
 
 interface ResultsPanelProps {
   message: ChatMessage | null;
@@ -13,12 +15,26 @@ interface ResultsPanelProps {
 
 export function ResultsPanel({ message, onClose }: ResultsPanelProps) {
   const [chartType, setChartType] = useState<ChartType>('table');
+  const [selectedMetric, setSelectedMetric] = useState<string>('');
 
-  if (!message || !message.query_result) {
+  const { query_result } = message ?? {};
+
+  // Get numeric columns for the metric selector
+  const numericColumns = useMemo(
+    () => (query_result ? getNumericColumns(query_result.columns) : []),
+    [query_result]
+  );
+
+  // Set default metric when columns change
+  useEffect(() => {
+    if (numericColumns.length > 0 && !numericColumns.find((c) => c.name === selectedMetric)) {
+      setSelectedMetric(numericColumns[0].name);
+    }
+  }, [numericColumns, selectedMetric]);
+
+  if (!message || !query_result) {
     return null;
   }
-
-  const { query_result } = message;
 
   const handleExportCSV = () => {
     // Helper to extract display value from enriched/calculated objects
@@ -87,9 +103,21 @@ export function ResultsPanel({ message, onClose }: ResultsPanelProps) {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Chart Type Toggle */}
-        <div className="flex items-center justify-between">
-          <ChartToggle activeChart={chartType} onChange={setChartType} />
+        {/* Chart Type Toggle and Metric Selector */}
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-3">
+            <ChartToggle activeChart={chartType} onChange={setChartType} />
+            {chartType !== 'table' && numericColumns.length > 1 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Metric:</span>
+                <MetricSelector
+                  columns={numericColumns}
+                  selectedColumn={selectedMetric}
+                  onChange={setSelectedMetric}
+                />
+              </div>
+            )}
+          </div>
           <span className="text-sm text-gray-500">
             {query_result.total_rows} rows in {query_result.query_time_ms.toFixed(0)}ms
           </span>
@@ -182,7 +210,7 @@ export function ResultsPanel({ message, onClose }: ResultsPanelProps) {
             <DataTable queryResult={query_result} />
           ) : (
             <div className="p-4">
-              <ChartView queryResult={query_result} chartType={chartType} />
+              <ChartView queryResult={query_result} chartType={chartType} yAxisColumn={selectedMetric} />
             </div>
           )}
         </div>

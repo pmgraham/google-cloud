@@ -5,12 +5,14 @@ import { useChartConfig } from '../../hooks/useChartConfig';
 interface ChartViewProps {
   queryResult: QueryResult;
   chartType: ChartType;
+  yAxisColumn?: string;
 }
 
-export function ChartView({ queryResult, chartType }: ChartViewProps) {
+export function ChartView({ queryResult, chartType, yAxisColumn }: ChartViewProps) {
   const chartOptions = useChartConfig({
     queryResult,
     chartType,
+    yAxisColumn,
   });
 
   if (!chartOptions) {

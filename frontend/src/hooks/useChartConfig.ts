@@ -1,12 +1,49 @@
 import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-import type { ChartType, QueryResult } from '../types';
+import type { ChartType, QueryResult, ColumnInfo } from '../types';
 
 interface UseChartConfigOptions {
   queryResult: QueryResult;
   chartType: ChartType;
   xAxisColumn?: string;
   yAxisColumn?: string;
+}
+
+// Helper to check if a column is numeric (including enriched/calculated)
+function isNumericColumn(col: ColumnInfo): boolean {
+  // Standard numeric types
+  if (['INTEGER', 'FLOAT', 'NUMERIC', 'INT64', 'FLOAT64', 'BIGNUMERIC'].includes(col.type.toUpperCase())) {
+    return true;
+  }
+  // Enriched and calculated columns contain numeric values
+  if (col.is_enriched || col.is_calculated) {
+    return true;
+  }
+  return false;
+}
+
+// Helper to extract numeric value from regular, enriched, or calculated values
+function extractNumericValue(value: unknown): number {
+  if (value === null || value === undefined) return 0;
+  // Handle enriched/calculated objects with .value property
+  if (typeof value === 'object' && value !== null && 'value' in value) {
+    const innerValue = (value as { value: unknown }).value;
+    if (innerValue === null || innerValue === undefined) return 0;
+    if (typeof innerValue === 'number') return innerValue;
+    // Try to parse string numbers
+    const parsed = parseFloat(String(innerValue).replace(/[^0-9.-]/g, ''));
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  // Regular numeric value
+  if (typeof value === 'number') return value;
+  // Try to parse string
+  const parsed = parseFloat(String(value));
+  return isNaN(parsed) ? 0 : parsed;
+}
+
+// Get available numeric columns for charting
+export function getNumericColumns(columns: ColumnInfo[]): ColumnInfo[] {
+  return columns.filter(isNumericColumn);
 }
 
 export function useChartConfig({
@@ -23,11 +60,10 @@ export function useChartConfig({
     const { columns, rows } = queryResult;
 
     // Auto-detect x and y columns if not specified
-    const numericColumns = columns.filter((col) =>
-      ['INTEGER', 'FLOAT', 'NUMERIC', 'INT64', 'FLOAT64', 'BIGNUMERIC'].includes(col.type.toUpperCase())
-    );
+    const numericColumns = columns.filter(isNumericColumn);
     const stringColumns = columns.filter((col) =>
-      ['STRING', 'DATE', 'DATETIME', 'TIMESTAMP'].includes(col.type.toUpperCase())
+      ['STRING', 'DATE', 'DATETIME', 'TIMESTAMP'].includes(col.type.toUpperCase()) &&
+      !col.is_enriched && !col.is_calculated
     );
 
     const xCol = xAxisColumn || stringColumns[0]?.name || columns[0]?.name;
@@ -37,9 +73,15 @@ export function useChartConfig({
       return null;
     }
 
-    // Extract data
-    const xData = rows.map((row) => String(row[xCol] ?? ''));
-    const yData = rows.map((row) => Number(row[yCol] ?? 0));
+    // Extract data - handle enriched/calculated values
+    const xData = rows.map((row) => {
+      const val = row[xCol];
+      if (typeof val === 'object' && val !== null && 'value' in val) {
+        return String((val as { value: unknown }).value ?? '');
+      }
+      return String(val ?? '');
+    });
+    const yData = rows.map((row) => extractNumericValue(row[yCol]));
 
     // Base options
     const baseOptions: EChartsOption = {
