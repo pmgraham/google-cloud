@@ -1,5 +1,7 @@
 # Data Insights Agent
 
+> **Early Stage Development**: This project is in very early stage development and is intended for demonstration and experimental purposes only. It is not production-ready and APIs, features, and architecture may change significantly. Use at your own risk.
+
 An AI-powered data analysis tool that enables users to query BigQuery data using natural language. Built with Google ADK (Agent Development Kit), FastAPI, React, and Apache ECharts.
 
 ## Features
@@ -155,6 +157,10 @@ data-insights-agent/
 ### Model not found errors
 - Ensure `GOOGLE_CLOUD_REGION=global` in your `.env` file
 - The app uses `gemini-3-flash-preview` model
+
+## Disclaimer
+
+This software is provided as-is for demonstration and educational purposes. It is in early stage development and should not be used in production environments. The authors make no warranties about the suitability of this software for any purpose.
 
 ## License
 
