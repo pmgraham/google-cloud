@@ -54,20 +54,79 @@ def validate_enrichment_request(
     fields: list[str],
     data_type: str | None = None
 ) -> dict[str, Any]:
-    """
-    Validate an enrichment request before sending to the enrichment agent.
+    """Validate an enrichment request against guardrails before sending to enrichment agent.
+
+    Enforces limits on the number of values and fields to prevent excessive API calls,
+    long processing times, and unreliable enrichment results. Also provides warnings
+    for dynamic fields that may become outdated.
+
+    **GUARDRAILS** (System-wide limits):
+    - **Maximum 20 unique values** can be enriched per request
+    - **Maximum 5 fields** can be added per value
+    - These limits prevent API quota exhaustion and ensure reasonable response times
 
     Args:
-        values: List of values to enrich (e.g., ["CA", "TX", "NY"])
-        fields: List of fields to add (e.g., ["capital", "population"])
-        data_type: Optional data type for template validation
+        values (list[str]): List of unique values to enrich.
+            Examples: ["CA", "TX", "NY"], ["Microsoft", "Apple", "Google"]
+        fields (list[str]): List of fields to add for each value.
+            Examples: ["capital", "population"], ["CEO", "founded_year", "headquarters"]
+        data_type (str | None, optional): Optional data type hint for context.
+            Examples: "us_state", "city", "company", "hotel"
+            Currently unused but reserved for future template-based validation.
 
     Returns:
-        dict with validation result and any warnings
+        dict[str, Any]: Validation result with the following structure:
+
+            On success:
+            {
+                "valid": True,
+                "error": None,
+                "warnings": [
+                    "Dynamic fields requested: ['population']. These may change over time...",
+                    "Large enrichment request (60 total lookups). This may take longer..."
+                ],
+                "total_enrichments": 60  # len(values) * len(fields)
+            }
+
+            On failure:
+            {
+                "valid": False,
+                "error": "Too many values to enrich. Maximum is 20, got 25...",
+                "warnings": []
+            }
+
+    Examples:
+        >>> # Valid request
+        >>> result = validate_enrichment_request(["CA", "TX", "NY"], ["capital", "population"])
+        >>> result
+        {"valid": True, "error": None, "warnings": [...], "total_enrichments": 6}
+
+        >>> # Too many values
+        >>> result = validate_enrichment_request(list(range(25)), ["capital"])
+        >>> result
+        {"valid": False, "error": "Too many values to enrich. Maximum is 20, got 25...", "warnings": []}
+
+        >>> # Too many fields
+        >>> result = validate_enrichment_request(["CA"], ["capital", "population", "gdp", "area", "governor", "flag"])
+        >>> result
+        {"valid": False, "error": "Too many fields requested. Maximum is 5, got 6...", "warnings": []}
+
+        >>> # Warning for dynamic fields
+        >>> result = validate_enrichment_request(["CA"], ["population", "governor"])
+        >>> result["warnings"]
+        ["Dynamic fields requested: ['population', 'governor']. These may change over time..."]
+
+    Notes:
+        - Guardrails are enforced BEFORE calling the enrichment agent
+        - Warnings do not prevent request execution, only inform about potential issues
+        - Large requests (>30 total lookups) receive a warning but are not blocked
     """
     warnings = []
 
-    # Guardrail: Limit number of values to prevent excessive API calls
+    # ========== GUARDRAIL 1: Maximum Values Limit ==========
+    # Limit number of values to prevent excessive API calls
+    # Example: Enriching 100 states with 5 fields = 500 Google Search API calls
+    # Rationale: API quota limits, response time, and reliability
     MAX_VALUES = 20
     if len(values) > MAX_VALUES:
         return {
@@ -77,7 +136,9 @@ def validate_enrichment_request(
             "warnings": []
         }
 
-    # Guardrail: Limit number of fields per value
+    # ========== GUARDRAIL 2: Maximum Fields Limit ==========
+    # Limit number of fields per value to keep responses manageable
+    # Rationale: More fields = more searches = higher failure rate and slower response
     MAX_FIELDS = 5
     if len(fields) > MAX_FIELDS:
         return {

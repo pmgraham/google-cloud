@@ -2,11 +2,93 @@ import { HelpCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import type { ClarifyingQuestion } from '../../types';
 
+/**
+ * Props for the ClarificationPrompt component.
+ *
+ * @remarks
+ * Defines the clarifying question data and selection callback.
+ */
 interface ClarificationPromptProps {
+  /** Clarifying question object with question text, optional context, and selectable options */
   question: ClarifyingQuestion;
+  /** Callback invoked when user selects an option (passes the selected option string) */
   onSelect: (option: string) => void;
 }
 
+/**
+ * Clarification prompt component that displays agent-generated questions with selectable options.
+ *
+ * @param props - Component props
+ * @returns Clarification UI with question and option buttons, or null if no options
+ *
+ * @remarks
+ * **Interactive prompt component** displayed when the AI agent needs clarification
+ * to better understand the user's request.
+ *
+ * **Features**:
+ * - **Question display**: Renders question text with markdown support
+ * - **Optional context**: Shows additional context/explanation below question
+ * - **Selectable options**: Clickable buttons for each option
+ * - **Markdown support**: All text (question, context, options) rendered with ReactMarkdown
+ * - **Amber styling**: Visually distinct from regular messages
+ *
+ * **Data Structure**:
+ * ClarifyingQuestion contains:
+ * - `question`: Main question text (markdown)
+ * - `context`: Optional explanatory text (markdown)
+ * - `options`: Array of selectable option strings (markdown)
+ *
+ * **Behavior**:
+ * - Returns `null` if `options` array is empty or undefined
+ * - Clicking an option calls `onSelect(option)` which typically sends the option as a new message
+ * - Options wrap to multiple lines on narrow screens
+ *
+ * **Visual Design**:
+ * - Amber background (`bg-amber-50`) and border (`border-amber-200`)
+ * - Help icon to indicate it's a question
+ * - Pills for options with hover state
+ *
+ * @example
+ * ```tsx
+ * import { ClarificationPrompt } from './ClarificationPrompt';
+ *
+ * function MessageContent({ message }: { message: ChatMessage }) {
+ *   const handleSelectOption = (option: string) => {
+ *     sendMessage(option);  // Send selected option as new message
+ *   };
+ *
+ *   return (
+ *     <div>
+ *       <p>{message.content}</p>
+ *       {message.clarifying_question && (
+ *         <ClarificationPrompt
+ *           question={message.clarifying_question}
+ *           onSelect={handleSelectOption}
+ *         />
+ *       )}
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Example ClarifyingQuestion object
+ * const question: ClarifyingQuestion = {
+ *   question: 'Which time period would you like to analyze?',
+ *   context: 'I can show data for different timeframes to give you better insights.',
+ *   options: [
+ *     'Last 7 days',
+ *     'Last 30 days',
+ *     'Last quarter',
+ *     'All time'
+ *   ]
+ * };
+ *
+ * <ClarificationPrompt question={question} onSelect={handleSelect} />
+ * // Renders amber prompt with 4 selectable option pills
+ * ```
+ */
 export function ClarificationPrompt({ question, onSelect }: ClarificationPromptProps) {
   if (!question.options || question.options.length === 0) {
     return null;

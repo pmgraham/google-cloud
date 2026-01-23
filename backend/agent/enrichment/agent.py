@@ -7,6 +7,7 @@ contamination of trusted database results with inaccurate or irrelevant informat
 from google.adk.agents import Agent
 from google.adk.tools.google_search_tool import GoogleSearchTool
 
+from ..callbacks import after_tool_callback
 from ..tools import apply_enrichment
 from .prompts import ENRICHMENT_INSTRUCTION
 
@@ -31,4 +32,5 @@ def create_enrichment_agent() -> Agent:
         ),
         instruction=ENRICHMENT_INSTRUCTION,
         tools=[_google_search, apply_enrichment],
+        after_tool_callback=after_tool_callback,
     )

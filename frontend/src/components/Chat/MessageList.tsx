@@ -4,13 +4,39 @@ import ReactMarkdown from 'react-markdown';
 import type { ChatMessage, Insight } from '../../types';
 import { ClarificationPrompt } from './ClarificationPrompt';
 
+/**
+ * Props for the MessageList component.
+ *
+ * @remarks
+ * Defines the data and event handlers for rendering the message history.
+ */
 interface MessageListProps {
+  /** Array of chat messages to display (user messages and agent responses) */
   messages: ChatMessage[];
+  /** Whether the agent is currently processing (shows loading animation) */
   isLoading: boolean;
+  /** Callback invoked when user selects a clarifying question option or starter suggestion */
   onSelectOption: (option: string) => void;
+  /** Optional callback invoked when user clicks "View results" button on a message with query_result */
   onViewResults?: (message: ChatMessage) => void;
 }
 
+/**
+ * Insight badge component displaying AI-generated insights.
+ *
+ * @param props - Component props with single insight object
+ * @returns Styled badge with icon and insight message
+ *
+ * @remarks
+ * Displays an Insight object (trend, anomaly, comparison, suggestion) with
+ * appropriate icon and color scheme.
+ *
+ * **Insight Types**:
+ * - `trend`: Blue (TrendingUp icon) - Data trends over time
+ * - `anomaly`: Amber (AlertCircle icon) - Unusual patterns or outliers
+ * - `comparison`: Purple (Sparkles icon) - Comparative analysis
+ * - `suggestion`: Green (Lightbulb icon) - Recommendations or next steps
+ */
 function InsightBadge({ insight }: { insight: Insight }) {
   const icons = {
     trend: TrendingUp,
@@ -37,6 +63,92 @@ function InsightBadge({ insight }: { insight: Insight }) {
   );
 }
 
+/**
+ * Message list component that displays chat history with auto-scroll.
+ *
+ * @param props - Component props
+ * @returns Scrollable message list with empty state, messages, insights, and loading indicator
+ *
+ * @remarks
+ * **Primary message display component** that renders the conversation history
+ * between user and AI agent.
+ *
+ * **Features**:
+ * - **Auto-scroll**: Scrolls to bottom when new messages arrive
+ * - **Empty state**: Shows welcome message and starter suggestions when no messages exist
+ * - **Message rendering**:
+ *   - User messages: Right-aligned, blue background, plain text
+ *   - Agent messages: Left-aligned, white background, markdown rendering
+ * - **Rich content**:
+ *   - Clarifying questions: Inline amber prompts with selectable options
+ *   - Query results: "View results" button to open ResultsPanel
+ *   - Insights: Colored badges for trends, anomalies, comparisons, suggestions
+ * - **Loading state**: Animated dots with "Thinking..." label
+ *
+ * **Auto-Scroll Behavior**:
+ * Uses `useEffect` hook with `bottomRef` to scroll to bottom whenever:
+ * - New message added to `messages` array
+ * - `isLoading` state changes
+ * Uses smooth scrolling for better UX.
+ *
+ * **Message Structure**:
+ * Each ChatMessage can contain:
+ * - `content`: Main text (markdown for agent, plain for user)
+ * - `clarifying_question`: Optional ClarifyingQuestion object
+ * - `query_result`: Optional QueryResult object (triggers "View results" button)
+ * - `insights`: Optional array of Insight objects
+ *
+ * **Empty State**:
+ * Shown when `messages.length === 0` and not loading:
+ * - Bot icon with welcome message
+ * - Example questions as clickable buttons
+ * - Calls `onSelectOption` when suggestion clicked
+ *
+ * **Avatar Icons**:
+ * - User: Gray circle with User icon
+ * - Agent: Primary-colored circle with Bot icon
+ *
+ * @example
+ * ```tsx
+ * import { MessageList } from './MessageList';
+ *
+ * function ChatPanel() {
+ *   const { messages, isLoading } = useChat();
+ *
+ *   return (
+ *     <div className="flex flex-col h-screen">
+ *       <MessageList
+ *         messages={messages}
+ *         isLoading={isLoading}
+ *         onSelectOption={handleSend}
+ *         onViewResults={openResultsPanel}
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Message with insights and clarifying question
+ * const messageWithExtras: ChatMessage = {
+ *   id: '1',
+ *   role: 'assistant',
+ *   content: 'I found some interesting patterns...',
+ *   insights: [
+ *     { type: 'trend', message: 'Sales increased 23% in Q4' },
+ *     { type: 'anomaly', message: 'Spike detected on Dec 15th' }
+ *   ],
+ *   clarifying_question: {
+ *     question: 'Which region should I focus on?',
+ *     options: ['North America', 'Europe', 'Asia']
+ *   }
+ * };
+ *
+ * <MessageList messages={[messageWithExtras]} isLoading={false} onSelectOption={handleSelect} />
+ * // Renders message with 2 insight badges and clarification prompt
+ * ```
+ */
 export function MessageList({
   messages,
   isLoading,

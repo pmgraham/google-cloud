@@ -8,11 +8,105 @@ import { MetricSelector } from './MetricSelector';
 import { SqlViewer } from './SqlViewer';
 import { getNumericColumns } from '../../hooks/useChartConfig';
 
+/**
+ * Props for the ResultsPanel component.
+ *
+ * @remarks
+ * Controls the display of query results in a dedicated panel with visualization options.
+ */
 interface ResultsPanelProps {
+  /** Chat message containing query results to display (null hides the panel) */
   message: ChatMessage | null;
+  /** Callback invoked when user closes the results panel */
   onClose: () => void;
 }
 
+/**
+ * Results panel component that displays query results with multiple visualization options.
+ *
+ * @param props - Component props
+ * @returns Results panel UI or null if no message
+ *
+ * @remarks
+ * **Primary component** for displaying BigQuery query results with rich visualizations
+ * and metadata about enrichment and calculations.
+ *
+ * **Features**:
+ * - **Multiple chart types**: Table, bar, line, pie, area charts
+ * - **CSV export**: Download results with proper handling of enriched/calculated values
+ * - **Metric selection**: Choose which numeric column to visualize (when multiple available)
+ * - **Enrichment metadata banners**: Show info about enriched data from Google Search
+ * - **Calculation metadata banners**: Show formulas for calculated columns
+ * - **Responsive layout**: Header with controls, scrollable content area
+ *
+ * **State Management**:
+ * - `chartType`: Current visualization type (table, bar, line, pie, area)
+ * - `selectedMetric`: Which numeric column to use for y-axis in charts
+ * - Auto-selects first numeric column when data changes
+ *
+ * **CSV Export Logic**:
+ * The `handleExportCSV()` function extracts values from enriched and calculated
+ * objects correctly:
+ * - Enriched values: Extracts `.value` property (ignores metadata)
+ * - Calculated values: Extracts `.value` property (ignores formula)
+ * - Regular values: Uses as-is
+ * - Properly escapes values containing commas, quotes, or newlines
+ * - Filename includes current date
+ *
+ * **Enrichment Metadata Display**:
+ * When `query_result.enrichment_metadata` exists, shows purple banner with:
+ * - Number of enriched values
+ * - List of enriched fields
+ * - Warnings about failed enrichments
+ * - Instructions for viewing source attribution
+ *
+ * **Calculation Metadata Display**:
+ * When `query_result.calculation_metadata` exists, shows blue banner with:
+ * - List of calculated columns with formulas
+ * - Warnings about calculation errors (e.g., division by zero)
+ *
+ * @example
+ * ```tsx
+ * function App() {
+ *   const [selectedMessage, setSelectedMessage] = useState<ChatMessage | null>(null);
+ *
+ *   return (
+ *     <div className="flex h-screen">
+ *       <ChatPanel onResultsClick={setSelectedMessage} />
+ *       <ResultsPanel
+ *         message={selectedMessage}
+ *         onClose={() => setSelectedMessage(null)}
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Handling enriched results
+ * const messageWithEnrichment: ChatMessage = {
+ *   // ...
+ *   query_result: {
+ *     columns: [
+ *       { name: "state", type: "STRING" },
+ *       { name: "_enriched_capital", type: "STRING", is_enriched: true }
+ *     ],
+ *     // ...
+ *     enrichment_metadata: {
+ *       source_column: "state",
+ *       enriched_fields: ["capital"],
+ *       total_enriched: 50,
+ *       warnings: [],
+ *       partial_failure: false
+ *     }
+ *   }
+ * };
+ *
+ * <ResultsPanel message={messageWithEnrichment} onClose={handleClose} />
+ * // Shows purple enrichment banner and enriched column in table
+ * ```
+ */
 export function ResultsPanel({ message, onClose }: ResultsPanelProps) {
   const [chartType, setChartType] = useState<ChartType>('table');
   const [selectedMetric, setSelectedMetric] = useState<string>('');
