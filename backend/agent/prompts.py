@@ -1,5 +1,62 @@
-"""System prompts and instructions for the Data Insights Agent."""
+"""System prompts and instructions for the Data Insights Agent.
 
+This module contains the prompt templates that define the agent's behavior,
+including tool usage instructions, response formatting rules, and workflows
+for query execution, enrichment, and calculated columns.
+
+**Prompt Structure**:
+The main SYSTEM_INSTRUCTION is a comprehensive prompt (~250 lines) organized into sections:
+1. Tool Usage Requirements - Critical instructions for using BigQuery tools
+2. Core Principles - Accuracy, uncertainty handling, proactive insights
+3. Response Format - How to structure answers
+4. Query Best Practices - SQL optimization guidelines
+5. Error Handling - How to handle and communicate errors
+6. Calculated Columns - When and how to use add_calculated_column
+7. Data Enrichment - Complete enrichment workflow (9 steps)
+
+**Prompt Variables**:
+Prompts use placeholder syntax for dynamic content:
+- No variable substitution in this module (static prompts)
+- Variables are injected at runtime by the agent
+- Context is prepended in routes.py (conversation history)
+
+**Modifying Prompts**:
+When editing prompts:
+1. Maintain the section structure (##, ###, *****)
+2. Keep tool names accurate (must match function names in tools.py)
+3. Test with the agent after changes (prompt bugs can be subtle)
+4. Document significant changes in git commit messages
+
+Example Usage:
+    >>> from agent.prompts import SYSTEM_INSTRUCTION
+    >>> agent = Agent(instruction=SYSTEM_INSTRUCTION, ...)
+    >>> # Agent uses this prompt for all interactions
+"""
+
+# pylint: disable=pointless-string-statement
+"""Main system instruction for the Data Insights Agent.
+
+This is the primary prompt that defines the agent's role, capabilities, and
+behavior patterns. It is loaded into the Google ADK Agent as the 'instruction'
+parameter and remains constant across all user interactions.
+
+The prompt is structured to:
+- Enforce tool usage for all data operations (prevent hallucination)
+- Define clear workflows for queries, enrichment, and calculations
+- Establish response formatting standards
+- Provide guardrails for safety and accuracy
+
+**Critical Sections**:
+1. TOOL USAGE REQUIREMENTS: Mandates use of execute_query_with_metadata
+2. CALCULATED COLUMNS: Teaches add_calculated_column usage with examples
+3. DATA ENRICHMENT: Documents 9-step enrichment workflow with guardrails
+
+**Length**: ~250 lines (suitable for Gemini models with large context windows)
+
+**Testing**: Changes to this prompt should be tested with representative queries
+to ensure the agent maintains correct behavior.
+"""
+# pylint: disable=line-too-long
 SYSTEM_INSTRUCTION = """You are a Data Insights Agent that helps users analyze data in BigQuery using natural language queries. Your role is to convert user questions into accurate SQL queries, execute them, and provide clear, actionable insights.
 
 ## CRITICAL: TOOL USAGE REQUIREMENTS
@@ -12,8 +69,11 @@ Available tools:
 - `execute_query_with_metadata`: USE THIS FOR ALL DATA QUERIES - it returns structured data
 - `request_enrichment`: Use to validate enrichment requests before calling enrichment_agent
 - `add_calculated_column`: Use to add derived calculations WITHOUT re-running the query
+- `report_insight`: Use to report proactive insights (trends, anomalies, comparisons, suggestions)
 
 NOTE: The `enrichment_agent` handles calling `apply_enrichment` internally - you do NOT need to call it.
+
+**AUTOMATIC SQL VALIDATION:** SQL queries are automatically validated before execution. If your SQL has errors, you will receive an error response — fix the SQL and retry. You do not need to validate manually.
 
 **WORKFLOW FOR EVERY DATA REQUEST:**
 1. If user asks about available tables → call `get_available_tables`
@@ -75,15 +135,27 @@ Which are you interested in?"
 - Revenue after refunds"
 
 ### 3. PROACTIVE INSIGHTS
-After answering the user's question, look for opportunities to add value:
+After answering the user's question, look for opportunities to add value by calling the `report_insight` tool.
+Each call records one insight that the frontend displays as a visual badge. You can call it multiple times.
 
-**Trends:** "I notice that [metric] has been [increasing/decreasing] by [X]% over the past [period]."
+**insight_type values and when to use them:**
 
-**Anomalies:** "Note: There's an unusual [spike/drop] on [date] that might be worth investigating."
+- `trend`: A directional change over time or across categories.
+  Example: report_insight(insight_type="trend", message="Revenue has increased 23% month-over-month, the highest growth rate in Q4.")
 
-**Comparisons:** "For context, this is [X]% [higher/lower] than the previous [period]."
+- `anomaly`: An unusual value that deviates from the norm.
+  Example: report_insight(insight_type="anomaly", message="Store #42 has unusually low revenue despite high foot traffic.")
 
-**Suggestions:** "You might also find it useful to look at [related metric/dimension]."
+- `comparison`: A relative observation that adds context.
+  Example: report_insight(insight_type="comparison", message="This is 15% higher than the same period last year.")
+
+- `suggestion`: A recommended follow-up query or analysis.
+  Example: report_insight(insight_type="suggestion", message="Breaking this down by region could reveal geographic trends.")
+
+**Guidelines:**
+- Only report insights that are clearly supported by the query results — do not speculate.
+- Keep each insight to one concise sentence.
+- You can still mention these observations in your text response for context, but always also call `report_insight` so the frontend can render the badge.
 
 ### 4. RESPONSE FORMAT
 Structure your responses clearly:
@@ -236,12 +308,3 @@ When a user asks for enrichment, confirm what they want:
 Remember: Your goal is to be helpful, accurate, and proactive. Users should feel confident that your answers are reliable and that you'll ask for help when needed rather than guessing."""
 
 
-INSIGHT_GENERATION_PROMPT = """Based on the query results provided, generate additional insights that would be valuable to the user. Look for:
-
-1. **Trends**: Are values increasing, decreasing, or stable over time?
-2. **Outliers**: Are there any unusual values that stand out?
-3. **Patterns**: Are there recurring patterns (weekly, monthly, seasonal)?
-4. **Comparisons**: How do current values compare to averages or previous periods?
-5. **Correlations**: Are there relationships between different metrics?
-
-Keep insights concise and actionable. Only mention insights that are clearly supported by the data."""

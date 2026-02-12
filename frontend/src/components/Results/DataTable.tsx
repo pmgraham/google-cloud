@@ -11,11 +11,53 @@ import {
 import { ArrowUpDown, ChevronLeft, ChevronRight, Zap, Calculator, AlertTriangle } from 'lucide-react';
 import type { QueryResult, EnrichedValue, CalculatedValue } from '../../types';
 
+/**
+ * Props for the DataTable component.
+ *
+ * @remarks
+ * Configures which query results to display in the data table.
+ */
 interface DataTableProps {
+  /** Query results to display in table format */
   queryResult: QueryResult;
 }
 
-// Type guard for enriched values
+/**
+ * Type guard to check if a value is an EnrichedValue object.
+ *
+ * @param value - Value to check (can be any type from query result row)
+ * @returns True if value is an EnrichedValue with metadata
+ *
+ * @remarks
+ * EnrichedValue objects come from the data enrichment workflow when the agent
+ * augments query results with real-time data from Google Search. These objects
+ * contain the actual value plus metadata (source, confidence, freshness, warnings).
+ *
+ * **Structure Check**:
+ * - Must be an object (not null, not primitive)
+ * - Must have `value` property (the actual data)
+ * - Must have `source` property (attribution)
+ * - Must have `confidence` property (quality indicator)
+ *
+ * **Use Case**:
+ * Used in cell rendering logic to determine whether to display enriched value
+ * with special styling (purple) and metadata tooltip.
+ *
+ * @example
+ * ```typescript
+ * const cellValue = row['_enriched_population'];
+ *
+ * if (isEnrichedValue(cellValue)) {
+ *   // cellValue is typed as EnrichedValue
+ *   console.log(cellValue.value);       // 39500000
+ *   console.log(cellValue.source);      // "U.S. Census (2023)"
+ *   console.log(cellValue.confidence);  // "high"
+ * } else {
+ *   // Regular primitive value
+ *   console.log(cellValue);  // 42
+ * }
+ * ```
+ */
 function isEnrichedValue(value: unknown): value is EnrichedValue {
   return (
     typeof value === 'object' &&
@@ -26,7 +68,40 @@ function isEnrichedValue(value: unknown): value is EnrichedValue {
   );
 }
 
-// Type guard for calculated values
+/**
+ * Type guard to check if a value is a CalculatedValue object.
+ *
+ * @param value - Value to check (can be any type from query result row)
+ * @returns True if value is a CalculatedValue with formula metadata
+ *
+ * @remarks
+ * CalculatedValue objects come from the `add_calculated_column` tool when the
+ * agent derives new columns from existing data without re-running the SQL query.
+ * These objects contain the computed value plus metadata (formula, format type, warnings).
+ *
+ * **Structure Check**:
+ * - Must be an object (not null, not primitive)
+ * - Must have `is_calculated` property set to `true`
+ *
+ * **Use Case**:
+ * Used in cell rendering logic to determine whether to display calculated value
+ * with special styling (blue, monospace font) and formula tooltip.
+ *
+ * @example
+ * ```typescript
+ * const cellValue = row['residents_per_store'];
+ *
+ * if (isCalculatedValue(cellValue)) {
+ *   // cellValue is typed as CalculatedValue
+ *   console.log(cellValue.value);         // 263333
+ *   console.log(cellValue.expression);    // "_enriched_population / store_count"
+ *   console.log(cellValue.format_type);   // "integer"
+ * } else {
+ *   // Regular primitive value
+ *   console.log(cellValue);  // 42
+ * }
+ * ```
+ */
 function isCalculatedValue(value: unknown): value is CalculatedValue {
   return (
     typeof value === 'object' &&
@@ -36,7 +111,45 @@ function isCalculatedValue(value: unknown): value is CalculatedValue {
   );
 }
 
-// Format calculated values based on format_type
+/**
+ * Format a calculated value according to its format type specification.
+ *
+ * @param value - Numeric value to format (can be null)
+ * @param formatType - Format type from CalculatedValue metadata
+ * @returns Formatted string representation of the value
+ *
+ * @remarks
+ * This function applies the appropriate formatting to calculated column values
+ * based on the `format_type` specified when the column was created via
+ * `add_calculated_column`.
+ *
+ * **Supported Format Types**:
+ * - `integer`: Rounds to whole number with thousands separators (e.g., `1,234`)
+ * - `percent`: Shows as percentage with 1 decimal place (e.g., `45.2%`)
+ * - `currency`: Shows as USD with 2 decimal places (e.g., `$1,234.56`)
+ * - `number` (default): Shows with up to 2 decimal places and thousands separators (e.g., `1,234.56`)
+ *
+ * **Null Handling**:
+ * Returns em dash (`—`) for null values instead of "null" or blank string.
+ *
+ * @example
+ * ```typescript
+ * formatCalculatedValue(263333, 'integer');    // "263,333"
+ * formatCalculatedValue(45.234, 'percent');    // "45.2%"
+ * formatCalculatedValue(1234.56, 'currency');  // "$1,234.56"
+ * formatCalculatedValue(1234.567, 'number');   // "1,234.57"
+ * formatCalculatedValue(null, 'integer');      // "—"
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Usage in cell rendering
+ * if (isCalculatedValue(cellValue)) {
+ *   const formatted = formatCalculatedValue(cellValue.value, cellValue.format_type);
+ *   return <span className="font-mono">{formatted}</span>;
+ * }
+ * ```
+ */
 function formatCalculatedValue(value: number | null, formatType: string): string {
   if (value === null) return '—';
 
@@ -52,7 +165,37 @@ function formatCalculatedValue(value: number | null, formatType: string): string
   }
 }
 
-// Get display name for enriched column (remove _enriched_ prefix)
+/**
+ * Get user-friendly display name for a column by removing internal prefixes.
+ *
+ * @param colName - Column name (may include `_enriched_` prefix)
+ * @returns Clean column name without prefix
+ *
+ * @remarks
+ * Enriched columns are prefixed with `_enriched_` internally to distinguish them
+ * from original query columns. This function removes that prefix for display purposes.
+ *
+ * **Examples**:
+ * - `_enriched_population` → `population`
+ * - `_enriched_capital` → `capital`
+ * - `store_count` → `store_count` (no change)
+ *
+ * @example
+ * ```typescript
+ * getDisplayName('_enriched_population');  // "population"
+ * getDisplayName('state');                 // "state"
+ * getDisplayName('_enriched_gdp');         // "gdp"
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Usage in table header
+ * <th>
+ *   {col.is_enriched && <Zap />}
+ *   {getDisplayName(col.name)}
+ * </th>
+ * ```
+ */
 function getDisplayName(colName: string): string {
   if (colName.startsWith('_enriched_')) {
     return colName.replace('_enriched_', '');
@@ -60,14 +203,35 @@ function getDisplayName(colName: string): string {
   return colName;
 }
 
-// Confidence badge colors
+/**
+ * Tailwind CSS classes for confidence level badges in enriched value tooltips.
+ *
+ * @remarks
+ * Maps confidence levels to appropriate color schemes using Tailwind utility classes.
+ * Displayed in enriched value tooltips to indicate data quality.
+ *
+ * - `high`: Green (reliable, verified data)
+ * - `medium`: Yellow (moderately reliable)
+ * - `low`: Red (questionable, needs verification)
+ */
 const confidenceColors = {
   high: 'bg-green-100 text-green-700',
   medium: 'bg-yellow-100 text-yellow-700',
   low: 'bg-red-100 text-red-700',
 };
 
-// Freshness badge colors
+/**
+ * Tailwind CSS classes for freshness level badges in enriched value tooltips.
+ *
+ * @remarks
+ * Maps freshness levels to appropriate color schemes using Tailwind utility classes.
+ * Displayed in enriched value tooltips to indicate data currency.
+ *
+ * - `static`: Blue (timeless data, e.g., founding date)
+ * - `current`: Green (recently updated, actively maintained)
+ * - `dated`: Yellow (somewhat old but still usable)
+ * - `stale`: Red (outdated, needs refresh)
+ */
 const freshnessColors = {
   static: 'bg-blue-100 text-blue-700',
   current: 'bg-green-100 text-green-700',
@@ -75,6 +239,130 @@ const freshnessColors = {
   stale: 'bg-red-100 text-red-700',
 };
 
+/**
+ * Data table component with sorting, pagination, and rich rendering of enriched/calculated values.
+ *
+ * @param props - Component props
+ * @returns Interactive data table with metadata tooltips
+ *
+ * @remarks
+ * **Primary data table component** for displaying BigQuery query results with special
+ * handling for enriched and calculated columns.
+ *
+ * **Features**:
+ * - **Sorting**: Click column headers to sort ascending/descending
+ * - **Pagination**: 10 rows per page with prev/next controls
+ * - **Column highlighting**:
+ *   - Purple background for enriched columns (data from Google Search)
+ *   - Blue background for calculated columns (derived formulas)
+ * - **Rich tooltips**:
+ *   - Enriched values: Show source, confidence, freshness, warnings on hover
+ *   - Calculated values: Show formula, format type, warnings on hover
+ * - **Smart formatting**:
+ *   - Numbers: Thousands separators, 2 decimal places
+ *   - Integers: Thousands separators, no decimals
+ *   - Calculated: Format based on type (integer, percent, currency, number)
+ *   - Null values: Display as italic "null" or "no data"
+ *
+ * **TanStack Table Integration** (React Table v8):
+ * - Uses `useReactTable` hook for state management
+ * - Core features: sorting, pagination, column definitions
+ * - Flexible rendering via `flexRender` helper
+ * - Type-safe with `createColumnHelper`
+ *
+ * **Cell Rendering Logic**:
+ * 1. Check if value is `EnrichedValue` → Render with purple styling + metadata tooltip
+ * 2. Check if value is `CalculatedValue` → Render with blue styling + formula tooltip
+ * 3. Otherwise → Render as regular value (null, number, or string)
+ *
+ * **Column Header Rendering**:
+ * - Enriched columns: Purple text + Zap icon + clean name (without `_enriched_` prefix)
+ * - Calculated columns: Blue text + Calculator icon + name
+ * - Regular columns: Default text + name
+ * - All headers: Clickable with sort icon
+ *
+ * **Visual Indicators**:
+ * - Purple columns: Data enriched from Google Search
+ * - Blue columns: Calculated from existing columns
+ * - Warning icon (⚠): Data quality issues or calculation errors
+ * - Hover tooltips: Full metadata for enriched/calculated values
+ *
+ * @example
+ * ```tsx
+ * import { DataTable } from './DataTable';
+ *
+ * function ResultsView({ queryResult }: { queryResult: QueryResult }) {
+ *   return (
+ *     <div className="border rounded-lg overflow-hidden">
+ *       <DataTable queryResult={queryResult} />
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Query result with enriched data
+ * const enrichedResult: QueryResult = {
+ *   columns: [
+ *     { name: "state", type: "STRING" },
+ *     { name: "_enriched_capital", type: "STRING", is_enriched: true }
+ *   ],
+ *   rows: [
+ *     {
+ *       state: "California",
+ *       _enriched_capital: {
+ *         value: "Sacramento",
+ *         source: "Wikipedia: California",
+ *         confidence: "high",
+ *         freshness: "current",
+ *         warning: null
+ *       }
+ *     }
+ *   ],
+ *   total_rows: 50,
+ *   // ...
+ * };
+ *
+ * <DataTable queryResult={enrichedResult} />
+ * // Renders:
+ * // - "capital" header (purple, with Zap icon)
+ * // - "Sacramento" cell (purple text)
+ * // - Hover tooltip: "Source: Wikipedia: California | Confidence: high | Freshness: current"
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Query result with calculated column
+ * const calculatedResult: QueryResult = {
+ *   columns: [
+ *     { name: "state", type: "STRING" },
+ *     { name: "population", type: "INTEGER" },
+ *     { name: "density", type: "FLOAT64", is_calculated: true }
+ *   ],
+ *   rows: [
+ *     {
+ *       state: "California",
+ *       population: 39500000,
+ *       density: {
+ *         value: 251.3,
+ *         expression: "population / area_sq_mi",
+ *         format_type: "number",
+ *         is_calculated: true,
+ *         warning: null
+ *       }
+ *     }
+ *   ],
+ *   // ...
+ * };
+ *
+ * <DataTable queryResult={calculatedResult} />
+ * // Renders:
+ * // - "density" header (blue, with Calculator icon)
+ * // - "251.3" cell (blue, monospace font)
+ * // - Hover tooltip: "Formula: population / area_sq_mi | Format: number"
+ * ```
+ */
 export function DataTable({ queryResult }: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
 

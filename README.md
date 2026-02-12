@@ -8,11 +8,13 @@ An AI-powered data analysis tool that enables users to query BigQuery data using
 
 - **Natural Language Queries**: Ask questions about your data in plain English
 - **Smart SQL Generation**: Automatically converts questions to optimized SQL
+- **Data Enrichment**: Augment query results with real-time data from Google Search
+- **Calculated Columns**: Derive new values from existing and enriched data without re-querying
 - **Uncertainty Handling**: Agent asks clarifying questions when queries are ambiguous
 - **Proactive Insights**: Automatically surfaces trends, anomalies, and suggestions
 - **Interactive Visualizations**: Toggle between table, bar, line, area, and pie charts
 - **SQL Transparency**: View the generated SQL for every query
-- **Auto-display Results**: Query results automatically appear in a side panel
+- **CSV Export**: Download query results for further analysis
 
 ## Prerequisites
 
@@ -54,6 +56,7 @@ gcloud auth application-default login
 cd backend
 
 # Using uv (recommended)
+curl -LsSf https://astral.sh/uv/install.sh | sh #optional if not installed
 uv venv
 source .venv/bin/activate
 uv pip install -r requirements.txt
@@ -64,7 +67,9 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 # Run the server
-uvicorn main:app --host 0.0.0.0 --port 8088 --reload
+uvicorn api.main:app --host 0.0.0.0 --port 8088 --reload
+# Or simply use:
+# python run.py
 ```
 
 ### 4. Install and Run Frontend
@@ -101,24 +106,26 @@ The agent will:
 ```
 data-insights-agent/
 ├── backend/
-│   ├── agent/           # ADK agent configuration
-│   │   ├── agent.py     # Main agent definition
-│   │   ├── config.py    # Configuration management
-│   │   ├── prompts.py   # System prompts
-│   │   └── tools.py     # Custom BigQuery tools
-│   ├── api/             # FastAPI routes and models
-│   ├── services/        # Session management
-│   ├── main.py          # Application entry point
+│   ├── agent/              # ADK agent configuration
+│   │   ├── agent.py        # Main agent definition
+│   │   ├── config.py       # Configuration management
+│   │   ├── prompts.py      # System prompts
+│   │   ├── tools.py        # Custom BigQuery tools
+│   │   └── enrichment/     # Enrichment sub-agent
+│   ├── api/                # FastAPI routes and models
+│   ├── services/           # Session management
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── components/  # React components
-│   │   │   ├── Chat/    # Chat interface
-│   │   │   ├── Results/ # Results panel & charts
-│   │   │   └── Layout/  # App layout
-│   │   ├── hooks/       # Custom React hooks
-│   │   └── types/       # TypeScript types
+│   │   ├── components/     # React components
+│   │   │   ├── Chat/       # Chat interface
+│   │   │   ├── Results/    # Results panel & charts
+│   │   │   └── Layout/     # App layout
+│   │   ├── hooks/          # Custom React hooks
+│   │   ├── services/       # API client
+│   │   └── types/          # TypeScript types
 │   └── package.json
+├── docs/                   # Project documentation
 └── README.md
 ```
 
@@ -144,7 +151,24 @@ data-insights-agent/
 | `DEBUG` | No | true | Enable debug mode |
 | `CORS_ORIGINS` | No | localhost:5173 | Allowed CORS origins |
 
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [User Guide](docs/USER_GUIDE.md) | How to use the application (queries, charts, enrichment, export) |
+| [Architecture](docs/ARCHITECTURE.md) | System design, data flow, and design decisions |
+| [API Reference](docs/API.md) | Complete API endpoint documentation |
+| [Configuration](docs/CONFIGURATION.md) | All environment variables and settings |
+| [Development](docs/DEVELOPMENT.md) | How-to guides for adding features and extending the system |
+| [Deployment](docs/DEPLOYMENT.md) | Local, Docker, and Cloud Run deployment |
+| [Testing](docs/TESTING.md) | Testing strategy and example tests |
+| [Security](docs/SECURITY.md) | Security considerations and production hardening |
+| [Troubleshooting](docs/TROUBLESHOOTING.md) | Common issues and solutions |
+| [Contributing](CONTRIBUTING.md) | Code style, Git workflow, and PR process |
+
 ## Troubleshooting
+
+See the [Troubleshooting Guide](docs/TROUBLESHOOTING.md) for comprehensive solutions. Common issues:
 
 ### "Permission denied" errors
 - Ensure your GCP credentials have BigQuery Data Viewer and Vertex AI User roles
@@ -152,11 +176,15 @@ data-insights-agent/
 
 ### Agent not responding
 - Verify Vertex AI API is enabled in your project
-- Check the backend logs: `tail -f /tmp/backend.log`
+- Check the backend logs for error details
 
 ### Model not found errors
 - Ensure `GOOGLE_CLOUD_REGION=global` in your `.env` file
 - The app uses `gemini-3-flash-preview` model
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for code style guidelines, Git workflow, and pull request process.
 
 ## Disclaimer
 

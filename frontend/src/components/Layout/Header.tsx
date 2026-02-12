@@ -1,9 +1,71 @@
 import { Database, MessageSquare, Settings } from 'lucide-react';
 
+/**
+ * Props for the Header component.
+ *
+ * @remarks
+ * Defines optional event handlers for header actions.
+ */
 interface HeaderProps {
+  /** Optional callback invoked when user clicks "New Chat" button */
   onNewChat?: () => void;
 }
 
+/**
+ * Application header component with branding and action buttons.
+ *
+ * @param props - Component props
+ * @returns Header bar with app branding, new chat button, and settings button
+ *
+ * @remarks
+ * **Top navigation component** displayed at the top of every page.
+ *
+ * **Structure**:
+ * - Left section: App branding (Database icon + title + subtitle)
+ * - Right section: Action buttons (New Chat, Settings)
+ *
+ * **Branding**:
+ * - Icon: Database icon in primary-colored circle
+ * - Title: "Data Insights Agent" (large, bold)
+ * - Subtitle: "Ask questions about your data in natural language" (small, muted)
+ *
+ * **Action Buttons**:
+ * - **New Chat**: Creates a fresh conversation (calls `onNewChat` callback)
+ * - **Settings**: Placeholder button (no functionality yet)
+ *
+ * **Visual Design**:
+ * - Background: White with bottom border
+ * - Padding: `px-6 py-4`
+ * - Responsive: Buttons may need adjustment on mobile
+ *
+ * **State Management**:
+ * Stateless component - only emits `onNewChat` event when button clicked.
+ *
+ * @example
+ * ```tsx
+ * import { Header } from './components/Layout/Header';
+ *
+ * function AppLayout({ children }: { children: ReactNode }) {
+ *   const handleNewChat = () => {
+ *     resetChatState();
+ *     navigate('/');
+ *   };
+ *
+ *   return (
+ *     <div className="flex flex-col h-screen">
+ *       <Header onNewChat={handleNewChat} />
+ *       <main className="flex-1">{children}</main>
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Without new chat functionality
+ * <Header />
+ * ```
+ */
 export function Header({ onNewChat }: HeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
