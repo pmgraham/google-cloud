@@ -3,9 +3,29 @@ output "project_id" {
   value       = google_project.pipeline.project_id
 }
 
-output "bucket_name" {
-  description = "Pipeline GCS bucket name"
-  value       = google_storage_bucket.pipeline.name
+output "region" {
+  description = "GCP region for compute resources"
+  value       = var.region
+}
+
+output "inbox_bucket_name" {
+  description = "Inbox GCS bucket name (Eventarc trigger)"
+  value       = google_storage_bucket.inbox.name
+}
+
+output "staging_bucket_name" {
+  description = "Staging GCS bucket name (agent parquet output)"
+  value       = google_storage_bucket.staging.name
+}
+
+output "iceberg_bucket_name" {
+  description = "Iceberg GCS bucket name (BigQuery Iceberg table data)"
+  value       = google_storage_bucket.iceberg.name
+}
+
+output "archive_bucket_name" {
+  description = "Archive GCS bucket name (processed originals)"
+  value       = google_storage_bucket.archive.name
 }
 
 output "agent_url" {

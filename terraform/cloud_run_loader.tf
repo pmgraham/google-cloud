@@ -3,7 +3,8 @@ resource "google_cloud_run_v2_service" "file_loader" {
   location = var.region
   project  = google_project.pipeline.project_id
 
-  ingress = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+  deletion_protection = false
+  ingress             = "INGRESS_TRAFFIC_INTERNAL_ONLY"
 
   template {
     service_account = google_service_account.file_loader.email
@@ -44,8 +45,20 @@ resource "google_cloud_run_v2_service" "file_loader" {
         value = var.region
       }
       env {
-        name  = "GCS_BUCKET"
-        value = google_storage_bucket.pipeline.name
+        name  = "INBOX_BUCKET"
+        value = google_storage_bucket.inbox.name
+      }
+      env {
+        name  = "STAGING_BUCKET"
+        value = google_storage_bucket.staging.name
+      }
+      env {
+        name  = "ICEBERG_BUCKET"
+        value = google_storage_bucket.iceberg.name
+      }
+      env {
+        name  = "ARCHIVE_BUCKET"
+        value = google_storage_bucket.archive.name
       }
       env {
         name  = "EVENT_TOPIC"
@@ -57,7 +70,7 @@ resource "google_cloud_run_v2_service" "file_loader" {
       }
       env {
         name  = "ICEBERG_BASE_PATH"
-        value = "gs://${google_storage_bucket.pipeline.name}/iceberg"
+        value = "gs://${google_storage_bucket.iceberg.name}"
       }
     }
   }

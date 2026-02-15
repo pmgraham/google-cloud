@@ -27,13 +27,34 @@ variable "environment" {
 }
 
 variable "region" {
-  description = "GCP region"
+  description = "GCP region for compute resources (Cloud Run, connections, etc.)"
   type        = string
   default     = "us-central1"
 }
 
-variable "bucket_name" {
-  description = "GCS bucket name for the pipeline"
+variable "bq_location" {
+  description = "BigQuery dataset location (multi-region recommended, e.g. US or EU)"
+  type        = string
+  default     = "US"
+}
+
+variable "inbox_bucket_name" {
+  description = "GCS bucket name for raw file uploads (Eventarc trigger watches this bucket)"
+  type        = string
+}
+
+variable "staging_bucket_name" {
+  description = "GCS bucket name for agent parquet output and reports (auto-deleted after 1 day)"
+  type        = string
+}
+
+variable "iceberg_bucket_name" {
+  description = "GCS bucket name for BigQuery Iceberg table data"
+  type        = string
+}
+
+variable "archive_bucket_name" {
+  description = "GCS bucket name for archived original files"
   type        = string
 }
 

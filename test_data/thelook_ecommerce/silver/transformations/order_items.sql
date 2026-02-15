@@ -2,7 +2,7 @@
 -- Deduplicates by id, casts types, parses timestamps
 -- Keeps sale_price_value_type (needed for gold layer currency conversion)
 
-INSERT INTO `__PROJECT_ID__.silver.order_items`
+INSERT INTO `biglake-pipeline-test1.silver.order_items`
 (id, order_id, user_id, product_id, inventory_item_id, status,
  created_at, shipped_at, delivered_at, returned_at, sale_price,
  sale_price_value_type, silver_loaded_at)
@@ -14,7 +14,7 @@ WITH deduplicated AS (
             PARTITION BY SAFE_CAST(id AS INT64)
             ORDER BY processed_at DESC
         ) AS row_rank
-    FROM `__PROJECT_ID__.bronze.order_items`
+    FROM `biglake-pipeline-test1.bronze.order_items`
     WHERE is_duplicate_in_file = FALSE
 )
 SELECT

@@ -5,7 +5,8 @@ resource "google_cloud_run_v2_service" "data_agent" {
   location = var.region
   project  = google_project.pipeline.project_id
 
-  ingress = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+  deletion_protection = false
+  ingress             = "INGRESS_TRAFFIC_INTERNAL_ONLY"
 
   template {
     service_account = google_service_account.data_agent.email
@@ -41,8 +42,12 @@ resource "google_cloud_run_v2_service" "data_agent" {
         value = google_project.pipeline.project_id
       }
       env {
-        name  = "GCS_BUCKET"
-        value = google_storage_bucket.pipeline.name
+        name  = "INBOX_BUCKET"
+        value = google_storage_bucket.inbox.name
+      }
+      env {
+        name  = "STAGING_BUCKET"
+        value = google_storage_bucket.staging.name
       }
       env {
         name  = "LOAD_TOPIC"

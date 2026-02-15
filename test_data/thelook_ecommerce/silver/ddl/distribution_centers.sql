@@ -1,4 +1,4 @@
-CREATE TABLE `__PROJECT_ID__.silver.distribution_centers`
+CREATE TABLE `biglake-pipeline-test1.silver.distribution_centers`
 (
     id INT64,
     name STRING,
@@ -8,9 +8,9 @@ CREATE TABLE `__PROJECT_ID__.silver.distribution_centers`
     longitude FLOAT64,
     silver_loaded_at TIMESTAMP
 )
-WITH CONNECTION `__PROJECT_ID__.__REGION__.__BIGLAKE_CONNECTION__`
+WITH CONNECTION `biglake-pipeline-test1.US.biglake-iceberg`
 OPTIONS (
     file_format = 'PARQUET',
     table_format = 'ICEBERG',
-    storage_uri = 'gs://__BUCKET_NAME__/iceberg/silver/distribution_centers'
+    storage_uri = 'gs://biglake-pipeline-test1-iceberg/silver/distribution_centers'
 );

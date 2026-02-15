@@ -57,17 +57,19 @@ TABLES = {
 }
 
 
-def load_project_id_from_env() -> str | None:
-    """Load PROJECT_ID from pipeline.env if it exists."""
+def load_env_values() -> dict[str, str]:
+    """Load values from pipeline.env if it exists."""
     env_file = Path(__file__).resolve().parent.parent.parent / "pipeline.env"
+    values = {}
     if not env_file.exists():
-        return None
+        return values
     with open(env_file) as f:
         for line in f:
             line = line.strip()
-            if line.startswith("PROJECT_ID=") and not line.startswith("#"):
-                return line.split("=", 1)[1].strip()
-    return None
+            if line and not line.startswith("#") and "=" in line:
+                key, val = line.split("=", 1)
+                values[key.strip()] = val.strip()
+    return values
 
 
 def seed_table(
@@ -106,19 +108,22 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    project_id = args.project_id or load_project_id_from_env()
+    env = load_env_values()
+    project_id = args.project_id or env.get("PROJECT_ID")
     if not project_id:
         print("ERROR: --project-id required or set PROJECT_ID in pipeline.env")
         sys.exit(1)
 
+    location = env.get("BQ_LOCATION", "US")
     tables_to_seed = args.tables or list(TABLES.keys())
 
     print(f"Seeding bronze tables in project: {project_id}")
+    print(f"Location: {location}")
     print(f"Source: {SOURCE_DATASET}")
     print(f"Tables: {', '.join(tables_to_seed)}")
     print()
 
-    client = bigquery.Client(project=project_id)
+    client = bigquery.Client(project=project_id, location=location)
 
     for table_name in tables_to_seed:
         columns = TABLES[table_name]

@@ -1,4 +1,4 @@
-CREATE TABLE `__PROJECT_ID__.silver.orders`
+CREATE TABLE `biglake-pipeline-test1.silver.orders`
 (
     order_id INT64,
     user_id INT64,
@@ -11,9 +11,9 @@ CREATE TABLE `__PROJECT_ID__.silver.orders`
     num_of_item INT64,
     silver_loaded_at TIMESTAMP
 )
-WITH CONNECTION `__PROJECT_ID__.__REGION__.__BIGLAKE_CONNECTION__`
+WITH CONNECTION `biglake-pipeline-test1.US.biglake-iceberg`
 OPTIONS (
     file_format = 'PARQUET',
     table_format = 'ICEBERG',
-    storage_uri = 'gs://__BUCKET_NAME__/iceberg/silver/orders'
+    storage_uri = 'gs://biglake-pipeline-test1-iceberg/silver/orders'
 );

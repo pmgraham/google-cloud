@@ -3,7 +3,8 @@ resource "google_cloud_run_v2_service" "pipeline_logger" {
   location = var.region
   project  = google_project.pipeline.project_id
 
-  ingress = "INGRESS_TRAFFIC_INTERNAL_ONLY"
+  deletion_protection = false
+  ingress             = "INGRESS_TRAFFIC_INTERNAL_ONLY"
 
   template {
     service_account = google_service_account.pipeline_logger.email
@@ -41,8 +42,8 @@ resource "google_cloud_run_v2_service" "pipeline_logger" {
       }
 
       env {
-        name  = "GCS_BUCKET"
-        value = google_storage_bucket.pipeline.name
+        name  = "INBOX_BUCKET"
+        value = google_storage_bucket.inbox.name
       }
 
       env {

@@ -5,9 +5,14 @@ project_id      = ""    # GCP project ID (must be globally unique)
 billing_account = ""    # GCP billing account ID (format: XXXXXX-XXXXXX-XXXXXX)
 org_id          = ""    # GCP organization ID (leave empty if using folder_id)
 folder_id       = ""    # GCP folder ID (leave empty if using org_id)
-bucket_name     = ""    # Globally unique GCS bucket name for the pipeline
+inbox_bucket_name   = ""  # GCS bucket for raw file uploads (Eventarc trigger)
+staging_bucket_name = ""  # GCS bucket for agent parquet output (auto-delete 1 day)
+iceberg_bucket_name = ""  # GCS bucket for BigQuery Iceberg table data
+archive_bucket_name = ""  # GCS bucket for archived originals (Nearline after 90 days)
 
-# Optional: Override default connection IDs
+# Optional: Override defaults
+# bq_location             = "US"           # BigQuery dataset location (default: US)
+# region                  = "us-central1"  # Compute region for Cloud Run, etc.
 # biglake_connection_id   = "biglake-iceberg"
 # vertex_ai_connection_id = "vertex-ai-remote"
 # spark_connection_id     = "spark-proc"

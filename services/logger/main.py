@@ -1,9 +1,9 @@
 import base64
 import json
 import logging
+import os
 
-import functions_framework
-from cloudevents.http import CloudEvent
+from flask import Flask, request as flask_request
 from google.cloud import firestore
 
 from config import Config
@@ -87,22 +87,30 @@ db = firestore.Client(
     database=Config.FIRESTORE_DATABASE,
 )
 
+app = Flask(__name__)
 
-@functions_framework.cloud_event
-def handle_pipeline_event(cloud_event: CloudEvent):
-    raw = base64.b64decode(cloud_event.data["message"]["data"])
-    message = json.loads(raw)
+
+@app.route("/", methods=["POST"])
+def handle_pipeline_event():
+    """Handle Pub/Sub push messages (standard wrapper format)."""
+    envelope = flask_request.get_json(silent=True) or {}
+
+    if "message" in envelope:
+        raw = base64.b64decode(envelope["message"]["data"])
+        message = json.loads(raw)
+    else:
+        message = envelope
 
     message_type = message.get("type")
     file_hash = message.get("file_hash")
 
     if not message_type or not file_hash:
         logger.error("Missing type or file_hash in message: %s", message)
-        return
+        return ("Missing required fields", 400)
 
     if message_type not in STATUS_RANK:
         logger.error("Unknown message type: %s", message_type)
-        return
+        return ("Unknown message type", 400)
 
     logger.info("Processing %s for hash %s", message_type, file_hash[:12])
 
@@ -143,6 +151,8 @@ def handle_pipeline_event(cloud_event: CloudEvent):
     if message_type == "LOADER_BIGQUERY_COMPLETE":
         _update_table_routing(message)
 
+    return ("OK", 200)
+
 
 def _update_table_routing(message):
     namespace = message.get("target_namespace", "bronze")
@@ -172,9 +182,13 @@ def _update_table_routing(message):
         update_data["first_loaded_at"] = now
         update_data["auto_create_table"] = True
         update_data["enabled"] = True
-        update_data["source_folder"] = f"gs://{Config.GCS_BUCKET}/inbox/{table}/"
+        update_data["source_folder"] = f"gs://{Config.INBOX_BUCKET}/{table}/"
         update_data["write_mode"] = message.get("write_mode", "APPEND")
 
     doc_ref.set(update_data, merge=True)
 
     logger.info("Updated table_routing for %s", doc_id)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))

@@ -1,4 +1,4 @@
-INSERT INTO `__PROJECT_ID__.silver.distribution_centers`
+INSERT INTO `biglake-pipeline-test1.silver.distribution_centers`
 (id, name, city, state, latitude, longitude, silver_loaded_at)
 
 WITH deduplicated AS (
@@ -8,7 +8,7 @@ WITH deduplicated AS (
             PARTITION BY SAFE_CAST(id AS INT64)
             ORDER BY processed_at DESC
         ) AS row_rank
-    FROM `__PROJECT_ID__.bronze.distribution_centers`
+    FROM `biglake-pipeline-test1.bronze.distribution_centers`
     WHERE is_duplicate_in_file = FALSE
 ),
 

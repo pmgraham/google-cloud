@@ -2,7 +2,7 @@
 resource "google_biglake_catalog" "pipeline" {
   provider = google-beta
   name     = var.iceberg_catalog_name
-  location = var.region
+  location = var.bq_location
 
   depends_on = [google_project_service.required_apis]
 }
@@ -11,7 +11,7 @@ resource "google_biglake_catalog" "pipeline" {
 resource "google_bigquery_connection" "biglake_iceberg" {
   provider      = google-beta
   connection_id = var.biglake_connection_id
-  location      = var.region
+  location      = var.bq_location
   project       = google_project.pipeline.project_id
 
   cloud_resource {}
@@ -30,7 +30,7 @@ resource "google_project_iam_member" "biglake_connection_storage" {
 resource "google_bigquery_connection" "vertex_ai" {
   provider      = google-beta
   connection_id = var.vertex_ai_connection_id
-  location      = var.region
+  location      = var.bq_location
   project       = google_project.pipeline.project_id
 
   cloud_resource {}
@@ -49,7 +49,7 @@ resource "google_project_iam_member" "vertex_ai_connection_user" {
 resource "google_bigquery_connection" "spark_proc" {
   provider      = google-beta
   connection_id = var.spark_connection_id
-  location      = var.region
+  location      = var.bq_location
   project       = google_project.pipeline.project_id
 
   spark {}

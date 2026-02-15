@@ -121,9 +121,35 @@ resource "google_project_iam_member" "eventarc_receiver" {
 }
 
 # --- GCS Service Agent (required for Eventarc GCS triggers) ---
+# The GCS service agent (service-PROJECT_NUM@gs-project-accounts) is lazily
+# provisioned. On a brand-new project it may not exist yet when Terraform
+# tries to grant it IAM roles. We force its creation by provisioning the
+# storage service identity first, then add a delay for propagation.
+
+resource "google_project_service_identity" "gcs_agent" {
+  provider = google-beta
+  project  = google_project.pipeline.project_id
+  service  = "storage.googleapis.com"
+
+  depends_on = [google_project_service.required_apis]
+}
+
+resource "time_sleep" "wait_for_gcs_agent" {
+  create_duration = "30s"
+
+  depends_on = [
+    google_project_service_identity.gcs_agent,
+    google_storage_bucket.inbox,
+    google_storage_bucket.staging,
+    google_storage_bucket.iceberg,
+    google_storage_bucket.archive,
+  ]
+}
 
 resource "google_project_iam_member" "gcs_pubsub_publisher" {
   project = google_project.pipeline.project_id
   role    = "roles/pubsub.publisher"
   member  = "serviceAccount:service-${data.google_project.current.number}@gs-project-accounts.iam.gserviceaccount.com"
+
+  depends_on = [time_sleep.wait_for_gcs_agent]
 }

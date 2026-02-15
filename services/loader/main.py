@@ -1,10 +1,10 @@
 import base64
 import json
 import logging
+import os
 import time
 
-import functions_framework
-from cloudevents.http import CloudEvent
+from flask import Flask, request as flask_request
 
 import bigquery_manager
 import cleanup
@@ -14,11 +14,19 @@ from message_parser import parse_load_request
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+app = Flask(__name__)
 
-@functions_framework.cloud_event
-def handle_pubsub(cloud_event: CloudEvent):
-    raw = base64.b64decode(cloud_event.data["message"]["data"])
-    message = json.loads(raw)
+
+@app.route("/", methods=["POST"])
+def handle_pubsub():
+    """Handle Pub/Sub push messages (standard wrapper format)."""
+    envelope = flask_request.get_json(silent=True) or {}
+
+    if "message" in envelope:
+        raw = base64.b64decode(envelope["message"]["data"])
+        message = json.loads(raw)
+    else:
+        message = envelope
 
     start = time.time()
     request = None
@@ -90,6 +98,8 @@ def handle_pubsub(cloud_event: CloudEvent):
             load_id,
         )
 
+        return ("OK", 200)
+
     except Exception as e:
         duration = time.time() - start
 
@@ -107,4 +117,8 @@ def handle_pubsub(cloud_event: CloudEvent):
 
         publisher.publish_event(error_payload)
         logger.exception("Load failed for %s", message.get("file_hash", "unknown"))
-        raise
+        return (str(e), 500)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))

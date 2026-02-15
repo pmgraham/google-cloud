@@ -8,4 +8,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 ENV PORT=8080
-CMD exec functions-framework --target=handle_pipeline_event --signature-type=cloudevent --port=${PORT}
+CMD exec gunicorn --bind :${PORT} --workers 1 --threads 1 --timeout 60 main:app
