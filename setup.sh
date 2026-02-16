@@ -2,12 +2,12 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ENV_FILE="${SCRIPT_DIR}/pipeline.env"
+ENV_FILE="${SCRIPT_DIR}/.env"
 
 if [[ ! -f "${ENV_FILE}" ]]; then
-    echo "ERROR: pipeline.env not found."
-    echo "  cp pipeline.env.example pipeline.env"
-    echo "  # Edit pipeline.env with your values"
+    echo "ERROR: .env not found."
+    echo "  cp .env.example .env" # Assuming we might want an example file later, or just create it
+    echo "  # Edit .env with your values"
     echo "  ./setup.sh"
     exit 1
 fi
@@ -18,7 +18,7 @@ source "${ENV_FILE}"
 # Validate required variables
 for var in PROJECT_ID INBOX_BUCKET_NAME STAGING_BUCKET_NAME ICEBERG_BUCKET_NAME ARCHIVE_BUCKET_NAME BQ_LOCATION BIGLAKE_CONNECTION SPARK_CONNECTION; do
     if [[ -z "${!var:-}" ]]; then
-        echo "ERROR: ${var} is not set in pipeline.env"
+        echo "ERROR: ${var} is not set in .env"
         exit 1
     fi
 done
@@ -56,4 +56,4 @@ echo ""
 echo "Done! Next steps:"
 echo "  1. cd terraform && terraform init && terraform apply"
 echo "  2. ./deploy.sh                     # deploy Cloud Run services"
-echo "  3. python test_data/thelook_ecommerce/seed.py   # seed bronze tables"
+echo "  3. python3 test_data/thelook_ecommerce/seed.py   # seed bronze tables"

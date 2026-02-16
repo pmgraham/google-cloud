@@ -16,10 +16,10 @@ terraform {
     }
   }
 
-  backend "gcs" {
-    bucket = "" # Set via -backend-config or terraform init
-    prefix = "terraform/state"
-  }
+#   backend "gcs" {
+#     bucket = "" # Set via -backend-config or terraform init
+#     prefix = "terraform/state"
+#   }
 }
 
 provider "google" {

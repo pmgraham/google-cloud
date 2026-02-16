@@ -38,6 +38,12 @@ def handle_pubsub():
         table_name = request["target_table"]
         parquet_uri = request["parquet_uri"]
         write_mode = request["write_mode"]
+        original_file_uri = request["original_file_uri"]
+
+        # Idempotency check: if files are already moved/deleted, it's a success
+        if cleanup.is_already_processed(parquet_uri, original_file_uri, table_name):
+            logger.info("File %s already processed. Skipping.", request["file_hash"])
+            return ("OK (Already processed)", 200)
 
         logger.info(
             "Loading %s into %s.%s (mode: %s)",

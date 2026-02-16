@@ -121,6 +121,12 @@ resource "google_project_iam_member" "eventarc_receiver" {
 }
 
 # --- GCS Service Agent (required for Eventarc GCS triggers) ---
+
+# Get current project data to access project number
+data "google_project" "current" {
+  project_id = google_project.pipeline.project_id
+}
+
 # The GCS service agent (service-PROJECT_NUM@gs-project-accounts) is lazily
 # provisioned. On a brand-new project it may not exist yet when Terraform
 # tries to grant it IAM roles. We force its creation by provisioning the
@@ -152,4 +158,28 @@ resource "google_project_iam_member" "gcs_pubsub_publisher" {
   member  = "serviceAccount:service-${data.google_project.current.number}@gs-project-accounts.iam.gserviceaccount.com"
 
   depends_on = [time_sleep.wait_for_gcs_agent]
+}
+
+# --- Deployment Roles (required for Org environments) ---
+# When using 'gcloud run deploy --source', Cloud Build uses the Compute Engine 
+# default service account by default. In many organizations, these SAs are 
+# stripped of their default broad permissions.
+
+locals {
+  deploy_roles = [
+    "roles/artifactregistry.writer",
+    "roles/logging.logWriter",
+    "roles/run.admin",
+    "roles/iam.serviceAccountUser",
+    "roles/storage.objectViewer",
+  ]
+}
+
+resource "google_project_iam_member" "compute_sa_deploy_roles" {
+  for_each = toset(local.deploy_roles)
+  project  = google_project.pipeline.project_id
+  role     = each.value
+  member   = "serviceAccount:${data.google_project.current.number}-compute@developer.gserviceaccount.com"
+
+  depends_on = [google_project_service.required_apis]
 }

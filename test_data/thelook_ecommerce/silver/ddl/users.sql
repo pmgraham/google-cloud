@@ -1,4 +1,4 @@
-CREATE TABLE `__PROJECT_ID__.silver.users`
+CREATE TABLE `biglake-iceberg-datalake.silver.users`
 (
     id INT64,
     first_name STRING,
@@ -17,9 +17,9 @@ CREATE TABLE `__PROJECT_ID__.silver.users`
     created_at TIMESTAMP,
     silver_loaded_at TIMESTAMP
 )
-WITH CONNECTION `__PROJECT_ID__.__REGION__.biglake-iceberg`
+WITH CONNECTION `biglake-iceberg-datalake.US.biglake-iceberg`
 OPTIONS (
     file_format = 'PARQUET',
     table_format = 'ICEBERG',
-    storage_uri = 'gs://__ICEBERG_BUCKET_NAME__/silver/users'
+    storage_uri = 'gs://biglake-iceberg-datalake-iceberg/silver/users'
 );

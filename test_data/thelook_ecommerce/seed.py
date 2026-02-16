@@ -4,8 +4,8 @@ Reads from bigquery-public-data.thelook_ecommerce and inserts into the user's
 bronze-layer BigQuery Iceberg tables. Tables must already exist (run DDL first).
 
 Usage:
-    python seed.py --project-id YOUR_PROJECT_ID
-    python seed.py  # reads PROJECT_ID from pipeline.env
+    python3 seed.py --project-id YOUR_PROJECT_ID
+    python3 seed.py  # reads PROJECT_ID from .env
 """
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from google.cloud import bigquery
+from google.cloud import bigquery # type: ignore
 
 SOURCE_DATASET = "bigquery-public-data.thelook_ecommerce"
 
@@ -58,8 +58,8 @@ TABLES = {
 
 
 def load_env_values() -> dict[str, str]:
-    """Load values from pipeline.env if it exists."""
-    env_file = Path(__file__).resolve().parent.parent.parent / "pipeline.env"
+    """Load values from .env if it exists."""
+    env_file = Path(__file__).resolve().parent.parent.parent / ".env"
     values = {}
     if not env_file.exists():
         return values
@@ -98,7 +98,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--project-id",
-        help="GCP project ID (reads from pipeline.env if not provided)",
+        help="GCP project ID (reads from .env if not provided)",
     )
     parser.add_argument(
         "--tables",
@@ -111,7 +111,7 @@ def main() -> None:
     env = load_env_values()
     project_id = args.project_id or env.get("PROJECT_ID")
     if not project_id:
-        print("ERROR: --project-id required or set PROJECT_ID in pipeline.env")
+        print("ERROR: --project-id required or set PROJECT_ID in .env")
         sys.exit(1)
 
     location = env.get("BQ_LOCATION", "US")

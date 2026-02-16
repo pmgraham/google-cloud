@@ -2,7 +2,7 @@
 -- Deduplicates by id, casts types, standardizes strings, parses timestamps
 -- Drops cost_value_type, product_retail_price_value_type
 
-INSERT INTO `__PROJECT_ID__.silver.inventory_items`
+INSERT INTO `biglake-iceberg-datalake.silver.inventory_items`
 (id, product_id, created_at, sold_at, cost, product_category, product_name,
  product_brand, product_retail_price, product_department, product_sku,
  product_distribution_center_id, silver_loaded_at)
@@ -14,7 +14,7 @@ WITH deduplicated AS (
             PARTITION BY SAFE_CAST(id AS INT64)
             ORDER BY processed_at DESC
         ) AS row_rank
-    FROM `__PROJECT_ID__.bronze.inventory_items`
+    FROM `biglake-iceberg-datalake.bronze.inventory_items`
     WHERE is_duplicate_in_file = FALSE
 )
 SELECT
