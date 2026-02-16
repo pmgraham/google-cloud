@@ -1,4 +1,4 @@
-# Setup Issues Log
+# Setup Issues Log (Corrected but still things to watch out for if errors occur)
 
 This document tracks issues encountered during the setup of the BigLake Iceberg Pipeline project.
 

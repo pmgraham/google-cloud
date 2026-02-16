@@ -122,11 +122,6 @@ resource "google_project_iam_member" "eventarc_receiver" {
 
 # --- GCS Service Agent (required for Eventarc GCS triggers) ---
 
-# Get current project data to access project number
-data "google_project" "current" {
-  project_id = google_project.pipeline.project_id
-}
-
 # The GCS service agent (service-PROJECT_NUM@gs-project-accounts) is lazily
 # provisioned. On a brand-new project it may not exist yet when Terraform
 # tries to grant it IAM roles. We force its creation by provisioning the

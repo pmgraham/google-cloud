@@ -67,8 +67,13 @@ def load_env_values() -> dict[str, str]:
         for line in f:
             line = line.strip()
             if line and not line.startswith("#") and "=" in line:
+                # Handle comments and trailing whitespace
+                line = line.split("#")[0].strip()
                 key, val = line.split("=", 1)
-                values[key.strip()] = val.strip()
+                key = key.strip()
+                if key.startswith("export "):
+                    key = key.replace("export ", "", 1).strip()
+                values[key] = val.strip().strip('"').strip("'")
     return values
 
 
