@@ -2,7 +2,7 @@
 -- Deduplicates by id, casts types, standardizes strings
 -- Drops cost_value_type, retail_price_value_type (redundant — agent already extracted numeric values)
 
-INSERT INTO `biglake-pipeline-test1.silver.products`
+INSERT INTO `__PROJECT_ID__.silver.products`
 (id, cost, category, name, brand, retail_price, department, sku, distribution_center_id, silver_loaded_at)
 
 WITH deduplicated AS (
@@ -12,7 +12,7 @@ WITH deduplicated AS (
             PARTITION BY SAFE_CAST(id AS INT64)
             ORDER BY processed_at DESC
         ) AS row_rank
-    FROM `biglake-pipeline-test1.bronze.products`
+    FROM `__PROJECT_ID__.bronze.products`
     WHERE is_duplicate_in_file = FALSE
 )
 SELECT

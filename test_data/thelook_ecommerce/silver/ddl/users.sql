@@ -1,4 +1,4 @@
-CREATE TABLE `biglake-pipeline-test1.silver.users`
+CREATE TABLE `__PROJECT_ID__.silver.users`
 (
     id INT64,
     first_name STRING,
@@ -17,9 +17,9 @@ CREATE TABLE `biglake-pipeline-test1.silver.users`
     created_at TIMESTAMP,
     silver_loaded_at TIMESTAMP
 )
-WITH CONNECTION `biglake-pipeline-test1.US.biglake-iceberg`
+WITH CONNECTION `__PROJECT_ID__.__REGION__.biglake-iceberg`
 OPTIONS (
     file_format = 'PARQUET',
     table_format = 'ICEBERG',
-    storage_uri = 'gs://biglake-pipeline-test1-iceberg/silver/users'
+    storage_uri = 'gs://__ICEBERG_BUCKET_NAME__/silver/users'
 );

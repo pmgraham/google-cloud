@@ -1,7 +1,7 @@
 -- Bronze → Silver transformation: orders
 -- Deduplicates by order_id, casts types, expands gender M/F, parses timestamps
 
-INSERT INTO `biglake-pipeline-test1.silver.orders`
+INSERT INTO `__PROJECT_ID__.silver.orders`
 (order_id, user_id, status, gender, created_at, returned_at, shipped_at, delivered_at,
  num_of_item, silver_loaded_at)
 
@@ -12,7 +12,7 @@ WITH deduplicated AS (
             PARTITION BY SAFE_CAST(order_id AS INT64)
             ORDER BY processed_at DESC
         ) AS row_rank
-    FROM `biglake-pipeline-test1.bronze.orders`
+    FROM `__PROJECT_ID__.bronze.orders`
     WHERE is_duplicate_in_file = FALSE
 )
 SELECT

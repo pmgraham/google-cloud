@@ -1,4 +1,4 @@
-CREATE TABLE `biglake-pipeline-test1.silver.inventory_items`
+CREATE TABLE `__PROJECT_ID__.silver.inventory_items`
 (
     id INT64,
     product_id INT64,
@@ -14,9 +14,9 @@ CREATE TABLE `biglake-pipeline-test1.silver.inventory_items`
     product_distribution_center_id INT64,
     silver_loaded_at TIMESTAMP
 )
-WITH CONNECTION `biglake-pipeline-test1.US.biglake-iceberg`
+WITH CONNECTION `__PROJECT_ID__.__REGION__.biglake-iceberg`
 OPTIONS (
     file_format = 'PARQUET',
     table_format = 'ICEBERG',
-    storage_uri = 'gs://biglake-pipeline-test1-iceberg/silver/inventory_items'
+    storage_uri = 'gs://__ICEBERG_BUCKET_NAME__/silver/inventory_items'
 );
