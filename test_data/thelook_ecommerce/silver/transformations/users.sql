@@ -1,7 +1,7 @@
 -- Bronze → Silver transformation: users
 -- Deduplicates by id, casts types, expands gender M/F, parses timestamps
 
-INSERT INTO `biglake-iceberg-datalake.silver.users`
+INSERT INTO `__PROJECT_ID__.silver.users`
 (id, first_name, last_name, email, age, gender, state, street_address,
  postal_code, city, country, latitude, longitude, traffic_source, created_at, silver_loaded_at)
 
@@ -12,7 +12,7 @@ WITH deduplicated AS (
             PARTITION BY SAFE_CAST(id AS INT64)
             ORDER BY processed_at DESC
         ) AS row_rank
-    FROM `biglake-iceberg-datalake.bronze.users`
+    FROM `__PROJECT_ID__.bronze.users`
     WHERE is_duplicate_in_file = FALSE
 )
 SELECT

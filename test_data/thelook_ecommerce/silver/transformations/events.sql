@@ -1,7 +1,7 @@
 -- Bronze → Silver transformation: events
 -- Deduplicates by id, casts types, standardizes strings, parses timestamps
 
-INSERT INTO `biglake-iceberg-datalake.silver.events`
+INSERT INTO `__PROJECT_ID__.silver.events`
 (id, user_id, sequence_number, session_id, created_at, ip_address,
  city, state, postal_code, browser, traffic_source, uri, event_type, silver_loaded_at)
 
@@ -12,7 +12,7 @@ WITH deduplicated AS (
             PARTITION BY SAFE_CAST(id AS INT64)
             ORDER BY processed_at DESC
         ) AS row_rank
-    FROM `biglake-iceberg-datalake.bronze.events`
+    FROM `__PROJECT_ID__.bronze.events`
     WHERE is_duplicate_in_file = FALSE
 )
 SELECT

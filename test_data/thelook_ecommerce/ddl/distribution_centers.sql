@@ -1,9 +1,9 @@
-CREATE TABLE `biglake-iceberg-datalake.bronze.distribution_centers`
-WITH CONNECTION `biglake-iceberg-datalake.US.biglake-iceberg`
+CREATE TABLE `__PROJECT_ID__.bronze.distribution_centers`
+WITH CONNECTION `__PROJECT_ID__.__REGION__.biglake-iceberg`
 OPTIONS (
     file_format = 'PARQUET',
     table_format = 'ICEBERG',
-    storage_uri = 'gs://biglake-iceberg-datalake-iceberg/bronze/distribution_centers'
+    storage_uri = 'gs://__ICEBERG_BUCKET_NAME__/bronze/distribution_centers'
 )
 AS SELECT
     CAST(NULL AS INT64) AS id,
