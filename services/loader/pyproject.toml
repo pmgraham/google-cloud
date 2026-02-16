@@ -1,0 +1,16 @@
+[project]
+name = "file-loader"
+version = "0.1.0"
+description = "BigQuery Iceberg table loader service."
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.0.0",
+    "gunicorn>=22.0.0",
+    "google-cloud-bigquery>=3.0.0",
+    "google-cloud-storage>=2.0.0",
+    "google-cloud-pubsub>=2.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -1,5 +1,5 @@
-CREATE OR REPLACE PROCEDURE `__PROJECT_ID__.silver.transform_products`()
-WITH CONNECTION `__PROJECT_ID__.__REGION__.spark-proc`
+CREATE OR REPLACE PROCEDURE `biglake-iceberg-datalake.silver.transform_products`()
+WITH CONNECTION `biglake-iceberg-datalake.US.spark-proc`
 OPTIONS (engine="SPARK", runtime_version="2.2")
 LANGUAGE PYTHON AS R"""
 from pyspark.sql import SparkSession
@@ -9,7 +9,7 @@ from pyspark.sql.types import LongType, DoubleType, StringType
 
 spark = SparkSession.builder.appName("bronze-to-silver-products").getOrCreate()
 
-PROJECT = "__PROJECT_ID__"
+PROJECT = "biglake-iceberg-datalake"
 NULL_SENTINELS = {'N/A', 'NA', 'NONE', 'NULL', '-', '--', 'MISSING', '#N/A', ''}
 DATE_FORMATS = [
     'yyyy-MM-dd HH:mm:ss',
@@ -133,5 +133,5 @@ write_silver(df, "products")
 # ── Export Iceberg metadata to BigLake Metastore ──
 from google.cloud import bigquery
 bq_client = bigquery.Client(project=PROJECT)
-bq_client.query("EXPORT TABLE METADATA FROM `__PROJECT_ID__.silver.products`").result()
+bq_client.query("EXPORT TABLE METADATA FROM `biglake-iceberg-datalake.silver.products`").result()
 """;

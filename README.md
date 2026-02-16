@@ -73,8 +73,8 @@ Builds and deploys all 3 Cloud Run services from source. You can also deploy ind
 gcloud config set project YOUR_PROJECT_ID
 gcloud auth application-default set-quota-project YOUR_PROJECT_ID
 
-pip install google-cloud-bigquery
-python test_data/thelook_ecommerce/seed.py
+pip3 install google-cloud-bigquery
+python3 test_data/thelook_ecommerce/seed.py
 ```
 
 Loads data from `bigquery-public-data.thelook_ecommerce` into your bronze Iceberg tables (7 tables, ~3.3M rows).
@@ -83,8 +83,8 @@ Loads data from `bigquery-public-data.thelook_ecommerce` into your bronze Iceber
 
 ```bash
 # Generate dirty incremental batch CSVs
-pip install faker
-python test_data/thelook_ecommerce/generate.py
+pip3 install faker
+python3 test_data/thelook_ecommerce/generate.py
 
 # Upload a batch to trigger the pipeline
 gsutil cp test_data/thelook_ecommerce/incremental/users/users_batch_001.csv \
