@@ -9,9 +9,9 @@ This script generates only incremental batches for testing the pipeline's
 append/incremental behavior.
 
 Usage:
-    python generate.py                # generate 3 incremental batches (default)
-    python generate.py --batches 5    # generate 5 batches
-    python generate.py --seed 123     # custom random seed
+    python3 generate.py                # generate 3 incremental batches (default)
+    python3 generate.py --batches 5    # generate 5 batches
+    python3 generate.py --seed 123     # custom random seed
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from faker import Faker
+from faker import Faker # type: ignore
 
 # ---------------------------------------------------------------------------
 # Domain constants (from bigquery-public-data.thelook_ecommerce)
@@ -169,7 +169,8 @@ class DirtyInjector:
         return f"{symbol}{formatted}"
 
     def inject_date_format(self, dt: datetime) -> str:
-        fmt = random.choice(DATE_FORMATS[1:])  # skip the correct format
+        formats = DATE_FORMATS
+        fmt = random.choice(formats[1:])  # type: ignore
         return dt.strftime(fmt)
 
     def maybe_dirty_string(self, value: str) -> str:
@@ -268,11 +269,11 @@ class TheLookGenerator:
         return s + timedelta(seconds=offset)
 
     def _random_price(self, min_p: float = 0.50, max_p: float = 500.0) -> float:
-        return round(random.uniform(min_p, max_p), 2)
+        return float(f"{random.uniform(min_p, max_p):.2f}")
 
     def _random_cost(self, retail: float) -> float:
         margin = random.uniform(0.3, 0.7)
-        return round(retail * margin, 2)
+        return float(f"{retail * margin:.2f}")
 
     def _sku(self) -> str:
         return hashlib.md5(uuid.uuid4().bytes).hexdigest().upper()
@@ -358,8 +359,8 @@ class TheLookGenerator:
                 "postal_code": dirty.maybe_dirty_string(self.fake.postcode()),
                 "city": dirty.maybe_dirty_string(self.fake.city()),
                 "country": dirty.maybe_dirty_string(country),
-                "latitude": str(round(random.uniform(-60, 70), 6)),
-                "longitude": str(round(random.uniform(-180, 180), 6)),
+                "latitude": f"{random.uniform(-60, 70):.6f}",
+                "longitude": f"{random.uniform(-180, 180):.6f}",
                 "traffic_source": dirty.maybe_dirty_string(random.choice(TRAFFIC_SOURCES)),
                 "created_at": dirty.maybe_dirty_timestamp(created),
             })
@@ -479,13 +480,13 @@ class TheLookGenerator:
     def _gen_events(self, count: int, dirty: DirtyInjector,
                     start_id: int = 1) -> list[dict]:
         rows = []
-        eid = start_id
-        session_flow = ["home", "department", "product", "cart", "purchase"]
+        eid: int = start_id
+        session_flow: list[str] = ["home", "department", "product", "cart", "purchase"]
 
-        while eid < start_id + count:
+        while eid < (start_id + count): # type: ignore
             uid = random.choice(self.user_ids)
             session_id = str(uuid.uuid4())
-            remaining = start_id + count - eid
+            remaining = (start_id + count) - eid # type: ignore
             session_len = random.randint(2, max(2, min(8, remaining)))
             session_start = self._random_datetime()
             ip = self.fake.ipv4()
@@ -497,7 +498,7 @@ class TheLookGenerator:
 
             for seq in range(1, session_len + 1):
                 if seq <= len(session_flow):
-                    event_type = session_flow[seq - 1]
+                    event_type = str(session_flow[seq - 1]) # type: ignore
                 else:
                     event_type = random.choice(EVENT_TYPES)
 
@@ -519,11 +520,11 @@ class TheLookGenerator:
                     "uri": dirty.maybe_dirty_string(uri),
                     "event_type": dirty.maybe_dirty_string(event_type),
                 })
-                eid += 1
+                eid += 1 # type: ignore
                 if eid >= start_id + count:
                     break
 
-        self._max_ids["events"] = eid - 1
+        self._max_ids["events"] = eid - 1 # type: ignore
         return rows
 
     # ------ CSV writer ------
