@@ -1,9 +1,9 @@
-CREATE TABLE `biglake-pipeline-test1.bronze.orders`
-WITH CONNECTION `biglake-pipeline-test1.US.biglake-iceberg`
+CREATE TABLE `__PROJECT_ID__.bronze.orders`
+WITH CONNECTION `__PROJECT_ID__.__REGION__.biglake-iceberg`
 OPTIONS (
     file_format = 'PARQUET',
     table_format = 'ICEBERG',
-    storage_uri = 'gs://biglake-pipeline-test1-iceberg/bronze/orders'
+    storage_uri = 'gs://__ICEBERG_BUCKET_NAME__/bronze/orders'
 )
 AS SELECT
     CAST(NULL AS INT64) AS order_id,
