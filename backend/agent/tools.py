@@ -1,101 +1,55 @@
 """Custom tools for the Data Insights Agent."""
 
+import logging
+import re
+import threading
 from typing import Any
-from google.cloud import bigquery
-from .config import settings
 from decimal import Decimal
 
+from google.cloud import bigquery
+from simpleeval import simple_eval, InvalidExpression
 
-"""Global cache for BigQuery table schema information.
+from .config import settings
 
-This cache stores table metadata to reduce API calls to BigQuery and improve
-response times for repeated schema lookups. The cache is populated on-demand
-when tables are accessed via get_available_tables() or get_table_schema().
+logger = logging.getLogger(__name__)
 
-Schema cache structure:
-    {
-        "project.dataset.table_name": {
-            "name": str,
-            "full_name": str,
-            "description": str,
-            "num_rows": int,
-            "columns": [{"name": str, "type": str, "description": str, "mode": str}]
-        }
-    }
 
-WARNING - Thread Safety:
-    This is a module-level mutable dictionary. It is NOT thread-safe.
-    Concurrent requests may cause race conditions. For production use with
-    concurrent workers, consider using a thread-safe cache implementation
-    (e.g., threading.Lock) or external cache (Redis, Memcached).
+_lock = threading.Lock()
 
-Cache Management:
-    - Cache never expires automatically
-    - Use clear_schema_cache() to manually clear if table structures change
-    - Cache is lost on server restart (in-memory only)
-"""
 _schema_cache: dict[str, dict] = {}
 
-"""Pending insights reported by the agent via the report_insight tool.
+# Session-scoped storage for query results and pending insights.
+# Keyed by session_id to prevent cross-user data leakage.
+_session_query_results: dict[str, dict[str, Any]] = {}
+_session_pending_insights: dict[str, list[dict[str, str]]] = {}
 
-Insights are accumulated here during a single agent invocation and then
-drained by the API route after the event stream completes. This replaces
-the previous regex-based approach, which required the agent to use exact
-magic phrases (e.g. "I notice that ...") that were fragile and hard to scale.
-
-WARNING - Thread Safety and Session Isolation:
-    Same caveats as _last_query_result below. This list is module-level and
-    NOT thread-safe or session-aware. For production with concurrent users,
-    store pending insights in session-scoped state instead of a global list.
-
-Lifecycle:
-    - Populated by report_insight() tool calls during agent execution
-    - Drained (read + cleared) by get_and_clear_pending_insights() in routes.py
-      after the ADK event stream finishes
-"""
-_pending_insights: list[dict[str, str]] = []
+# Thread-local storage to pass the active session_id into tool functions
+# without changing their signatures (which are defined by the agent framework).
+_active_session = threading.local()
 
 
-"""Global storage for the most recent query result.
+def set_active_session(session_id: str) -> None:
+    """Set the active session ID for the current thread/request."""
+    _active_session.session_id = session_id
 
-This variable stores the last successful query result from execute_query_with_metadata()
-to enable subsequent enrichment and calculation operations without re-querying the
-database. It is used by apply_enrichment() and add_calculated_column() to merge
-additional data into existing results.
 
-Structure matches the return format of execute_query_with_metadata():
-    {
-        "status": "success",
-        "columns": [{"name": str, "type": str, "is_enriched": bool, "is_calculated": bool}],
-        "rows": [dict[str, Any]],
-        "total_rows": int,
-        "query_time_ms": float,
-        "sql": str,
-        "enrichment_metadata": dict (optional),
-        "calculation_metadata": dict (optional)
-    }
+def _get_active_session_id() -> str:
+    """Get the active session ID, falling back to a default."""
+    return getattr(_active_session, "session_id", "_default")
 
-WARNING - Thread Safety and Session Isolation:
-    This is a module-level global variable. It is NOT thread-safe and NOT session-aware.
 
-    Problems in concurrent environments:
-    - Multiple concurrent requests will overwrite each other's query results
-    - User A's enrichment may accidentally apply to User B's query
-    - Race conditions can cause data corruption
+def _get_last_query_result() -> dict[str, Any] | None:
+    """Get the last query result for the current session (thread-safe)."""
+    sid = _get_active_session_id()
+    with _lock:
+        return _session_query_results.get(sid)
 
-    Current Limitation:
-    This implementation assumes single-threaded or low-concurrency usage.
-    For production with multiple concurrent users, refactor to use:
-    - Session-scoped storage (SessionService)
-    - Thread-local storage (threading.local())
-    - Request context (e.g., FastAPI Request state)
 
-SIDE EFFECT WARNING:
-    execute_query_with_metadata() ALWAYS updates this variable on successful query.
-    This is intentional to support the enrichment workflow but may be surprising.
-    See execute_query_with_metadata() docstring for details.
-"""
-_last_query_result: dict[str, Any] | None = None
+def _set_last_query_result(result: dict[str, Any]) -> None:
+    """Store a query result for the current session (thread-safe)."""
+    sid = _get_active_session_id()
+    with _lock:
+        _session_query_results[sid] = result
 
 
 def get_available_tables() -> dict[str, Any]:
@@ -208,9 +162,10 @@ def get_available_tables() -> dict[str, Any]:
             "tables": table_info
         }
     except Exception as e:
+        logger.exception("Failed to list available tables")
         return {
             "status": "error",
-            "error": str(e)
+            "error": "Failed to retrieve available tables. Check server logs for details."
         }
 
 
@@ -229,6 +184,13 @@ def get_table_schema(table_name: str) -> dict[str, Any]:
             - sample_values: Sample values for each column (for context)
     """
     try:
+        # Validate table name to prevent injection (allow only alphanumeric, underscore, hyphen, dot)
+        if not re.match(r'^[a-zA-Z0-9_.\-]+$', table_name):
+            return {
+                "status": "error",
+                "error": "Invalid table name. Only alphanumeric characters, underscores, hyphens, and dots are allowed."
+            }
+
         client = bigquery.Client(project=settings.google_cloud_project)
 
         # Handle both simple and fully qualified table names
@@ -237,6 +199,7 @@ def get_table_schema(table_name: str) -> dict[str, Any]:
         else:
             full_table_id = table_name
 
+        # Use BigQuery API to get table metadata (not string-interpolated SQL)
         table_ref = client.get_table(full_table_id)
 
         columns = []
@@ -265,9 +228,10 @@ def get_table_schema(table_name: str) -> dict[str, Any]:
             "sample_rows": sample_rows
         }
     except Exception as e:
+        logger.exception("Failed to get schema for table: %s", table_name)
         return {
             "status": "error",
-            "error": str(e)
+            "error": f"Failed to retrieve schema for table '{table_name}'. Check server logs for details."
         }
 
 
@@ -378,9 +342,15 @@ def validate_sql_query(sql: str) -> dict[str, Any]:
             "message": f"Query is valid. Estimated data to process: {size_str}"
         }
     except Exception as e:
+        logger.exception("SQL validation failed")
+        error_msg = "Query validation failed."
+        error_str = str(e)
+        # Allow syntax/validation errors through (they help the agent fix SQL)
+        if "Syntax error" in error_str or "not found" in error_str:
+            error_msg = f"Validation failed: {error_str}"
         return {
             "status": "invalid",
-            "error": str(e)
+            "error": error_msg
         }
 
 
@@ -497,8 +467,6 @@ def execute_query_with_metadata(sql: str, max_rows: int = 1000) -> dict[str, Any
         - Result is stored in _last_query_result for enrichment/calculation workflows
         - In production with concurrent users, consider session-scoped result storage
     """
-    global _last_query_result
-
     try:
         client = bigquery.Client(project=settings.google_cloud_project)
 
@@ -547,14 +515,21 @@ def execute_query_with_metadata(sql: str, max_rows: int = 1000) -> dict[str, Any
             "sql": sql
         }
 
-        # Store for potential enrichment
-        _last_query_result = result.copy()
+        # Store for potential enrichment (session-scoped)
+        _set_last_query_result(result.copy())
 
         return result
     except Exception as e:
+        logger.exception("Query execution failed for SQL: %s", sql)
+        # Return a safe error message; the agent can see this but not raw internals
+        error_msg = "Query execution failed."
+        error_str = str(e)
+        # Allow syntax/validation errors through (they help the agent fix SQL)
+        if "Syntax error" in error_str or "not found" in error_str:
+            error_msg = f"Query failed: {error_str}"
         return {
             "status": "error",
-            "error": str(e),
+            "error": error_msg,
             "sql": sql
         }
 
@@ -695,9 +670,9 @@ def apply_enrichment(
         - Frontend displays enriched values with source badges and confidence indicators
         - Enriched columns can be used in add_calculated_column() expressions
     """
-    global _last_query_result
+    last_result = _get_last_query_result()
 
-    if _last_query_result is None:
+    if last_result is None:
         return {
             "status": "error",
             "error": "No query result available to enrich. Run a query first."
@@ -712,7 +687,7 @@ def apply_enrichment(
     # ========== STEP 1: Initialize and Validate ==========
     # Create a deep copy to avoid mutating the original result during merge
     import copy
-    result = copy.deepcopy(_last_query_result)
+    result = copy.deepcopy(last_result)
 
     # Track existing columns to prevent duplicate enrichment columns
     existing_columns = {col["name"] for col in result.get("columns", [])}
@@ -809,7 +784,7 @@ def apply_enrichment(
     }
 
     # Update the stored result so add_calculated_column can use enriched data
-    _last_query_result = result
+    _set_last_query_result(result)
 
     return result
 
@@ -821,15 +796,15 @@ def add_calculated_column(
 ) -> dict[str, Any]:
     """Add a calculated column to query results using safe expression evaluation.
 
-    Adds a derived column to _last_query_result by evaluating a mathematical expression
-    on existing column values. Uses Python's eval() with restricted namespace for safety.
+    Adds a derived column to the last query result by evaluating a mathematical expression
+    on existing column values. Uses simpleeval for safe sandboxed evaluation.
     Automatically extracts values from enriched columns (which are stored as metadata dicts).
 
     This enables users to perform calculations on query results without re-running the
     database query, which is especially useful for combining base data with enriched data.
 
     **EXPRESSION EVALUATION SECURITY**:
-    - Uses eval() with restricted __builtins__ (no access to os, sys, imports, etc.)
+    - Uses simpleeval for sandboxed expression evaluation (no access to os, sys, imports, etc.)
     - Only allows mathematical operators: +, -, *, /, %, **
     - Column names are validated against available columns before evaluation
     - No function calls or attribute access allowed (except built-in math)
@@ -949,17 +924,16 @@ def add_calculated_column(
         - Format types are hints for frontend display, actual values stored as numbers
         - Warnings limited to first 5 rows to prevent response bloat
     """
-    global _last_query_result
+    last_result = _get_last_query_result()
 
-    if _last_query_result is None:
+    if last_result is None:
         return {
             "status": "error",
             "error": "No query result available. Run a query first."
         }
 
     import copy
-    import re
-    result = copy.deepcopy(_last_query_result)
+    result = copy.deepcopy(last_result)
 
     # ========== Validation Phase ==========
     # Get available column names for validation
@@ -1000,7 +974,7 @@ def add_calculated_column(
     })
 
     # ========== Calculation Phase ==========
-    # Calculate values for each row using safe eval()
+    # Calculate values for each row using simpleeval
     errors = []
     for i, row in enumerate(result.get("rows", [])):
         try:
@@ -1035,14 +1009,8 @@ def add_calculated_column(
                     # Normal numeric value (int, float)
                     context[col] = float(value)
 
-            # STEP 4: Safely evaluate the expression using restricted eval()
-            # Security: allowed_names has empty __builtins__ to prevent:
-            # - Import statements (e.g., "import os")
-            # - File operations (e.g., "open('/etc/passwd')")
-            # - System calls (e.g., "os.system('rm -rf /')")
-            # Only mathematical operators (+, -, *, /, %, **) are allowed
-            allowed_names = {"__builtins__": {}}  # Empty builtins = no dangerous functions
-            calculated_value = eval(expression, allowed_names, context)
+            # STEP 4: Safely evaluate using simpleeval (sandboxed, no builtins)
+            calculated_value = simple_eval(expression, names=context)
 
             # STEP 5: Format the result based on format_type
             if format_type == "integer":
@@ -1096,8 +1064,8 @@ def add_calculated_column(
     if errors:
         result["calculation_metadata"]["warnings"].extend(errors[:5])
 
-    # Update the stored result
-    _last_query_result = result
+    # Update the stored result (session-scoped)
+    _set_last_query_result(result)
 
     return result
 
@@ -1157,29 +1125,34 @@ def report_insight(
     if insight_type not in valid_types:
         insight_type = "suggestion"
 
-    _pending_insights.append({
-        "type": insight_type,
-        "message": message.strip(),
-    })
+    sid = _get_active_session_id()
+    with _lock:
+        if sid not in _session_pending_insights:
+            _session_pending_insights[sid] = []
+        _session_pending_insights[sid].append({
+            "type": insight_type,
+            "message": message.strip(),
+        })
 
     return {"status": "recorded", "type": insight_type}
 
 
-def get_and_clear_pending_insights() -> list[dict[str, str]]:
+def get_and_clear_pending_insights(session_id: str | None = None) -> list[dict[str, str]]:
     """Drain all pending insights accumulated during the current agent invocation.
 
     Called by the API route after the ADK event stream completes to collect
     insights reported via report_insight() tool calls.
 
+    Args:
+        session_id: The session to drain insights for. If None, uses the active session.
+
     Returns:
         list[dict[str, str]]: List of insight dicts, each with "type" and "message".
             Returns an empty list if no insights were reported.
-
-    Side Effects:
-        - Clears the global _pending_insights list
     """
-    insights = list(_pending_insights)
-    _pending_insights.clear()
+    sid = session_id or _get_active_session_id()
+    with _lock:
+        insights = _session_pending_insights.pop(sid, [])
     return insights
 
 

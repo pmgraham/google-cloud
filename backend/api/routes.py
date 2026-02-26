@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import logging
 import re
 from datetime import datetime
 from typing import Optional
@@ -10,12 +11,14 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
+logger = logging.getLogger(__name__)
+
 # Maximum time (seconds) the agent is allowed to process a single chat request
 # before the endpoint returns a timeout error to the client.
 _AGENT_TIMEOUT_SECONDS = 120
 
 from agent.agent import root_agent
-from agent.tools import get_and_clear_pending_insights
+from agent.tools import get_and_clear_pending_insights, set_active_session
 from .observability import AgentRunTracer
 
 # Global ADK session service for managing agent sessions
@@ -211,6 +214,9 @@ async def chat(request: ChatRequest):
     # Get or create session in our service
     session_id = session_service.get_or_create_session(request.session_id)
 
+    # Set active session for thread-safe tool state isolation
+    set_active_session(session_id)
+
     # Add user message to session
     user_message = session_service.add_message(
         session_id=session_id,
@@ -358,7 +364,7 @@ async def chat(request: ChatRequest):
             )
 
         # Collect insights reported via the report_insight tool
-        raw_insights = get_and_clear_pending_insights()
+        raw_insights = get_and_clear_pending_insights(session_id=session_id)
         insights = [
             Insight(type=ins["type"], message=ins["message"])
             for ins in raw_insights
@@ -384,6 +390,9 @@ async def chat(request: ChatRequest):
         )
 
     except Exception as e:
+        # Log full error details server-side only
+        logger.exception("Error processing chat request for session %s", session_id)
+
         # Emit structured log for the error case
         if 'tracer' in locals():
             tracer.complete(error=e)
@@ -391,7 +400,7 @@ async def chat(request: ChatRequest):
         error_message = session_service.add_message(
             session_id=session_id,
             role=MessageRole.ASSISTANT,
-            content=f"I encountered an error processing your request: {str(e)}. Please try again.",
+            content="I encountered an error processing your request. Please try again.",
         )
 
         return ChatResponse(
