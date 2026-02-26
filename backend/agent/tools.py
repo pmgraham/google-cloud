@@ -3,6 +3,7 @@
 from typing import Any
 from google.cloud import bigquery
 from .config import settings
+from decimal import Decimal
 
 
 """Global cache for BigQuery table schema information.
@@ -531,6 +532,8 @@ def execute_query_with_metadata(sql: str, max_rows: int = 1000) -> dict[str, Any
                     row_dict[key] = value.isoformat()
                 elif isinstance(value, bytes):
                     row_dict[key] = value.decode('utf-8', errors='replace')
+                elif isinstance(value, Decimal):
+                    row_dict[key] = float(value)
                 else:
                     row_dict[key] = value
             rows.append(row_dict)
