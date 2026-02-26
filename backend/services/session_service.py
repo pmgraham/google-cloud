@@ -1,12 +1,21 @@
 """Session management service for chat conversations."""
 
+import logging
+import threading
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 from google.adk.sessions import InMemorySessionService
 from google.adk.events import Event
 
 from api.models import ChatMessage, MessageRole, SessionInfo
+
+logger = logging.getLogger(__name__)
+
+# Sessions expire after 24 hours of inactivity
+SESSION_TTL = timedelta(hours=24)
+# Maximum number of sessions before forced cleanup
+MAX_SESSIONS = 1000
 
 
 class SessionService:
@@ -85,6 +94,20 @@ class SessionService:
         self.adk_session_service = InMemorySessionService()
         # Keep track of our own metadata (in-memory dictionary)
         self._sessions: dict[str, dict] = {}
+        self._lock = threading.Lock()
+
+    def _cleanup_expired_sessions(self) -> int:
+        """Remove sessions that have exceeded the TTL. Returns count of removed sessions."""
+        now = datetime.utcnow()
+        expired = [
+            sid for sid, s in self._sessions.items()
+            if now - s["updated_at"] > SESSION_TTL
+        ]
+        for sid in expired:
+            del self._sessions[sid]
+        if expired:
+            logger.info("Cleaned up %d expired sessions", len(expired))
+        return len(expired)
 
     def create_session(self, name: Optional[str] = None) -> str:
         """Create a new chat session with a unique ID.
@@ -115,16 +138,26 @@ class SessionService:
             - No expiration is set (lives until server restart or manual deletion)
             - Thread-safety: Not thread-safe for concurrent creation
         """
-        session_id = str(uuid.uuid4())
-        now = datetime.utcnow()
+        with self._lock:
+            # Clean up expired sessions and enforce max session limit
+            self._cleanup_expired_sessions()
+            if len(self._sessions) >= MAX_SESSIONS:
+                # Remove oldest sessions to make room
+                oldest = sorted(self._sessions.keys(), key=lambda s: self._sessions[s]["updated_at"])
+                for sid in oldest[:len(self._sessions) - MAX_SESSIONS + 1]:
+                    del self._sessions[sid]
+                logger.warning("Evicted %d sessions to stay under MAX_SESSIONS limit", len(oldest[:len(self._sessions)]))
 
-        self._sessions[session_id] = {
-            "id": session_id,
-            "name": name or f"Session {len(self._sessions) + 1}",
-            "created_at": now,
-            "updated_at": now,
-            "messages": []
-        }
+            session_id = str(uuid.uuid4())
+            now = datetime.utcnow()
+
+            self._sessions[session_id] = {
+                "id": session_id,
+                "name": name or f"Session {len(self._sessions) + 1}",
+                "created_at": now,
+                "updated_at": now,
+                "messages": []
+            }
 
         return session_id
 
