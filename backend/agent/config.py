@@ -72,6 +72,12 @@ class Settings(BaseSettings):
         )
     )
 
+    model_name: str = Field(
+        default="gemini-3-flash-preview",
+        env="MODEL_NAME",
+        description="Gemini model name for the agent. Default: gemini-3-flash-preview."
+    )
+
     # ========== BigQuery Configuration ==========
     bigquery_dataset: str = Field(
         ...,
