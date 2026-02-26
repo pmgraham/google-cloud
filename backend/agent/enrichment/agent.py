@@ -8,6 +8,7 @@ from google.adk.agents import Agent
 from google.adk.tools.google_search_tool import GoogleSearchTool
 
 from ..callbacks import after_tool_callback
+from ..config import settings
 from ..tools import apply_enrichment
 from .prompts import ENRICHMENT_INSTRUCTION
 
@@ -24,7 +25,7 @@ def create_enrichment_agent() -> Agent:
     """
     return Agent(
         name="enrichment_agent",
-        model="gemini-3-flash-preview",
+        model=settings.model_name,
         description=(
             "A data enrichment specialist that augments query results with "
             "verified real-time information from Google Search, then merges "

@@ -119,7 +119,7 @@ def create_agent() -> Agent:
     # - enrichment_agent: Sub-agent for Google Search-based enrichment
     agent = Agent(
         name="data_insights_agent",
-        model="gemini-3-flash-preview",
+        model=settings.model_name,
         description=(
             "A data insights assistant that helps users analyze BigQuery data "
             "using natural language. Converts questions to SQL, executes queries, "
