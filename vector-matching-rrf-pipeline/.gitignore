@@ -57,6 +57,12 @@ go-agent/parts-matcher
 # Package Managers
 uv.lock
 
+# Go binaries
+go-agent/go-agent
+go-agent/parts-matcher
+go-agent/bin/
+bin/
+
 # Temporary Internal Files
 .gemini/
 .agent/
