@@ -1,7 +1,6 @@
 # Industrial Parts Matching Pipeline & Agent
 
 ## Overview
-
 The Industrial Parts Matching project aims to solve the complex challenge of aligning a customer's proprietary or generic parts catalog with supplier catalog items. Exact-match logic fails for the vast majority of parts due to differences in abbreviations, missing dimensions, implicit standards, and differing part number formats.
 
 This project implements a **Hybrid AI Matching Architecture** to solve this problem, leveraging the strengths of BigQuery's native AI processing for scale, and the reasoning capabilities of a Google Agent Development Kit (ADK) Python Agent for precision.
