@@ -1,0 +1,13 @@
+Extract structured part attributes from this raw description. Expand all abbreviations. Convert all dimensions to METRIC values (e.g. inches to mm) where appropriate to ensure cross-catalog matching. Map industry standard references to a single canonical standard string (e.g. "DIN 933" and "ISO 4017" should both map to "ISO 4017"). Normalize the part_type into a broad category (e.g., always use "bolt" instead of mixing "bolt", "screw", and "fastener"). If a field cannot be determined, return null. Return EXACTLY this JSON schema and NOTHING else. DO NOT include any reasoning, thoughts, or explanations. DO NOT include markdown block characters. Just the raw JSON object:
+{
+  "part_type": "string",
+  "material": "string",
+  "grade": "string",
+  "size_value": number,
+  "size_unit": "string",
+  "thread_pitch": number,
+  "length_value": number,
+  "length_unit": "string",
+  "standard_ref": "string"
+}
+Description:

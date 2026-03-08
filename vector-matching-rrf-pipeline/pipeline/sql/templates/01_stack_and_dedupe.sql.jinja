@@ -1,0 +1,50 @@
+-- =============================================================================
+-- 01_stack_and_dedupe.sql
+-- =============================================================================
+-- Purpose: 
+-- 1. Combine all disparate parts catalogs into a single working table.
+-- 2. Clean inputs (lowercase, remove excess whitespace).
+-- 3. Create a composite string of all physical attributes.
+-- 4. Deduplicate to find unique physical descriptions to minimize AI API calls.
+-- =============================================================================
+
+-- Create reusable UDF for normalizing part attributes into a composite string
+CREATE OR REPLACE FUNCTION `{{ project_id }}.{{ dataset }}.normalize_composite_key`(
+  attributes ARRAY<STRING>
+) RETURNS STRING AS (
+  TRIM(REGEXP_REPLACE(
+    LOWER(ARRAY_TO_STRING(attributes, ' | ', '')),
+    r'\s+', ' '
+  ))
+);
+
+CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.all_parts` AS
+{% for src in source_tables %}
+SELECT 
+  '{{ src.source_name }}' AS source, 
+  {{ src.pk_column }} AS part_number, 
+  {{ src.desc_column }} AS part_description,
+  `{{ project_id }}.{{ dataset }}.normalize_composite_key`(
+      [{% for attr in src.composite_attributes %}{{ attr }}{% if not loop.last %}, {% endif %}{% endfor %}]
+    ) AS composite_key
+FROM `{{ project_id }}.{{ dataset }}.{{ src.table_name }}`
+{% if not loop.last %}UNION ALL{% endif %}
+{% endfor %}
+;
+
+-- =============================================================================
+-- Create Deduplicated Composites Table
+-- =============================================================================
+
+CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.distinct_composites` AS
+SELECT
+  composite_key,
+  COUNT(*) AS total_parts,
+  COUNT(DISTINCT source) AS num_sources,
+  ARRAY_AGG(DISTINCT source) AS sources_list,
+  ARRAY_AGG(
+    STRUCT(source, part_number, part_description)
+    ORDER BY source LIMIT 5
+  ) AS example_parts
+FROM `{{ project_id }}.{{ dataset }}.all_parts`
+GROUP BY composite_key;

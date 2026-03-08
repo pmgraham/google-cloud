@@ -1,0 +1,15 @@
+-- =============================================================================
+-- setup_ai_model.sql
+-- =============================================================================
+-- Creates the BigQuery ML remote model that connects BigQuery to Vertex AI.
+-- This is required before running 02_ai_generation.sql
+-- =============================================================================
+
+CREATE OR REPLACE MODEL `{{ project_id }}.{{ dataset }}.{{ gemini_text_model_name }}`
+  REMOTE WITH CONNECTION `{{ vertex_ai_connection }}`
+  OPTIONS(ENDPOINT = 'https://aiplatform.googleapis.com/v1/projects/{{ project_id }}/locations/{{ gemini_text_model_location }}/publishers/google/models/{{ gemini_text_model_endpoint }}'
+  );
+
+CREATE OR REPLACE MODEL `{{ project_id }}.{{ dataset }}.{{ gemini_embedding_model_name }}`
+  REMOTE WITH CONNECTION `{{ vertex_ai_connection }}`
+  OPTIONS(ENDPOINT = '{{ gemini_embedding_model_endpoint }}');

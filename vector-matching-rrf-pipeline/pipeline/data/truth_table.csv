@@ -1,0 +1,687 @@
+canonical_part_id,canonical_description,source,part_number
+e30945c4-ebfe-4b3e-b9d8-d72acc32c177,Ball Bearing Series 6201-ZZ,Customer,ERP-1000001
+e30945c4-ebfe-4b3e-b9d8-d72acc32c177,Ball Bearing Series 6201-ZZ,Source1,FAS-BALLBEARING-00001
+e30945c4-ebfe-4b3e-b9d8-d72acc32c177,Ball Bearing Series 6201-ZZ,Source2,98409A525
+e30945c4-ebfe-4b3e-b9d8-d72acc32c177,Ball Bearing Series 6201-ZZ,Source3,BALLBEARING-1
+e30945c4-ebfe-4b3e-b9d8-d72acc32c177,Ball Bearing Series 6201-ZZ,Source4,00001
+54786f4a-f66d-480b-9853-0c32b094cf45, O-Ring 12mm ID x 1.5mm CS,Customer,ERP-1000002
+54786f4a-f66d-480b-9853-0c32b094cf45, O-Ring 12mm ID x 1.5mm CS,Source1,FAS-O-RING-00002
+54786f4a-f66d-480b-9853-0c32b094cf45, O-Ring 12mm ID x 1.5mm CS,Source2,93570A692
+54786f4a-f66d-480b-9853-0c32b094cf45, O-Ring 12mm ID x 1.5mm CS,Source3,O-RING-2
+54786f4a-f66d-480b-9853-0c32b094cf45, O-Ring 12mm ID x 1.5mm CS,Source4,00002
+57da8f4c-2f56-469e-a800-aa0639a3423e,Brass Set Screw M8x2.0x25mm,Customer,ERP-1000003
+57da8f4c-2f56-469e-a800-aa0639a3423e,Brass Set Screw M8x2.0x25mm,Source1,FAS-SETSCREW-00003
+57da8f4c-2f56-469e-a800-aa0639a3423e,Brass Set Screw M8x2.0x25mm,Source2,96698A284
+57da8f4c-2f56-469e-a800-aa0639a3423e,Brass Set Screw M8x2.0x25mm,Source3,SETSCREW-3
+57da8f4c-2f56-469e-a800-aa0639a3423e,Brass Set Screw M8x2.0x25mm,Source4,00003
+faad120b-b20a-47ca-8650-bd4905d5b1ad,Stainless Steel Hex Nut Standard Configuration,Customer,ERP-1000004
+faad120b-b20a-47ca-8650-bd4905d5b1ad,Stainless Steel Hex Nut Standard Configuration,Source1,FAS-HEXNUT-00004
+faad120b-b20a-47ca-8650-bd4905d5b1ad,Stainless Steel Hex Nut Standard Configuration,Source2,98835A236
+faad120b-b20a-47ca-8650-bd4905d5b1ad,Stainless Steel Hex Nut Standard Configuration,Source3,HEXNUT-4
+faad120b-b20a-47ca-8650-bd4905d5b1ad,Stainless Steel Hex Nut Standard Configuration,Source4,00004
+8a67e9bc-e315-4e66-9330-2a8c65c5aab1,Plastic Gasket Standard Configuration,Customer,ERP-1000005
+8a67e9bc-e315-4e66-9330-2a8c65c5aab1,Plastic Gasket Standard Configuration,Source1,FAS-GASKET-00005
+8a67e9bc-e315-4e66-9330-2a8c65c5aab1,Plastic Gasket Standard Configuration,Source2,94888A574
+8a67e9bc-e315-4e66-9330-2a8c65c5aab1,Plastic Gasket Standard Configuration,Source3,GASKET-5
+8a67e9bc-e315-4e66-9330-2a8c65c5aab1,Plastic Gasket Standard Configuration,Source4,00005
+25f6d475-b31a-4e24-a559-9d681c90b417,Stainless Steel Lock Nut Standard Configuration,Customer,ERP-1000006
+25f6d475-b31a-4e24-a559-9d681c90b417,Stainless Steel Lock Nut Standard Configuration,Source1,FAS-LOCKNUT-00006
+25f6d475-b31a-4e24-a559-9d681c90b417,Stainless Steel Lock Nut Standard Configuration,Source2,91848A132
+25f6d475-b31a-4e24-a559-9d681c90b417,Stainless Steel Lock Nut Standard Configuration,Source3,LOCKNUT-6
+25f6d475-b31a-4e24-a559-9d681c90b417,Stainless Steel Lock Nut Standard Configuration,Source4,00006
+be35d0b8-c159-40b7-b9d8-6b00b25daacc,Carbon Steel Lock Nut Standard Configuration,Customer,ERP-1000007
+be35d0b8-c159-40b7-b9d8-6b00b25daacc,Carbon Steel Lock Nut Standard Configuration,Source1,FAS-LOCKNUT-00007
+be35d0b8-c159-40b7-b9d8-6b00b25daacc,Carbon Steel Lock Nut Standard Configuration,Source2,90797A350
+be35d0b8-c159-40b7-b9d8-6b00b25daacc,Carbon Steel Lock Nut Standard Configuration,Source3,LOCKNUT-7
+be35d0b8-c159-40b7-b9d8-6b00b25daacc,Carbon Steel Lock Nut Standard Configuration,Source4,00007
+f15ba4e8-0edc-4330-8a7f-44d8bb33a88e,Steel Relay Standard Configuration,Customer,ERP-1000008
+f15ba4e8-0edc-4330-8a7f-44d8bb33a88e,Steel Relay Standard Configuration,Source1,FAS-RELAY-00008
+f15ba4e8-0edc-4330-8a7f-44d8bb33a88e,Steel Relay Standard Configuration,Source2,93836A935
+f15ba4e8-0edc-4330-8a7f-44d8bb33a88e,Steel Relay Standard Configuration,Source3,RELAY-8
+f15ba4e8-0edc-4330-8a7f-44d8bb33a88e,Steel Relay Standard Configuration,Source4,00008
+3e65c5ba-5062-4600-8ae8-c67b43ed81ab,Rubber Spring Standard Configuration,Customer,ERP-1000009
+3e65c5ba-5062-4600-8ae8-c67b43ed81ab,Rubber Spring Standard Configuration,Source1,FAS-SPRING-00009
+3e65c5ba-5062-4600-8ae8-c67b43ed81ab,Rubber Spring Standard Configuration,Source2,98540A326
+3e65c5ba-5062-4600-8ae8-c67b43ed81ab,Rubber Spring Standard Configuration,Source3,SPRING-9
+3e65c5ba-5062-4600-8ae8-c67b43ed81ab,Rubber Spring Standard Configuration,Source4,00009
+200a83d7-59e2-4f5f-a49b-6fda43c88d2a,Plastic Switch Standard Configuration,Customer,ERP-1000010
+200a83d7-59e2-4f5f-a49b-6fda43c88d2a,Plastic Switch Standard Configuration,Source1,FAS-SWITCH-00010
+200a83d7-59e2-4f5f-a49b-6fda43c88d2a,Plastic Switch Standard Configuration,Source2,98592A426
+200a83d7-59e2-4f5f-a49b-6fda43c88d2a,Plastic Switch Standard Configuration,Source3,SWITCH-10
+200a83d7-59e2-4f5f-a49b-6fda43c88d2a,Plastic Switch Standard Configuration,Source4,00010
+9f1fda80-0807-4658-b3ba-8a764b6464d4,Viton O-Ring 15mm ID x 2.0mm CS,Customer,ERP-1000011
+9f1fda80-0807-4658-b3ba-8a764b6464d4,Viton O-Ring 15mm ID x 2.0mm CS,Source1,FAS-O-RING-00011
+9f1fda80-0807-4658-b3ba-8a764b6464d4,Viton O-Ring 15mm ID x 2.0mm CS,Source2,92365A925
+9f1fda80-0807-4658-b3ba-8a764b6464d4,Viton O-Ring 15mm ID x 2.0mm CS,Source3,O-RING-11
+9f1fda80-0807-4658-b3ba-8a764b6464d4,Viton O-Ring 15mm ID x 2.0mm CS,Source4,00011
+29d1b1cf-42af-438e-ad38-eff90c66f4bd,Plastic Cylinder Standard Configuration,Customer,ERP-1000012
+29d1b1cf-42af-438e-ad38-eff90c66f4bd,Plastic Cylinder Standard Configuration,Source1,FAS-CYLINDER-00012
+29d1b1cf-42af-438e-ad38-eff90c66f4bd,Plastic Cylinder Standard Configuration,Source2,93331A438
+29d1b1cf-42af-438e-ad38-eff90c66f4bd,Plastic Cylinder Standard Configuration,Source3,CYLINDER-12
+29d1b1cf-42af-438e-ad38-eff90c66f4bd,Plastic Cylinder Standard Configuration,Source4,00012
+6f1bde74-e2e5-47e9-afbf-d9b5ac5080db,Needle Bearing Series 6202-ZZ,Customer,ERP-1000013
+6f1bde74-e2e5-47e9-afbf-d9b5ac5080db,Needle Bearing Series 6202-ZZ,Source1,FAS-NEEDLEBEARING-00013
+6f1bde74-e2e5-47e9-afbf-d9b5ac5080db,Needle Bearing Series 6202-ZZ,Source2,99911A717
+6f1bde74-e2e5-47e9-afbf-d9b5ac5080db,Needle Bearing Series 6202-ZZ,Source3,NEEDLEBEARING-13
+6f1bde74-e2e5-47e9-afbf-d9b5ac5080db,Needle Bearing Series 6202-ZZ,Source4,00013
+347c4766-d438-478e-8dc8-fed906dd1aa9, O-Ring 44mm ID x 2.0mm CS,Customer,ERP-1000014
+347c4766-d438-478e-8dc8-fed906dd1aa9, O-Ring 44mm ID x 2.0mm CS,Source1,FAS-O-RING-00014
+347c4766-d438-478e-8dc8-fed906dd1aa9, O-Ring 44mm ID x 2.0mm CS,Source2,90251A316
+347c4766-d438-478e-8dc8-fed906dd1aa9, O-Ring 44mm ID x 2.0mm CS,Source3,O-RING-14
+347c4766-d438-478e-8dc8-fed906dd1aa9, O-Ring 44mm ID x 2.0mm CS,Source4,00014
+495804e6-3093-4cfd-9083-fa4ecbe4b7e1,Carbon Steel Flange Nut Standard Configuration,Customer,ERP-1000015
+495804e6-3093-4cfd-9083-fa4ecbe4b7e1,Carbon Steel Flange Nut Standard Configuration,Source1,FAS-FLANGENUT-00015
+495804e6-3093-4cfd-9083-fa4ecbe4b7e1,Carbon Steel Flange Nut Standard Configuration,Source2,93921A665
+495804e6-3093-4cfd-9083-fa4ecbe4b7e1,Carbon Steel Flange Nut Standard Configuration,Source3,FLANGENUT-15
+495804e6-3093-4cfd-9083-fa4ecbe4b7e1,Carbon Steel Flange Nut Standard Configuration,Source4,00015
+befcfeb6-10a0-4326-b7d4-254a98e95bfa,Viton O-Ring 30mm ID x 3.0mm CS,Customer,ERP-1000016
+befcfeb6-10a0-4326-b7d4-254a98e95bfa,Viton O-Ring 30mm ID x 3.0mm CS,Source1,FAS-O-RING-00016
+befcfeb6-10a0-4326-b7d4-254a98e95bfa,Viton O-Ring 30mm ID x 3.0mm CS,Source2,97635A200
+befcfeb6-10a0-4326-b7d4-254a98e95bfa,Viton O-Ring 30mm ID x 3.0mm CS,Source3,O-RING-16
+befcfeb6-10a0-4326-b7d4-254a98e95bfa,Viton O-Ring 30mm ID x 3.0mm CS,Source4,00016
+b655af9d-933d-458e-991b-be52d3b9a50e,"Brass Set Screw 5/16""-20 x 1-1/4""",Customer,ERP-1000017
+b655af9d-933d-458e-991b-be52d3b9a50e,"Brass Set Screw 5/16""-20 x 1-1/4""",Source1,FAS-SETSCREW-00017
+b655af9d-933d-458e-991b-be52d3b9a50e,"Brass Set Screw 5/16""-20 x 1-1/4""",Source2,90265A367
+b655af9d-933d-458e-991b-be52d3b9a50e,"Brass Set Screw 5/16""-20 x 1-1/4""",Source3,SETSCREW-17
+b655af9d-933d-458e-991b-be52d3b9a50e,"Brass Set Screw 5/16""-20 x 1-1/4""",Source4,00017
+769408ff-5209-47b6-8e23-f30f072d507a,Rubber Cylinder Standard Configuration,Customer,ERP-1000018
+769408ff-5209-47b6-8e23-f30f072d507a,Rubber Cylinder Standard Configuration,Source1,FAS-CYLINDER-00018
+769408ff-5209-47b6-8e23-f30f072d507a,Rubber Cylinder Standard Configuration,Source2,98180A663
+769408ff-5209-47b6-8e23-f30f072d507a,Rubber Cylinder Standard Configuration,Source3,CYLINDER-18
+769408ff-5209-47b6-8e23-f30f072d507a,Rubber Cylinder Standard Configuration,Source4,00018
+bb268a77-0823-46c1-b385-0c142071cfa3,Brass Lock Washer Standard Configuration,Customer,ERP-1000019
+bb268a77-0823-46c1-b385-0c142071cfa3,Brass Lock Washer Standard Configuration,Source1,FAS-LOCKWASHER-00019
+bb268a77-0823-46c1-b385-0c142071cfa3,Brass Lock Washer Standard Configuration,Source2,95770A273
+bb268a77-0823-46c1-b385-0c142071cfa3,Brass Lock Washer Standard Configuration,Source3,LOCKWASHER-19
+bb268a77-0823-46c1-b385-0c142071cfa3,Brass Lock Washer Standard Configuration,Source4,00019
+05887aa1-1706-41aa-b12c-70002ed85da7,Copper Shaft Seal Standard Configuration,Customer,ERP-1000020
+05887aa1-1706-41aa-b12c-70002ed85da7,Copper Shaft Seal Standard Configuration,Source1,FAS-SHAFTSEAL-00020
+05887aa1-1706-41aa-b12c-70002ed85da7,Copper Shaft Seal Standard Configuration,Source2,90104A522
+05887aa1-1706-41aa-b12c-70002ed85da7,Copper Shaft Seal Standard Configuration,Source3,SHAFTSEAL-20
+05887aa1-1706-41aa-b12c-70002ed85da7,Copper Shaft Seal Standard Configuration,Source4,00020
+81d1e14c-60ac-4701-b3b2-91a49b24d141,"Brass Flat Head Screw 1/4""-20 x 1/2""",Customer,ERP-1000021
+81d1e14c-60ac-4701-b3b2-91a49b24d141,"Brass Flat Head Screw 1/4""-20 x 1/2""",Source1,FAS-FLATHEADSCREW-00021
+81d1e14c-60ac-4701-b3b2-91a49b24d141,"Brass Flat Head Screw 1/4""-20 x 1/2""",Source2,97993A116
+81d1e14c-60ac-4701-b3b2-91a49b24d141,"Brass Flat Head Screw 1/4""-20 x 1/2""",Source3,FLATHEADSCREW-21
+81d1e14c-60ac-4701-b3b2-91a49b24d141,"Brass Flat Head Screw 1/4""-20 x 1/2""",Source4,00021
+25c8349e-2acc-4354-a873-8e6233dbf86f,Carbon Steel Flat Head Screw M16x2.0x60mm,Customer,ERP-1000022
+25c8349e-2acc-4354-a873-8e6233dbf86f,Carbon Steel Flat Head Screw M16x2.0x60mm,Source1,FAS-FLATHEADSCREW-00022
+25c8349e-2acc-4354-a873-8e6233dbf86f,Carbon Steel Flat Head Screw M16x2.0x60mm,Source2,92937A209
+25c8349e-2acc-4354-a873-8e6233dbf86f,Carbon Steel Flat Head Screw M16x2.0x60mm,Source3,FLATHEADSCREW-22
+25c8349e-2acc-4354-a873-8e6233dbf86f,Carbon Steel Flat Head Screw M16x2.0x60mm,Source4,00022
+c2b65355-600f-4e1f-b913-d9912f1e7818,Bearing Housing Series 6205-Open,Customer,ERP-1000023
+c2b65355-600f-4e1f-b913-d9912f1e7818,Bearing Housing Series 6205-Open,Source1,FAS-BEARINGHOUSING-00023
+c2b65355-600f-4e1f-b913-d9912f1e7818,Bearing Housing Series 6205-Open,Source2,96112A515
+c2b65355-600f-4e1f-b913-d9912f1e7818,Bearing Housing Series 6205-Open,Source3,BEARINGHOUSING-23
+c2b65355-600f-4e1f-b913-d9912f1e7818,Bearing Housing Series 6205-Open,Source4,00023
+a2e6bb60-33ce-4a26-a475-ae2bbc019764,Plastic Relay Standard Configuration,Customer,ERP-1000024
+a2e6bb60-33ce-4a26-a475-ae2bbc019764,Plastic Relay Standard Configuration,Source1,FAS-RELAY-00024
+a2e6bb60-33ce-4a26-a475-ae2bbc019764,Plastic Relay Standard Configuration,Source2,96213A486
+a2e6bb60-33ce-4a26-a475-ae2bbc019764,Plastic Relay Standard Configuration,Source3,RELAY-24
+a2e6bb60-33ce-4a26-a475-ae2bbc019764,Plastic Relay Standard Configuration,Source4,00024
+1b187d04-379a-428b-ba1d-62224f94be76,Carbon Steel Flat Head Screw M10x1.0x16mm,Customer,ERP-1000025
+1b187d04-379a-428b-ba1d-62224f94be76,Carbon Steel Flat Head Screw M10x1.0x16mm,Source1,FAS-FLATHEADSCREW-00025
+1b187d04-379a-428b-ba1d-62224f94be76,Carbon Steel Flat Head Screw M10x1.0x16mm,Source2,98653A143
+1b187d04-379a-428b-ba1d-62224f94be76,Carbon Steel Flat Head Screw M10x1.0x16mm,Source3,FLATHEADSCREW-25
+1b187d04-379a-428b-ba1d-62224f94be76,Carbon Steel Flat Head Screw M10x1.0x16mm,Source4,00025
+a92fdae0-70e9-4c1c-bd39-cd001f9cb7f8,Copper Valve Standard Configuration,Customer,ERP-1000026
+a92fdae0-70e9-4c1c-bd39-cd001f9cb7f8,Copper Valve Standard Configuration,Source1,FAS-VALVE-00026
+a92fdae0-70e9-4c1c-bd39-cd001f9cb7f8,Copper Valve Standard Configuration,Source2,95152A116
+a92fdae0-70e9-4c1c-bd39-cd001f9cb7f8,Copper Valve Standard Configuration,Source3,VALVE-26
+a92fdae0-70e9-4c1c-bd39-cd001f9cb7f8,Copper Valve Standard Configuration,Source4,00026
+3b94b5f0-bed6-4cd2-91fb-3e59cb196548,Brass Flat Head Screw M12x2.5x10mm,Customer,ERP-1000027
+3b94b5f0-bed6-4cd2-91fb-3e59cb196548,Brass Flat Head Screw M12x2.5x10mm,Source1,FAS-FLATHEADSCREW-00027
+3b94b5f0-bed6-4cd2-91fb-3e59cb196548,Brass Flat Head Screw M12x2.5x10mm,Source2,92292A909
+3b94b5f0-bed6-4cd2-91fb-3e59cb196548,Brass Flat Head Screw M12x2.5x10mm,Source3,FLATHEADSCREW-27
+3b94b5f0-bed6-4cd2-91fb-3e59cb196548,Brass Flat Head Screw M12x2.5x10mm,Source4,00027
+53e4c346-363b-4855-b494-38928ccdc906,Carbon Steel Lock Nut Standard Configuration,Customer,ERP-1000028
+53e4c346-363b-4855-b494-38928ccdc906,Carbon Steel Lock Nut Standard Configuration,Source1,FAS-LOCKNUT-00028
+53e4c346-363b-4855-b494-38928ccdc906,Carbon Steel Lock Nut Standard Configuration,Source2,99758A506
+53e4c346-363b-4855-b494-38928ccdc906,Carbon Steel Lock Nut Standard Configuration,Source3,LOCKNUT-28
+53e4c346-363b-4855-b494-38928ccdc906,Carbon Steel Lock Nut Standard Configuration,Source4,00028
+6e39873b-d5cc-4f3c-8a10-6a24d38be4e3,Stainless Steel Threaded Rod Standard Configuration,Customer,ERP-1000029
+6e39873b-d5cc-4f3c-8a10-6a24d38be4e3,Stainless Steel Threaded Rod Standard Configuration,Source1,FAS-THREADEDROD-00029
+6e39873b-d5cc-4f3c-8a10-6a24d38be4e3,Stainless Steel Threaded Rod Standard Configuration,Source2,97075A290
+6e39873b-d5cc-4f3c-8a10-6a24d38be4e3,Stainless Steel Threaded Rod Standard Configuration,Source3,THREADEDROD-29
+6e39873b-d5cc-4f3c-8a10-6a24d38be4e3,Stainless Steel Threaded Rod Standard Configuration,Source4,00029
+70e0c654-ea60-4ae4-85db-95b30e5a6110, O-Ring 18mm ID x 3.0mm CS,Customer,ERP-1000030
+70e0c654-ea60-4ae4-85db-95b30e5a6110, O-Ring 18mm ID x 3.0mm CS,Source1,FAS-O-RING-00030
+70e0c654-ea60-4ae4-85db-95b30e5a6110, O-Ring 18mm ID x 3.0mm CS,Source2,92526A489
+70e0c654-ea60-4ae4-85db-95b30e5a6110, O-Ring 18mm ID x 3.0mm CS,Source3,O-RING-30
+70e0c654-ea60-4ae4-85db-95b30e5a6110, O-Ring 18mm ID x 3.0mm CS,Source4,00030
+67af2a5b-dad1-4fe7-bc99-f0daf14419a8,Plastic Hose Standard Configuration,Customer,ERP-1000031
+67af2a5b-dad1-4fe7-bc99-f0daf14419a8,Plastic Hose Standard Configuration,Source2,95896A879
+76fcc5f2-03e8-4c0e-aa07-089119d92c82,Rubber Clip Standard Configuration,Customer,ERP-1000032
+76fcc5f2-03e8-4c0e-aa07-089119d92c82,Rubber Clip Standard Configuration,Source3,CLIP-31
+269f2a7f-9773-4ab0-a01d-ab4dda271e5c,Carbon Steel Lock Nut Standard Configuration,Customer,ERP-1000033
+269f2a7f-9773-4ab0-a01d-ab4dda271e5c,Carbon Steel Lock Nut Standard Configuration,Source2,90430A191
+73998fb1-744a-4079-9bf4-1fc56d1c2724,"Stainless Steel Set Screw 1/4""-18 x 1-1/2""",Customer,ERP-1000034
+73998fb1-744a-4079-9bf4-1fc56d1c2724,"Stainless Steel Set Screw 1/4""-18 x 1-1/2""",Source4,00031
+2934361e-58f3-4f85-9183-c0af218de766,Stainless Steel Set Screw M4x1.25x16mm,Customer,ERP-1000035
+2934361e-58f3-4f85-9183-c0af218de766,Stainless Steel Set Screw M4x1.25x16mm,Source4,00032
+0683a8fb-c804-43d4-a8f4-bf6d62095fbc,Rubber Valve Standard Configuration,Customer,ERP-1000036
+0683a8fb-c804-43d4-a8f4-bf6d62095fbc,Rubber Valve Standard Configuration,Source4,00033
+0683a8fb-c804-43d4-a8f4-bf6d62095fbc,Rubber Valve Standard Configuration,Source2,91387A842
+9111d247-38c0-4277-a379-dda033fa6a8c,Stainless Steel Flat Washer Standard Configuration,Customer,ERP-1000037
+9111d247-38c0-4277-a379-dda033fa6a8c,Stainless Steel Flat Washer Standard Configuration,Source3,FLATWASHER-32
+9111d247-38c0-4277-a379-dda033fa6a8c,Stainless Steel Flat Washer Standard Configuration,Source4,DIN 125-00034
+50c96071-331f-4290-a611-a6de5244a676,Rubber Shaft Seal Standard Configuration,Customer,ERP-1000038
+50c96071-331f-4290-a611-a6de5244a676,Rubber Shaft Seal Standard Configuration,Source1,FAS-SHAFTSEAL-00031
+9776e789-2c1d-4313-9668-98af1e4e7ad0,Rubber Terminal Standard Configuration,Customer,ERP-1000039
+9776e789-2c1d-4313-9668-98af1e4e7ad0,Rubber Terminal Standard Configuration,Source2,92390A164
+ac094280-623b-4ac2-b359-88573f8e32f2,Steel Gasket Standard Configuration,Customer,ERP-1000040
+ac094280-623b-4ac2-b359-88573f8e32f2,Steel Gasket Standard Configuration,Source1,FAS-GASKET-00032
+ac094280-623b-4ac2-b359-88573f8e32f2,Steel Gasket Standard Configuration,Source4,00035
+0d4f3e2a-daf9-4320-8b4b-84368020c010,Stainless Steel Hex Bolt M16x1.75x16mm (DIN 933),Customer,ERP-1000041
+0d4f3e2a-daf9-4320-8b4b-84368020c010,Stainless Steel Hex Bolt M16x1.75x16mm (DIN 933),Source2,94040A838
+0447abfb-cefe-4d66-838a-5aada28f3e95,Carbon Steel Lock Washer Standard Configuration,Customer,ERP-1000042
+0447abfb-cefe-4d66-838a-5aada28f3e95,Carbon Steel Lock Washer Standard Configuration,Source2,95443A961
+8cf06503-b4a1-4eeb-804c-908dce1c8148,Carbon Steel Hex Nut Standard Configuration,Customer,ERP-1000043
+8cf06503-b4a1-4eeb-804c-908dce1c8148,Carbon Steel Hex Nut Standard Configuration,Source4,00036
+8b928ab0-46a2-496f-8592-b92a549bd972,Steel Fitting Standard Configuration,Customer,ERP-1000044
+8b928ab0-46a2-496f-8592-b92a549bd972,Steel Fitting Standard Configuration,Source4,00037
+8b928ab0-46a2-496f-8592-b92a549bd972,Steel Fitting Standard Configuration,Source2,99738A239
+c4ae2f51-7868-48a8-a8b6-9c671767a70e,Stainless Steel Lock Washer Standard Configuration,Customer,ERP-1000045
+c4ae2f51-7868-48a8-a8b6-9c671767a70e,Stainless Steel Lock Washer Standard Configuration,Source2,97848A421
+d9651f57-df2c-4115-affa-7e63b2565061,Rubber Hose Standard Configuration,Customer,ERP-1000046
+d9651f57-df2c-4115-affa-7e63b2565061,Rubber Hose Standard Configuration,Source3,HOSE-33
+d9651f57-df2c-4115-affa-7e63b2565061,Rubber Hose Standard Configuration,Source4,00038
+9fb05ec9-1c3c-4884-8fca-a57a828c69b8,Carbon Steel Set Screw M6x2.0x10mm,Customer,ERP-1000047
+9fb05ec9-1c3c-4884-8fca-a57a828c69b8,Carbon Steel Set Screw M6x2.0x10mm,Source1,FAS-SETSCREW-00033
+9fb05ec9-1c3c-4884-8fca-a57a828c69b8,Carbon Steel Set Screw M6x2.0x10mm,Source3,SETSCREW-34
+4a18e9b8-e936-474c-83b7-6b7ea2df106f,Steel Lubricant Standard Configuration,Customer,ERP-1000048
+4a18e9b8-e936-474c-83b7-6b7ea2df106f,Steel Lubricant Standard Configuration,Source3,LUBRICANT-35
+375f7cc4-0724-4633-851b-e4f773623b85,Carbon Steel Lock Washer Standard Configuration,Customer,ERP-1000049
+375f7cc4-0724-4633-851b-e4f773623b85,Carbon Steel Lock Washer Standard Configuration,Source4,00039
+4e3b93b0-e8ca-48a7-897c-99570dcc7f2e,Stainless Steel Set Screw M12x0.7x10mm,Customer,ERP-1000050
+4e3b93b0-e8ca-48a7-897c-99570dcc7f2e,Stainless Steel Set Screw M12x0.7x10mm,Source2,90440A844
+6771f06b-9612-4a3e-8a3b-e40000575d4a,Bearing Housing Series 6200-Open,Customer,ERP-1000051
+6771f06b-9612-4a3e-8a3b-e40000575d4a,Bearing Housing Series 6200-Open,Source3,BEARINGHOUSING-36
+68d94368-a226-42f5-8578-d072401a3f07,Stainless Steel Flat Head Screw M8x2.0x16mm,Customer,ERP-1000052
+68d94368-a226-42f5-8578-d072401a3f07,Stainless Steel Flat Head Screw M8x2.0x16mm,Source1,FAS-FLATHEADSCREW-00034
+08bf4e73-859c-43d0-9dc1-60ad26df02dd,Rubber Quick-Connect Standard Configuration,Customer,ERP-1000053
+08bf4e73-859c-43d0-9dc1-60ad26df02dd,Rubber Quick-Connect Standard Configuration,Source2,94961A347
+57437bf8-2eeb-48bf-8d2b-6f8733580125,Thrust Bearing Series 6202-ZZ,Customer,ERP-1000054
+57437bf8-2eeb-48bf-8d2b-6f8733580125,Thrust Bearing Series 6202-ZZ,Source3,THRUSTBEARING-37
+57437bf8-2eeb-48bf-8d2b-6f8733580125,Thrust Bearing Series 6202-ZZ,Source2,99539A510
+0b528b1a-3b68-4bcd-b9c9-2eb82a3119bb,Rubber Gasket Standard Configuration,Customer,ERP-1000055
+0b528b1a-3b68-4bcd-b9c9-2eb82a3119bb,Rubber Gasket Standard Configuration,Source4,00040
+b650a7a9-396e-4aa9-87df-640d178fe931,Carbon Steel Hex Nut Standard Configuration,Customer,ERP-1000056
+b650a7a9-396e-4aa9-87df-640d178fe931,Carbon Steel Hex Nut Standard Configuration,Source4,00041
+b650a7a9-396e-4aa9-87df-640d178fe931,Carbon Steel Hex Nut Standard Configuration,Source2,98796A708
+21db6c46-15d6-4d69-af51-8f5a11b3e7af,Rubber Fitting Standard Configuration,Customer,ERP-1000057
+21db6c46-15d6-4d69-af51-8f5a11b3e7af,Rubber Fitting Standard Configuration,Source4,00042
+21db6c46-15d6-4d69-af51-8f5a11b3e7af,Rubber Fitting Standard Configuration,Source1,FAS-FITTING-00035
+ef71a71d-01bb-44c1-939a-536a5ac12f19,Bearing Housing Series 6204-ZZ,Customer,ERP-1000058
+ef71a71d-01bb-44c1-939a-536a5ac12f19,Bearing Housing Series 6204-ZZ,Source4,00043
+73b2696e-f560-4120-99f0-2e1348db8ecd,Roller Bearing Series 6201-2RS,Customer,ERP-1000059
+73b2696e-f560-4120-99f0-2e1348db8ecd,Roller Bearing Series 6201-2RS,Source3,ROLLERBEARING-38
+73b2696e-f560-4120-99f0-2e1348db8ecd,Roller Bearing Series 6201-2RS,Source1,FAS-ROLLERBEARING-00036
+398e6042-71d7-49c8-8ebe-7db1c8f89ead,Brass Flat Washer Standard Configuration,Customer,ERP-1000060
+398e6042-71d7-49c8-8ebe-7db1c8f89ead,Brass Flat Washer Standard Configuration,Source2,96129A500
+1224b796-67fd-431b-89f5-0ad01d8a5827,Bearing Housing Series 6205-ZZ,Customer,ERP-1000061
+1224b796-67fd-431b-89f5-0ad01d8a5827,Bearing Housing Series 6205-ZZ,Source3,BEARINGHOUSING-39
+95165182-a5e9-4b2d-902f-767f7490d378,Plastic Hose Standard Configuration,Customer,ERP-1000062
+95165182-a5e9-4b2d-902f-767f7490d378,Plastic Hose Standard Configuration,Source2,95707A419
+ba5d9fa6-af1a-45c2-b2e4-ab99182e3a0f,Rubber Quick-Connect Standard Configuration,Customer,ERP-1000063
+ba5d9fa6-af1a-45c2-b2e4-ab99182e3a0f,Rubber Quick-Connect Standard Configuration,Source4,00044
+ba5d9fa6-af1a-45c2-b2e4-ab99182e3a0f,Rubber Quick-Connect Standard Configuration,Source2,97801A199
+7ba79888-cde5-4129-b052-36ff4842881b,Carbon Steel Set Screw M10x2.5x30mm,Customer,ERP-1000064
+7ba79888-cde5-4129-b052-36ff4842881b,Carbon Steel Set Screw M10x2.5x30mm,Source4,00045
+9b93e0bd-2992-4990-83c4-bbeff5a4f0fe,Rubber Fitting Standard Configuration,Customer,ERP-1000065
+9b93e0bd-2992-4990-83c4-bbeff5a4f0fe,Rubber Fitting Standard Configuration,Source1,FAS-FITTING-00037
+9b93e0bd-2992-4990-83c4-bbeff5a4f0fe,Rubber Fitting Standard Configuration,Source2,90370A969
+f30991ba-1a85-4c95-9354-0771e6739005,Rubber Connector Standard Configuration,Customer,ERP-1000066
+f30991ba-1a85-4c95-9354-0771e6739005,Rubber Connector Standard Configuration,Source4,00046
+f30991ba-1a85-4c95-9354-0771e6739005,Rubber Connector Standard Configuration,Source2,99042A263
+37182e36-b15b-47eb-8495-09aebe076631,Plastic Relay Standard Configuration,Customer,ERP-1000067
+37182e36-b15b-47eb-8495-09aebe076631,Plastic Relay Standard Configuration,Source1,FAS-RELAY-00038
+37182e36-b15b-47eb-8495-09aebe076631,Plastic Relay Standard Configuration,Source4,00047
+5d55c9e4-e1b7-4917-8415-c41711fc9dc9,Copper Shaft Seal Standard Configuration,Customer,ERP-1000068
+5d55c9e4-e1b7-4917-8415-c41711fc9dc9,Copper Shaft Seal Standard Configuration,Source4,00048
+5d55c9e4-e1b7-4917-8415-c41711fc9dc9,Copper Shaft Seal Standard Configuration,Source3,SHAFTSEAL-40
+2201cada-f359-4da8-ad5c-6c88626f1cd8,Brass Flat Head Screw M12x1.0x50mm,Customer,ERP-1000069
+2201cada-f359-4da8-ad5c-6c88626f1cd8,Brass Flat Head Screw M12x1.0x50mm,Source3,FLATHEADSCREW-41
+2201cada-f359-4da8-ad5c-6c88626f1cd8,Brass Flat Head Screw M12x1.0x50mm,Source4,00049
+191e18ea-551a-4947-87cd-99fd0208ffc1,Carbon Steel Hex Nut Standard Configuration,Customer,ERP-1000070
+191e18ea-551a-4947-87cd-99fd0208ffc1,Carbon Steel Hex Nut Standard Configuration,Source1,FAS-HEXNUT-00039
+191e18ea-551a-4947-87cd-99fd0208ffc1,Carbon Steel Hex Nut Standard Configuration,Source2,99459A204
+a601456b-5616-4d14-95d7-716391fdd2dc,Rubber Hose Standard Configuration,Customer,ERP-1000071
+a601456b-5616-4d14-95d7-716391fdd2dc,Rubber Hose Standard Configuration,Source3,HOSE-42
+8d071275-7c2d-43f3-837a-0b303b1419cc,Carbon Steel Lock Washer Standard Configuration,Customer,ERP-1000072
+8d071275-7c2d-43f3-837a-0b303b1419cc,Carbon Steel Lock Washer Standard Configuration,Source3,LOCKWASHER-43
+8d071275-7c2d-43f3-837a-0b303b1419cc,Carbon Steel Lock Washer Standard Configuration,Source1,FAS-LOCKWASHER-00040
+cb440ebf-2b00-442e-9783-60bed0704ff8,Rubber Hose Standard Configuration,Customer,ERP-1000073
+cb440ebf-2b00-442e-9783-60bed0704ff8,Rubber Hose Standard Configuration,Source1,FAS-HOSE-00041
+cb440ebf-2b00-442e-9783-60bed0704ff8,Rubber Hose Standard Configuration,Source3,HOSE-44
+186eb391-54ea-4a05-96e9-aebb8482b1c1,Rubber Fitting Standard Configuration,Customer,ERP-1000074
+186eb391-54ea-4a05-96e9-aebb8482b1c1,Rubber Fitting Standard Configuration,Source4,00050
+186eb391-54ea-4a05-96e9-aebb8482b1c1,Rubber Fitting Standard Configuration,Source1,FAS-FITTING-00042
+393615e7-5d01-473a-8204-f8240d0f99b5,Rubber Fuse Standard Configuration,Customer,ERP-1000075
+393615e7-5d01-473a-8204-f8240d0f99b5,Rubber Fuse Standard Configuration,Source3,FUSE-45
+a7f9f12a-1b2d-418d-a44a-1473c28d0ef0,Carbon Steel Socket Head Cap Screw M20x1.25x25mm (DIN 912),Customer,ERP-1000076
+a7f9f12a-1b2d-418d-a44a-1473c28d0ef0,Carbon Steel Socket Head Cap Screw M20x1.25x25mm (DIN 912),Source4,DIN 912-00051
+a7f9f12a-1b2d-418d-a44a-1473c28d0ef0,Carbon Steel Socket Head Cap Screw M20x1.25x25mm (DIN 912),Source1,FAS-SHCS-00043
+8704aa11-1654-4a63-8541-794ec62e9f2c,Stainless Steel Set Screw M8x2.0x40mm,Customer,ERP-1000077
+8704aa11-1654-4a63-8541-794ec62e9f2c,Stainless Steel Set Screw M8x2.0x40mm,Source3,SETSCREW-46
+e8e6a63a-3a3d-4393-aa71-c05dbab3dbe2,"Carbon Steel Socket Head Cap Screw 5/8""-13 x 2"" (DIN 912)",Customer,ERP-1000078
+e8e6a63a-3a3d-4393-aa71-c05dbab3dbe2,"Carbon Steel Socket Head Cap Screw 5/8""-13 x 2"" (DIN 912)",Source3,SHCS-47
+40ef68ef-b930-4e06-a406-a3a75b8e562a,Plastic Fitting Standard Configuration,Customer,ERP-1000079
+40ef68ef-b930-4e06-a406-a3a75b8e562a,Plastic Fitting Standard Configuration,Source4,00052
+40ef68ef-b930-4e06-a406-a3a75b8e562a,Plastic Fitting Standard Configuration,Source1,FAS-FITTING-00044
+798e85c6-dac5-4929-b2c7-8e73c2d1ba1c,Needle Bearing Series 6204-2RS,Customer,ERP-1000080
+798e85c6-dac5-4929-b2c7-8e73c2d1ba1c,Needle Bearing Series 6204-2RS,Source2,99091A270
+19124834-5a37-434b-9465-c3f08d2e8b05,Carbon Steel Lock Nut Standard Configuration,Customer,ERP-1000081
+19124834-5a37-434b-9465-c3f08d2e8b05,Carbon Steel Lock Nut Standard Configuration,Source3,LOCKNUT-48
+9bbf4c01-e2e7-43fc-82ac-9e77b5928bff,Stainless Steel Threaded Rod Standard Configuration,Customer,ERP-1000082
+9bbf4c01-e2e7-43fc-82ac-9e77b5928bff,Stainless Steel Threaded Rod Standard Configuration,Source4,00053
+74db677e-c2e4-4390-ad90-0ae36ea519e2,Stainless Steel Flange Nut Standard Configuration,Customer,ERP-1000083
+74db677e-c2e4-4390-ad90-0ae36ea519e2,Stainless Steel Flange Nut Standard Configuration,Source2,96290A675
+469ec446-376f-4f44-b04d-3a21c7c6c054,"Carbon Steel Socket Head Cap Screw 1/4""-16 x 1-1/2"" (DIN 912)",Customer,ERP-1000084
+469ec446-376f-4f44-b04d-3a21c7c6c054,"Carbon Steel Socket Head Cap Screw 1/4""-16 x 1-1/2"" (DIN 912)",Source4,DIN 912-00054
+38f7d998-a0fc-4814-8237-3e4d09905bfe,Steel Gasket Standard Configuration,Customer,ERP-1000085
+38f7d998-a0fc-4814-8237-3e4d09905bfe,Steel Gasket Standard Configuration,Source2,91354A678
+d3a1acd5-fe46-4f48-b623-df5c283bbab8,Roller Bearing Series 6205-Open,Customer,ERP-1000086
+d3a1acd5-fe46-4f48-b623-df5c283bbab8,Roller Bearing Series 6205-Open,Source3,ROLLERBEARING-49
+d3a1acd5-fe46-4f48-b623-df5c283bbab8,Roller Bearing Series 6205-Open,Source4,00055
+e718b51e-3b6b-44a1-9972-e3772cf92953,Copper Quick-Connect Standard Configuration,Customer,ERP-1000087
+e718b51e-3b6b-44a1-9972-e3772cf92953,Copper Quick-Connect Standard Configuration,Source4,00056
+e718b51e-3b6b-44a1-9972-e3772cf92953,Copper Quick-Connect Standard Configuration,Source2,99383A216
+191565cb-09ba-433a-900a-432008806e69,"Carbon Steel Hex Bolt 5/16""-13 x 1-1/2"" (DIN 931)",Customer,ERP-1000088
+191565cb-09ba-433a-900a-432008806e69,"Carbon Steel Hex Bolt 5/16""-13 x 1-1/2"" (DIN 931)",Source2,90681A878
+191565cb-09ba-433a-900a-432008806e69,"Carbon Steel Hex Bolt 5/16""-13 x 1-1/2"" (DIN 931)",Source4,DIN 931-00057
+f0b21c6a-7f38-4c29-ba24-88e06f72a77f,Stainless Steel Flat Washer Standard Configuration,Customer,ERP-1000089
+f0b21c6a-7f38-4c29-ba24-88e06f72a77f,Stainless Steel Flat Washer Standard Configuration,Source4,DIN 125-00058
+bcd6c769-6848-41d2-926d-764eb80e8871,Rubber Relay Standard Configuration,Customer,ERP-1000090
+bcd6c769-6848-41d2-926d-764eb80e8871,Rubber Relay Standard Configuration,Source2,97193A986
+b75339aa-320a-4354-9a05-ea3273811eac,Carbon Steel Threaded Rod Standard Configuration,Customer,ERP-1000091
+b75339aa-320a-4354-9a05-ea3273811eac,Carbon Steel Threaded Rod Standard Configuration,Source3,THREADEDROD-50
+de8f0e03-536f-42f2-9481-a5053729b608,Plastic Terminal Standard Configuration,Customer,ERP-1000092
+de8f0e03-536f-42f2-9481-a5053729b608,Plastic Terminal Standard Configuration,Source3,TERMINAL-51
+de8f0e03-536f-42f2-9481-a5053729b608,Plastic Terminal Standard Configuration,Source4,00059
+d1083921-e722-40c3-802c-17d3bd1df91e,Rubber Terminal Standard Configuration,Customer,ERP-1000093
+d1083921-e722-40c3-802c-17d3bd1df91e,Rubber Terminal Standard Configuration,Source1,FAS-TERMINAL-00045
+d1083921-e722-40c3-802c-17d3bd1df91e,Rubber Terminal Standard Configuration,Source2,98720A387
+599edfa4-acee-43b0-a610-3e6a536c5183,Brass Flat Washer Standard Configuration,Customer,ERP-1000094
+599edfa4-acee-43b0-a610-3e6a536c5183,Brass Flat Washer Standard Configuration,Source4,DIN 125-00060
+599edfa4-acee-43b0-a610-3e6a536c5183,Brass Flat Washer Standard Configuration,Source1,FAS-FLATWASHER-00046
+99fd0595-42e7-4494-bfae-80d1a0a5feb9,Stainless Steel Threaded Rod Standard Configuration,Customer,ERP-1000095
+99fd0595-42e7-4494-bfae-80d1a0a5feb9,Stainless Steel Threaded Rod Standard Configuration,Source4,00061
+99fd0595-42e7-4494-bfae-80d1a0a5feb9,Stainless Steel Threaded Rod Standard Configuration,Source2,94543A987
+5a6170e1-ed9b-46ba-b807-680f024ed88c,Stainless Steel Set Screw M5x2.0x25mm,Customer,ERP-1000096
+5a6170e1-ed9b-46ba-b807-680f024ed88c,Stainless Steel Set Screw M5x2.0x25mm,Source4,00062
+5a6170e1-ed9b-46ba-b807-680f024ed88c,Stainless Steel Set Screw M5x2.0x25mm,Source2,95277A948
+615584ae-8589-4e8b-812d-d1dcab77317a,Carbon Steel Lock Washer Standard Configuration,Customer,ERP-1000097
+615584ae-8589-4e8b-812d-d1dcab77317a,Carbon Steel Lock Washer Standard Configuration,Source2,92329A691
+615584ae-8589-4e8b-812d-d1dcab77317a,Carbon Steel Lock Washer Standard Configuration,Source3,LOCKWASHER-52
+b4c73006-5f8b-468d-ada7-f2eb9e557c56,Ball Bearing Series 6203-Open,Customer,ERP-1000098
+b4c73006-5f8b-468d-ada7-f2eb9e557c56,Ball Bearing Series 6203-Open,Source4,00063
+c57af503-e6de-49b9-acec-63dc387cf2e4,Bearing Housing Series 6203-Open,Customer,ERP-1000099
+c57af503-e6de-49b9-acec-63dc387cf2e4,Bearing Housing Series 6203-Open,Source4,00064
+d3db3fa7-9aad-40b4-9a3e-e89b2716597e,Steel Switch Standard Configuration,Customer,ERP-1000100
+d3db3fa7-9aad-40b4-9a3e-e89b2716597e,Steel Switch Standard Configuration,Source3,SWITCH-53
+74ac559e-8334-49d0-9b96-f729853a50d4,Steel Cylinder Standard Configuration,Customer,ERP-1000101
+74ac559e-8334-49d0-9b96-f729853a50d4,Steel Cylinder Standard Configuration,Source4,00065
+74ac559e-8334-49d0-9b96-f729853a50d4,Steel Cylinder Standard Configuration,Source2,97511A750
+c43e0369-e5ec-4489-ac6a-eb4b5bfabbe6,Plastic Relay Standard Configuration,Customer,ERP-1000102
+c43e0369-e5ec-4489-ac6a-eb4b5bfabbe6,Plastic Relay Standard Configuration,Source4,00066
+59f64cc5-eddc-42f9-86e5-09ab2ea8095d,Needle Bearing Series 6205-2RS,Customer,ERP-1000103
+59f64cc5-eddc-42f9-86e5-09ab2ea8095d,Needle Bearing Series 6205-2RS,Source2,93470A606
+decab648-628a-4855-8e4c-defe9801affa,Carbon Steel Lock Nut Standard Configuration,Customer,ERP-1000104
+decab648-628a-4855-8e4c-defe9801affa,Carbon Steel Lock Nut Standard Configuration,Source1,FAS-LOCKNUT-00047
+decab648-628a-4855-8e4c-defe9801affa,Carbon Steel Lock Nut Standard Configuration,Source2,92139A679
+3ebb2adb-efa3-49d4-a44c-77bfa09d6b99,Carbon Steel Set Screw M8x0.8x50mm,Customer,ERP-1000105
+3ebb2adb-efa3-49d4-a44c-77bfa09d6b99,Carbon Steel Set Screw M8x0.8x50mm,Source4,00067
+1d1c34ea-5d33-41b4-80a3-50647f368e42,Carbon Steel Lock Washer Standard Configuration,Customer,ERP-1000106
+1d1c34ea-5d33-41b4-80a3-50647f368e42,Carbon Steel Lock Washer Standard Configuration,Source2,90266A227
+8705c7c0-98df-4b1e-9e68-e13fcbc59017,Carbon Steel Flange Nut Standard Configuration,Customer,ERP-1000107
+8705c7c0-98df-4b1e-9e68-e13fcbc59017,Carbon Steel Flange Nut Standard Configuration,Source2,97009A307
+8705c7c0-98df-4b1e-9e68-e13fcbc59017,Carbon Steel Flange Nut Standard Configuration,Source1,FAS-FLANGENUT-00048
+cd9b8aeb-0ae2-490b-aa58-303250315417,Steel Quick-Connect Standard Configuration,Customer,ERP-1000108
+cd9b8aeb-0ae2-490b-aa58-303250315417,Steel Quick-Connect Standard Configuration,Source3,QUICK-CONNECT-54
+cd9b8aeb-0ae2-490b-aa58-303250315417,Steel Quick-Connect Standard Configuration,Source2,96092A780
+ad810d16-75ed-4573-84dd-07a5abaf55b3,Carbon Steel Lock Nut Standard Configuration,Customer,ERP-1000109
+ad810d16-75ed-4573-84dd-07a5abaf55b3,Carbon Steel Lock Nut Standard Configuration,Source1,FAS-LOCKNUT-00049
+ad810d16-75ed-4573-84dd-07a5abaf55b3,Carbon Steel Lock Nut Standard Configuration,Source2,97032A771
+39ce990c-8cba-4beb-82a3-c6de9e186854,Copper Cylinder Standard Configuration,Customer,ERP-1000110
+39ce990c-8cba-4beb-82a3-c6de9e186854,Copper Cylinder Standard Configuration,Source3,CYLINDER-55
+39ce990c-8cba-4beb-82a3-c6de9e186854,Copper Cylinder Standard Configuration,Source4,00068
+50cb4bf5-4394-475e-b559-ff40ab9e86b0,Carbon Steel Hex Nut Standard Configuration,Customer,ERP-1000111
+50cb4bf5-4394-475e-b559-ff40ab9e86b0,Carbon Steel Hex Nut Standard Configuration,Source1,FAS-HEXNUT-00050
+50cb4bf5-4394-475e-b559-ff40ab9e86b0,Carbon Steel Hex Nut Standard Configuration,Source3,HEXNUT-56
+5fc9cd49-028d-4134-80c3-5204e49a3c0d,Carbon Steel Lock Nut Standard Configuration,Customer,ERP-1000112
+5fc9cd49-028d-4134-80c3-5204e49a3c0d,Carbon Steel Lock Nut Standard Configuration,Source2,97826A172
+0a3ab1cc-16e5-4452-8601-6c0edd1e030c,Copper Terminal Standard Configuration,Customer,ERP-1000113
+0a3ab1cc-16e5-4452-8601-6c0edd1e030c,Copper Terminal Standard Configuration,Source2,95133A476
+0a3ab1cc-16e5-4452-8601-6c0edd1e030c,Copper Terminal Standard Configuration,Source3,TERMINAL-57
+54fc33e7-ac31-4ba6-8f22-98345ffe80da,Copper Quick-Connect Standard Configuration,Customer,ERP-1000114
+54fc33e7-ac31-4ba6-8f22-98345ffe80da,Copper Quick-Connect Standard Configuration,Source4,00069
+816f5ca7-afa2-449b-a0a4-aa6d1dbda491,Stainless Steel Flange Nut Standard Configuration,Customer,ERP-1000115
+816f5ca7-afa2-449b-a0a4-aa6d1dbda491,Stainless Steel Flange Nut Standard Configuration,Source1,FAS-FLANGENUT-00051
+a626d7c8-8f38-43cd-a086-f0e538d29b62,Carbon Steel Hex Nut Standard Configuration,Customer,ERP-1000116
+a626d7c8-8f38-43cd-a086-f0e538d29b62,Carbon Steel Hex Nut Standard Configuration,Source2,95753A839
+a626d7c8-8f38-43cd-a086-f0e538d29b62,Carbon Steel Hex Nut Standard Configuration,Source3,HEXNUT-58
+c519b368-4e97-4cd8-a1fb-eec4dfe91be9,Carbon Steel Lock Nut Standard Configuration,Customer,ERP-1000117
+c519b368-4e97-4cd8-a1fb-eec4dfe91be9,Carbon Steel Lock Nut Standard Configuration,Source1,FAS-LOCKNUT-00052
+c519b368-4e97-4cd8-a1fb-eec4dfe91be9,Carbon Steel Lock Nut Standard Configuration,Source4,00070
+6aa1dd4a-a0ed-4892-ad84-a950fb062c5d,Carbon Steel Flange Nut Standard Configuration,Customer,ERP-1000118
+6aa1dd4a-a0ed-4892-ad84-a950fb062c5d,Carbon Steel Flange Nut Standard Configuration,Source1,FAS-FLANGENUT-00053
+6aa1dd4a-a0ed-4892-ad84-a950fb062c5d,Carbon Steel Flange Nut Standard Configuration,Source2,96291A459
+9c1d5c38-75af-40c7-ac50-11f6694f9dd0,Stainless Steel Lock Washer Standard Configuration,Customer,ERP-1000119
+9c1d5c38-75af-40c7-ac50-11f6694f9dd0,Stainless Steel Lock Washer Standard Configuration,Source3,LOCKWASHER-59
+9c1d5c38-75af-40c7-ac50-11f6694f9dd0,Stainless Steel Lock Washer Standard Configuration,Source2,99846A714
+f8573378-0c59-465c-8d48-c390523d2f76,Stainless Steel Socket Head Cap Screw M8x1.25x10mm (DIN 912),Customer,ERP-1000120
+f8573378-0c59-465c-8d48-c390523d2f76,Stainless Steel Socket Head Cap Screw M8x1.25x10mm (DIN 912),Source2,94942A310
+b172ccb4-0f80-4ba0-bc52-318ad2df6bdf,Stainless Steel Flat Washer Standard Configuration,Customer,ERP-1000121
+b172ccb4-0f80-4ba0-bc52-318ad2df6bdf,Stainless Steel Flat Washer Standard Configuration,Source2,96322A215
+b172ccb4-0f80-4ba0-bc52-318ad2df6bdf,Stainless Steel Flat Washer Standard Configuration,Source1,FAS-FLATWASHER-00054
+a1ea5d3c-fa4a-4b20-837d-f7c979fbd1a3,Carbon Steel Hex Nut Standard Configuration,Customer,ERP-1000122
+a1ea5d3c-fa4a-4b20-837d-f7c979fbd1a3,Carbon Steel Hex Nut Standard Configuration,Source1,FAS-HEXNUT-00055
+8fbff23d-f7d1-4187-9aa8-e51788a1fa91,Ball Bearing Series 6200-Open,Customer,ERP-1000123
+8fbff23d-f7d1-4187-9aa8-e51788a1fa91,Ball Bearing Series 6200-Open,Source2,99312A530
+8fbff23d-f7d1-4187-9aa8-e51788a1fa91,Ball Bearing Series 6200-Open,Source4,00071
+718b3143-0563-47d6-926f-509f05bec436,Brass Hex Nut Standard Configuration,Customer,ERP-1000124
+718b3143-0563-47d6-926f-509f05bec436,Brass Hex Nut Standard Configuration,Source2,99623A169
+32f49612-cfa8-4cde-94ef-a4733d868c8f,Stainless Steel Set Screw M5x1.5x16mm,Customer,ERP-1000125
+32f49612-cfa8-4cde-94ef-a4733d868c8f,Stainless Steel Set Screw M5x1.5x16mm,Source3,SETSCREW-60
+32f49612-cfa8-4cde-94ef-a4733d868c8f,Stainless Steel Set Screw M5x1.5x16mm,Source2,96806A533
+e777aa24-b935-4038-a295-c3af5eb7d1fa,Rubber Switch Standard Configuration,Customer,ERP-1000126
+e777aa24-b935-4038-a295-c3af5eb7d1fa,Rubber Switch Standard Configuration,Source1,FAS-SWITCH-00056
+e777aa24-b935-4038-a295-c3af5eb7d1fa,Rubber Switch Standard Configuration,Source2,95077A180
+fd17071e-5611-420d-bcd9-862041290845,Needle Bearing Series 6200-2RS,Customer,ERP-1000127
+fd17071e-5611-420d-bcd9-862041290845,Needle Bearing Series 6200-2RS,Source2,96401A700
+fd17071e-5611-420d-bcd9-862041290845,Needle Bearing Series 6200-2RS,Source1,FAS-NEEDLEBEARING-00057
+06741ac0-05aa-4336-8503-8b2167e41c15,Steel Connector Standard Configuration,Customer,ERP-1000128
+06741ac0-05aa-4336-8503-8b2167e41c15,Steel Connector Standard Configuration,Source3,CONNECTOR-61
+06741ac0-05aa-4336-8503-8b2167e41c15,Steel Connector Standard Configuration,Source4,00072
+afade733-b1b6-4794-8e52-3a4317881a93,Thrust Bearing Series 6201-Open,Customer,ERP-1000129
+afade733-b1b6-4794-8e52-3a4317881a93,Thrust Bearing Series 6201-Open,Source4,00073
+afade733-b1b6-4794-8e52-3a4317881a93,Thrust Bearing Series 6201-Open,Source3,THRUSTBEARING-62
+c9a6e2dc-728c-4543-9655-330bca5cf9cd,Needle Bearing Series 6203-2RS,Customer,ERP-1000130
+c9a6e2dc-728c-4543-9655-330bca5cf9cd,Needle Bearing Series 6203-2RS,Source4,00074
+c9a6e2dc-728c-4543-9655-330bca5cf9cd,Needle Bearing Series 6203-2RS,Source2,91956A112
+02172fd1-f222-462b-83bc-09d2213049e3,Carbon Steel Flange Nut Standard Configuration,Customer,ERP-1000131
+1861e16b-7226-43e0-a78b-0aa9bce5b3ed,Carbon Steel Threaded Rod Standard Configuration,Customer,ERP-1000132
+ffae2ed0-a673-430a-8a84-bb1ddb2c886b,Rubber Lubricant Standard Configuration,Customer,ERP-1000133
+da609146-96f7-4392-88cb-d377ece5f4e1,Stainless Steel Threaded Rod Standard Configuration,Customer,ERP-1000134
+8699f458-9f9a-4aa6-8d89-be22c5da1aae,Rubber Wire Standard Configuration,Customer,ERP-1000135
+fd1a298e-de7d-4ecf-9c5c-eae23bfcd0c5,"Brass Set Screw 5/16""-28 x 2""",Customer,ERP-1000136
+0501c669-7630-4c23-9446-81fce304c7b7,Needle Bearing Series 6204-2RS,Customer,ERP-1000137
+7c2d1585-9f31-45ba-8750-95fdf7b17a4f,Nylon O-Ring 36mm ID x 2.0mm CS,Customer,ERP-1000138
+f55c98d6-76e1-492b-9d0b-d70473ad09bc,Carbon Steel Lock Washer Standard Configuration,Customer,ERP-1000139
+f0a639bc-4736-43ed-8c2b-bac5395a25e9,Steel Wire Standard Configuration,Customer,ERP-1000140
+9abd6498-9c0a-438e-a0a2-577e9bb69d75,Rubber Gasket Standard Configuration,Customer,ERP-1000141
+739b37fb-b58e-4c50-9b7a-a9bccd89ee2f,Rubber Adhesive Standard Configuration,Customer,ERP-1000142
+1fa089e2-cc39-4557-8ab7-3d2e9b15616d,Plastic Clip Standard Configuration,Customer,ERP-1000143
+cce23d92-a5cd-4be5-9d7f-a6c6f38a5e75,Plastic Connector Standard Configuration,Customer,ERP-1000144
+9c9891a4-804f-42f5-aa6c-005430bd16a1,Brass Hex Nut Standard Configuration,Customer,ERP-1000145
+2b09137d-b754-4787-b8ff-a7af2cf394cf,Rubber Wire Standard Configuration,Customer,ERP-1000146
+8d30f705-de62-4433-afd6-12d7f8d18dd1,Brass Threaded Rod Standard Configuration,Customer,ERP-1000147
+57dcded7-c409-4062-a36a-cb071aeaf5be,Rubber Hose Standard Configuration,Customer,ERP-1000148
+92d23ed8-73f2-4f3d-884e-77cc925ed8eb,Steel Valve Standard Configuration,Customer,ERP-1000149
+7211e3bb-288d-48c6-8738-4af3361da5ea,"Carbon Steel Hex Bolt 1/4""-28 x 3/4"" (DIN 933)",Customer,ERP-1000150
+a67be6e9-2996-4381-9295-1d710eba7d47,Brass Lock Nut Standard Configuration,Customer,ERP-1000151
+5a51f9f2-c712-4cda-be79-f266fecb1a06,Roller Bearing Series 6203-Open,Customer,ERP-1000152
+a189a4bf-df22-4c3d-87b6-eb46fc2e4f7e,Stainless Steel Hex Nut Standard Configuration,Customer,ERP-1000153
+370c712a-6ce5-4f6b-9928-34d5373932f2,Stainless Steel Flat Washer Standard Configuration,Customer,ERP-1000154
+b1674e3c-7b3e-4b0d-9b13-72f6c6545cdc,Brass Lock Nut Standard Configuration,Customer,ERP-1000155
+4a35119d-fd21-497d-a088-141296c19246,Stainless Steel Hex Nut Standard Configuration,Customer,ERP-1000156
+8db3db95-75a4-43ba-b891-dd496b2afdb7,Rubber Cylinder Standard Configuration,Customer,ERP-1000157
+6f5da5ba-2d6d-42f4-8e4a-1b41cf58d891,Bearing Housing Series 6202-ZZ,Customer,ERP-1000158
+30775f12-c90e-49e1-8c5d-43621d8ff6e3,Rubber Clip Standard Configuration,Customer,ERP-1000159
+2daa7085-748b-4200-9fd6-650e147a0e84,Rubber Switch Standard Configuration,Customer,ERP-1000160
+bf975ad0-4f2e-438d-8da7-2a40c3cb999b,Plastic Terminal Standard Configuration,Customer,ERP-1000161
+67bd4f4c-9176-4f51-99f7-121a2b557cd0,Rubber Switch Standard Configuration,Customer,ERP-1000162
+594d22ca-9155-495d-b00a-9a39b2c92975,Rubber Hose Standard Configuration,Customer,ERP-1000163
+b17e5c6b-39e7-4296-a9da-7a07ed0461fc,Rubber Connector Standard Configuration,Customer,ERP-1000164
+3d26cc10-8555-45f5-8252-4eb7c21d56df,"Brass Set Screw 1/4""-18 x 1""",Customer,ERP-1000165
+bfc5357f-2e2f-4ba8-8ecb-45d4fcc7da94,Brass Flange Nut Standard Configuration,Customer,ERP-1000166
+ca9a1f68-04b8-4812-b128-3c1788d8c900,Steel Shaft Seal Standard Configuration,Customer,ERP-1000167
+ed61abc5-57e0-4cf4-82ad-e408f2218ea7,Ball Bearing Series 6204-ZZ,Customer,ERP-1000168
+e376ec32-3a93-46fc-bd6c-086286584cb9,Steel Gasket Standard Configuration,Customer,ERP-1000169
+7bd84315-2567-45ba-ad94-3bf7b20ca1f5,Carbon Steel Flat Washer Standard Configuration,Customer,ERP-1000170
+19b669a5-080b-4098-abe3-26aa9e1f8e9d,Steel Shaft Seal Standard Configuration,Customer,ERP-1000171
+b47ab5de-c40f-4179-a05c-0e6352a12fa7,Copper Valve Standard Configuration,Customer,ERP-1000172
+37542edc-9201-48fd-a308-efa406c3843e,Brass Hex Nut Standard Configuration,Customer,ERP-1000173
+582e20df-5da9-4d43-a66b-1485335c9498,Brass Threaded Rod Standard Configuration,Customer,ERP-1000174
+14a8c566-c313-4f85-9c02-0d46da682cdc,Carbon Steel Threaded Rod Standard Configuration,Customer,ERP-1000175
+7167125c-97d4-4824-9432-1401c31af1bd,Copper Connector Standard Configuration,Customer,ERP-1000176
+68b84aff-8cba-4757-b1de-afbba59a86be,"Carbon Steel Set Screw 1/2""-13 x 1-1/4""",Customer,ERP-1000177
+5e8d1369-3a40-42b6-8f0e-cde7a8ffc2b4,Steel Gasket Standard Configuration,Customer,ERP-1000178
+669a9d52-7c55-4dfe-a8a1-d225487b4b82,Rubber Gasket Standard Configuration,Customer,ERP-1000179
+2a01fd24-98fd-47a5-a694-f8ad004beeb0,"Stainless Steel Socket Head Cap Screw 1/4""-24 x 3/4"" (DIN 912)",Customer,ERP-1000180
+9513a633-017b-4c48-90d6-4b7fb5d8a139,Bearing Housing Series 6205-ZZ,Source1,FAS-BEARINGHOUSING-00058
+de68a3c2-5138-4a9b-9bf4-ceab6cbd58b5,Stainless Steel Flange Nut Standard Configuration,Source4,00075
+3343b08c-2350-4582-bd4c-a42475a6f28e,Needle Bearing Series 6201-Open,Source4,00076
+3343b08c-2350-4582-bd4c-a42475a6f28e,Needle Bearing Series 6201-Open,Source2,96819A837
+5e98ac0f-c783-4a34-905b-bc14d9461b96,"Carbon Steel Socket Head Cap Screw 1/4""-16 x 1-1/2"" (DIN 912)",Source3,SHCS-63
+7c4f3e7e-9224-4646-a38a-71c0c2e4b979,Copper Switch Standard Configuration,Source2,92938A328
+7c4f3e7e-9224-4646-a38a-71c0c2e4b979,Copper Switch Standard Configuration,Source4,00077
+7c4f3e7e-9224-4646-a38a-71c0c2e4b979,Copper Switch Standard Configuration,Source3,SWITCH-64
+dd64144b-b742-4637-b367-f73a5ea6a521,Needle Bearing Series 6202-Open,Source3,NEEDLEBEARING-65
+dd64144b-b742-4637-b367-f73a5ea6a521,Needle Bearing Series 6202-Open,Source2,96044A305
+dd64144b-b742-4637-b367-f73a5ea6a521,Needle Bearing Series 6202-Open,Source1,FAS-NEEDLEBEARING-00059
+7b8b4a92-d076-4032-bf8e-fd8531846a73,Plastic Wire Standard Configuration,Source1,FAS-WIRE-00060
+7b8b4a92-d076-4032-bf8e-fd8531846a73,Plastic Wire Standard Configuration,Source2,99694A605
+e111ca5b-0a0c-4a32-a340-635303255bfe,"Brass Flat Head Screw 1/4""-18 x 2""",Source4,00078
+4c7f4489-4a90-42c0-a486-7ecaf4ae8689,Ball Bearing Series 6203-2RS,Source3,BALLBEARING-66
+cccfd5c5-1c4e-4aa5-8e03-836aba88ec81,"Carbon Steel Flat Head Screw 3/8""-18 x 1-1/2""",Source2,98872A454
+cccfd5c5-1c4e-4aa5-8e03-836aba88ec81,"Carbon Steel Flat Head Screw 3/8""-18 x 1-1/2""",Source1,FAS-FLATHEADSCREW-00061
+2365fe53-4407-4e3a-b6af-b7d89a80f4bf,Stainless Steel Hex Bolt M4x0.8x30mm (DIN 931),Source1,FAS-HB-00062
+37c8660e-3c65-4639-b659-1ff14c0a794b,Copper Shaft Seal Standard Configuration,Source4,00079
+37c8660e-3c65-4639-b659-1ff14c0a794b,Copper Shaft Seal Standard Configuration,Source3,SHAFTSEAL-67
+0576cf20-3706-48b5-a842-331ef3307e53,Brass Set Screw M12x2.0x16mm,Source2,93361A642
+0576cf20-3706-48b5-a842-331ef3307e53,Brass Set Screw M12x2.0x16mm,Source1,FAS-SETSCREW-00063
+6264c6ba-eb8f-4c97-84c6-646d6c7c1031,Carbon Steel Threaded Rod Standard Configuration,Source3,THREADEDROD-68
+6264c6ba-eb8f-4c97-84c6-646d6c7c1031,Carbon Steel Threaded Rod Standard Configuration,Source1,FAS-THREADEDROD-00064
+a2fc10fb-fc5b-495f-8214-3375cacc4aff,Brass Flange Nut Standard Configuration,Source4,00080
+32bd2060-d7d9-490c-a3b1-0ef7d963552d,Stainless Steel Hex Nut Standard Configuration,Source4,00081
+32bd2060-d7d9-490c-a3b1-0ef7d963552d,Stainless Steel Hex Nut Standard Configuration,Source2,97511A865
+32bd2060-d7d9-490c-a3b1-0ef7d963552d,Stainless Steel Hex Nut Standard Configuration,Source3,HEXNUT-69
+a93537bb-6b49-4024-b574-c0c4a027502c,Plastic Wire Standard Configuration,Source1,FAS-WIRE-00065
+a93537bb-6b49-4024-b574-c0c4a027502c,Plastic Wire Standard Configuration,Source4,00082
+0c5bf324-3ea0-45f0-ae1a-bca8f732a150,Stainless Steel Flange Nut Standard Configuration,Source4,00083
+0c5bf324-3ea0-45f0-ae1a-bca8f732a150,Stainless Steel Flange Nut Standard Configuration,Source1,FAS-FLANGENUT-00066
+6df9912a-3e7f-411b-821b-db22517e3583,"Brass Set Screw 1/4""-13 x 2""",Source3,SETSCREW-70
+2d23cf00-da46-45b1-b9ce-ce42c1eb780c,Carbon Steel Hex Bolt M12x2.0x50mm (DIN 931),Source1,FAS-HB-00067
+a2965427-63bc-4085-b43d-fccf5bbe0dca,Stainless Steel Flange Nut Standard Configuration,Source4,00084
+a2965427-63bc-4085-b43d-fccf5bbe0dca,Stainless Steel Flange Nut Standard Configuration,Source3,FLANGENUT-71
+6e2adefd-3d91-4e94-bb44-2fecf930226f,Carbon Steel Threaded Rod Standard Configuration,Source4,00085
+6e2adefd-3d91-4e94-bb44-2fecf930226f,Carbon Steel Threaded Rod Standard Configuration,Source2,93321A239
+6e2adefd-3d91-4e94-bb44-2fecf930226f,Carbon Steel Threaded Rod Standard Configuration,Source1,FAS-THREADEDROD-00068
+e8350588-d8e4-4aca-adef-e18402a3fd96,"Stainless Steel Socket Head Cap Screw 5/8""-13 x 1-1/2"" (DIN 912)",Source4,DIN 912-00086
+a04f19ce-db52-4263-bb6d-151bf9372ea1,Carbon Steel Hex Nut Standard Configuration,Source3,HEXNUT-72
+be888837-41bb-4786-9c58-921351a5bc17,Stainless Steel Flat Head Screw M8x1.75x40mm,Source3,FLATHEADSCREW-73
+be888837-41bb-4786-9c58-921351a5bc17,Stainless Steel Flat Head Screw M8x1.75x40mm,Source2,95051A574
+be888837-41bb-4786-9c58-921351a5bc17,Stainless Steel Flat Head Screw M8x1.75x40mm,Source4,00087
+4c693496-db2c-431d-ae3c-e1fe65e340aa,Rubber Oil Seal Standard Configuration,Source4,00088
+7d6c09a5-6502-496f-b76a-891b34a37294,Stainless Steel Set Screw M5x1.0x60mm,Source2,99884A141
+b2e3136d-b7ad-4a92-8bcb-ec978e55cd29,Brass Threaded Rod Standard Configuration,Source3,THREADEDROD-74
+b2e3136d-b7ad-4a92-8bcb-ec978e55cd29,Brass Threaded Rod Standard Configuration,Source1,FAS-THREADEDROD-00069
+b30443c7-2a4b-40cc-8e96-852019732e4f,Plastic Gasket Standard Configuration,Source4,00089
+b30443c7-2a4b-40cc-8e96-852019732e4f,Plastic Gasket Standard Configuration,Source3,GASKET-75
+2952a92c-2f77-4931-9655-8c2c6ad5bd70,Carbon Steel Flat Washer Standard Configuration,Source1,FAS-FLATWASHER-00070
+2952a92c-2f77-4931-9655-8c2c6ad5bd70,Carbon Steel Flat Washer Standard Configuration,Source4,DIN 125-00090
+9831ea2c-fc2c-4b05-b41b-471bb1bfb839,Rubber Switch Standard Configuration,Source4,00091
+792c4e6d-f07f-4000-a790-b2795d2038bd,Needle Bearing Series 6200-ZZ,Source3,NEEDLEBEARING-76
+792c4e6d-f07f-4000-a790-b2795d2038bd,Needle Bearing Series 6200-ZZ,Source4,00092
+a5c5c9f7-9a8f-484c-8154-5b2572675acd,Stainless Steel Hex Nut Standard Configuration,Source2,92290A224
+a5c5c9f7-9a8f-484c-8154-5b2572675acd,Stainless Steel Hex Nut Standard Configuration,Source1,FAS-HEXNUT-00071
+e8b0508c-dc91-498a-a798-1e70df7c1df5,Bearing Housing Series 6204-Open,Source4,00093
+e8b0508c-dc91-498a-a798-1e70df7c1df5,Bearing Housing Series 6204-Open,Source3,BEARINGHOUSING-77
+e8b0508c-dc91-498a-a798-1e70df7c1df5,Bearing Housing Series 6204-Open,Source1,FAS-BEARINGHOUSING-00072
+9bf4f7b3-86c4-4cdf-afdf-05a4ba0c85e7,Steel Filter Standard Configuration,Source1,FAS-FILTER-00073
+b2e7b555-7229-44bf-a254-d11def849593,Brass Flat Washer Standard Configuration,Source3,FLATWASHER-78
+36a3e77c-b617-465f-b50f-4c4cfd6e0d2b,Rubber Spring Standard Configuration,Source4,00094
+36a3e77c-b617-465f-b50f-4c4cfd6e0d2b,Rubber Spring Standard Configuration,Source1,FAS-SPRING-00074
+6fa9bc3c-43a9-4676-9684-38035c93b5f1,Copper Filter Standard Configuration,Source2,93239A761
+6fa9bc3c-43a9-4676-9684-38035c93b5f1,Copper Filter Standard Configuration,Source4,00095
+6fa9bc3c-43a9-4676-9684-38035c93b5f1,Copper Filter Standard Configuration,Source3,FILTER-79
+79e2aa14-e85c-4e9d-942e-9d690e8e3952,Carbon Steel Flat Washer Standard Configuration,Source4,DIN 125-00096
+e39a2e51-42ce-45b0-a3d5-73452b1e053d,Carbon Steel Hex Nut Standard Configuration,Source3,HEXNUT-80
+e39a2e51-42ce-45b0-a3d5-73452b1e053d,Carbon Steel Hex Nut Standard Configuration,Source4,00097
+e39a2e51-42ce-45b0-a3d5-73452b1e053d,Carbon Steel Hex Nut Standard Configuration,Source2,95799A319
+ff9850bd-b093-4cb7-87a2-b187490e64ae,Copper Relay Standard Configuration,Source4,00098
+ff9850bd-b093-4cb7-87a2-b187490e64ae,Copper Relay Standard Configuration,Source3,RELAY-81
+ff9850bd-b093-4cb7-87a2-b187490e64ae,Copper Relay Standard Configuration,Source2,94835A610
+f78c9c28-5d62-4ba1-a373-6e694e6594d9,Plastic Relay Standard Configuration,Source1,FAS-RELAY-00075
+f78c9c28-5d62-4ba1-a373-6e694e6594d9,Plastic Relay Standard Configuration,Source2,94583A492
+023f0c98-f5c4-40ab-8a4d-61ed092ecc1b,Carbon Steel Lock Washer Standard Configuration,Source1,FAS-LOCKWASHER-00076
+023f0c98-f5c4-40ab-8a4d-61ed092ecc1b,Carbon Steel Lock Washer Standard Configuration,Source2,98907A913
+f0892db6-c4ca-4d23-ac89-038d6d997bfe,Stainless Steel Threaded Rod Standard Configuration,Source3,THREADEDROD-82
+f0892db6-c4ca-4d23-ac89-038d6d997bfe,Stainless Steel Threaded Rod Standard Configuration,Source4,00099
+f0892db6-c4ca-4d23-ac89-038d6d997bfe,Stainless Steel Threaded Rod Standard Configuration,Source1,FAS-THREADEDROD-00077
+0519a0a7-db8d-47c4-9586-ce733389781f,"Carbon Steel Flat Head Screw 1/2""-18 x 1-1/2""",Source4,00100
+0519a0a7-db8d-47c4-9586-ce733389781f,"Carbon Steel Flat Head Screw 1/2""-18 x 1-1/2""",Source2,95269A497
+0519a0a7-db8d-47c4-9586-ce733389781f,"Carbon Steel Flat Head Screw 1/2""-18 x 1-1/2""",Source1,FAS-FLATHEADSCREW-00078
+dd7aa42e-4e94-4346-a6aa-d29224493f98,Nylon O-Ring 31mm ID x 2.0mm CS,Source1,FAS-O-RING-00079
+dd7aa42e-4e94-4346-a6aa-d29224493f98,Nylon O-Ring 31mm ID x 2.0mm CS,Source3,O-RING-83
+dd7aa42e-4e94-4346-a6aa-d29224493f98,Nylon O-Ring 31mm ID x 2.0mm CS,Source2,97728A642
+88d802b1-a6e2-43cc-9327-41166a0b84ff,Chrome O-Ring 11mm ID x 2.5mm CS,Source4,00101
+438c7203-6ef2-4bd0-9d0e-45963c984392,"Carbon Steel Set Screw 5/16""-24 x 3/4""",Source2,91640A353
+df3431bf-6ad9-48cc-ae01-61376bf9e2e1,Stainless Steel Hex Nut Standard Configuration,Source1,FAS-HEXNUT-00080
+42f17082-d569-4afa-b50f-a796b1a7e4d6,Copper Oil Seal Standard Configuration,Source1,FAS-OILSEAL-00081
+8604a977-97da-403d-9c6b-90712d8b960d,Brass Flat Head Screw M20x0.7x50mm,Source3,FLATHEADSCREW-84
+8604a977-97da-403d-9c6b-90712d8b960d,Brass Flat Head Screw M20x0.7x50mm,Source2,95813A959
+f0e49741-2b50-46e5-87d7-6feded8bde08,"Carbon Steel Set Screw 1/2""-24 x 1-1/2""",Source4,00102
+0a2f8204-dea1-4ca7-929a-80e1db4893ab,Stainless Steel Flat Washer Standard Configuration,Source2,95210A925
+0a2f8204-dea1-4ca7-929a-80e1db4893ab,Stainless Steel Flat Washer Standard Configuration,Source4,DIN 125-00103
+0a2f8204-dea1-4ca7-929a-80e1db4893ab,Stainless Steel Flat Washer Standard Configuration,Source3,FLATWASHER-85
+3f7cecc9-b555-4efd-8f1b-c2699ce03dd3,Steel Shaft Seal Standard Configuration,Source1,FAS-SHAFTSEAL-00082
+3f7cecc9-b555-4efd-8f1b-c2699ce03dd3,Steel Shaft Seal Standard Configuration,Source3,SHAFTSEAL-86
+3f7cecc9-b555-4efd-8f1b-c2699ce03dd3,Steel Shaft Seal Standard Configuration,Source4,00104
+45457055-7700-4e49-b6bc-4ad270b698ac,Copper Switch Standard Configuration,Source2,93811A716
+45457055-7700-4e49-b6bc-4ad270b698ac,Copper Switch Standard Configuration,Source3,SWITCH-87
+45457055-7700-4e49-b6bc-4ad270b698ac,Copper Switch Standard Configuration,Source4,00105
+54d40f2b-a3bc-453e-b199-1b570aed21ce,Copper Adhesive Standard Configuration,Source4,00106
+54d40f2b-a3bc-453e-b199-1b570aed21ce,Copper Adhesive Standard Configuration,Source3,ADHESIVE-88
+54d40f2b-a3bc-453e-b199-1b570aed21ce,Copper Adhesive Standard Configuration,Source2,90975A122
+ca415fe4-cfba-4585-9b17-c1002b5a7e53,Steel Fitting Standard Configuration,Source2,91817A966
+ca415fe4-cfba-4585-9b17-c1002b5a7e53,Steel Fitting Standard Configuration,Source4,00107
+82f31702-4b07-492d-a19e-8a778bb1dc63,Ball Bearing Series 6202-ZZ,Source3,BALLBEARING-89
+82f31702-4b07-492d-a19e-8a778bb1dc63,Ball Bearing Series 6202-ZZ,Source4,00108
+82f31702-4b07-492d-a19e-8a778bb1dc63,Ball Bearing Series 6202-ZZ,Source2,94944A430
+93a16d70-e2d7-4276-b21e-54a3a635d0a4,Steel Wire Standard Configuration,Source3,WIRE-90
+93a16d70-e2d7-4276-b21e-54a3a635d0a4,Steel Wire Standard Configuration,Source4,00109
+93a16d70-e2d7-4276-b21e-54a3a635d0a4,Steel Wire Standard Configuration,Source2,92854A824
+0c24bdc9-2007-49a3-b7ef-ccc3c2e2fbc1,Rubber Connector Standard Configuration,Source2,95846A328
+6c53f1a3-c5bc-45ec-85e6-d5c9ee4bfef0,Steel Fitting Standard Configuration,Source3,FITTING-91
+6c53f1a3-c5bc-45ec-85e6-d5c9ee4bfef0,Steel Fitting Standard Configuration,Source1,FAS-FITTING-00083
+6812a475-29fd-4d01-87c7-698476f220e7,Stainless Steel Lock Nut Standard Configuration,Source3,LOCKNUT-92
+6812a475-29fd-4d01-87c7-698476f220e7,Stainless Steel Lock Nut Standard Configuration,Source4,00110
+43e5757a-6eee-4d25-9869-daf8fbe193ca,Rubber Lubricant Standard Configuration,Source4,00111
+2c263348-6e99-4e97-9c49-1b4fd8543013,Carbon Steel Socket Head Cap Screw M6x0.7x30mm (DIN 912),Source4,DIN 912-00112
+2c263348-6e99-4e97-9c49-1b4fd8543013,Carbon Steel Socket Head Cap Screw M6x0.7x30mm (DIN 912),Source2,99869A425
+fc2ca89b-c01b-4eec-8b3f-a3cc296cac75,Steel Oil Seal Standard Configuration,Source3,OILSEAL-93
+fc2ca89b-c01b-4eec-8b3f-a3cc296cac75,Steel Oil Seal Standard Configuration,Source2,92750A751
+fc2ca89b-c01b-4eec-8b3f-a3cc296cac75,Steel Oil Seal Standard Configuration,Source1,FAS-OILSEAL-00084
+54640151-ff56-431a-81e9-876d0bc00bcd,Ball Bearing Series 6201-ZZ,Source4,00113
+54640151-ff56-431a-81e9-876d0bc00bcd,Ball Bearing Series 6201-ZZ,Source2,90186A371
+54640151-ff56-431a-81e9-876d0bc00bcd,Ball Bearing Series 6201-ZZ,Source3,BALLBEARING-94
+cde2adb3-61cc-41cd-b421-233dc52cfeeb,Bearing Housing Series 6200-2RS,Source3,BEARINGHOUSING-95
+f5907bb5-c1fa-4a22-988b-d9b63de73dba,Stainless Steel Socket Head Cap Screw M16x2.5x16mm (DIN 912),Source3,SHCS-96
+b7888d48-e90e-43a4-8101-f62cbe473af9,Copper Fuse Standard Configuration,Source1,FAS-FUSE-00085
+b7888d48-e90e-43a4-8101-f62cbe473af9,Copper Fuse Standard Configuration,Source2,95754A659
+b7888d48-e90e-43a4-8101-f62cbe473af9,Copper Fuse Standard Configuration,Source3,FUSE-97
+3c81fe69-b794-4f25-b4ea-e936e9238f0a,Bearing Housing Series 6202-2RS,Source3,BEARINGHOUSING-98
+3c81fe69-b794-4f25-b4ea-e936e9238f0a,Bearing Housing Series 6202-2RS,Source4,00114
+3c81fe69-b794-4f25-b4ea-e936e9238f0a,Bearing Housing Series 6202-2RS,Source2,95600A274
+bd312cde-808c-4e78-b49a-fa6b690e4aa5,Stainless Steel Lock Nut Standard Configuration,Source2,98962A195
+869b72e2-a097-45ba-9ab9-078093fa98b4,"Brass Socket Head Cap Screw 1/4""-11 x 1-1/2"" (DIN 912)",Source3,SHCS-99
+869b72e2-a097-45ba-9ab9-078093fa98b4,"Brass Socket Head Cap Screw 1/4""-11 x 1-1/2"" (DIN 912)",Source4,DIN 912-00115
+869b72e2-a097-45ba-9ab9-078093fa98b4,"Brass Socket Head Cap Screw 1/4""-11 x 1-1/2"" (DIN 912)",Source2,90877A203
+7475daca-f23a-4a39-bf25-5173717630f5,Stainless Steel Flat Washer Standard Configuration,Source1,FAS-FLATWASHER-00086
+0e4e41ea-bb5f-4bd7-abe6-2017798f0d78,Rubber Lubricant Standard Configuration,Source2,94612A404
+0e4e41ea-bb5f-4bd7-abe6-2017798f0d78,Rubber Lubricant Standard Configuration,Source1,FAS-LUBRICANT-00087
+0e4e41ea-bb5f-4bd7-abe6-2017798f0d78,Rubber Lubricant Standard Configuration,Source3,LUBRICANT-100
+804be606-50d5-4d08-9a1f-24c1d1365a2f,Rubber Wire Standard Configuration,Source2,94825A943
+804be606-50d5-4d08-9a1f-24c1d1365a2f,Rubber Wire Standard Configuration,Source3,WIRE-101
+804be606-50d5-4d08-9a1f-24c1d1365a2f,Rubber Wire Standard Configuration,Source1,FAS-WIRE-00088
+a9f14e40-28c9-4179-86f2-5e3beb3dacc5,Plastic Relay Standard Configuration,Source1,FAS-RELAY-00089
+d929ed33-3dc3-4f3c-b4e4-ed43ce23c7af,Carbon Steel Lock Washer Standard Configuration,Source3,LOCKWASHER-102
+d929ed33-3dc3-4f3c-b4e4-ed43ce23c7af,Carbon Steel Lock Washer Standard Configuration,Source4,00116
+1156433c-c2a7-4218-943b-b4878d5e8a71,Steel Relay Standard Configuration,Source1,FAS-RELAY-00090
+1156433c-c2a7-4218-943b-b4878d5e8a71,Steel Relay Standard Configuration,Source3,RELAY-103
+23713c97-f22f-4f8e-b51e-35d88d3e7b7f,Roller Bearing Series 6200-2RS,Source1,FAS-ROLLERBEARING-00091
+c3d8e403-5f78-46b0-9a1d-5215609dc9fa,"Stainless Steel Set Screw 3/8""-11 x 1-1/4""",Source2,96078A490
+c3d8e403-5f78-46b0-9a1d-5215609dc9fa,"Stainless Steel Set Screw 3/8""-11 x 1-1/4""",Source4,00117
+c3d8e403-5f78-46b0-9a1d-5215609dc9fa,"Stainless Steel Set Screw 3/8""-11 x 1-1/4""",Source3,SETSCREW-104
+a99e76fb-2a40-4cb1-bda9-898ee2dacbc3,Steel Clip Standard Configuration,Source2,99244A163
+a99e76fb-2a40-4cb1-bda9-898ee2dacbc3,Steel Clip Standard Configuration,Source4,00118
+fec95619-5bc4-4141-814b-d686d2e92882,"Carbon Steel Set Screw 1/4""-24 x 1""",Source3,SETSCREW-105
+fec95619-5bc4-4141-814b-d686d2e92882,"Carbon Steel Set Screw 1/4""-24 x 1""",Source4,00119
+f6ace868-0371-4195-bb94-8eee9f5ece70,Carbon Steel Lock Nut Standard Configuration,Source1,FAS-LOCKNUT-00092
+b10b6d96-1c80-4077-aadf-88393a639ca3,Plastic Shaft Seal Standard Configuration,Source2,99070A162
+b10b6d96-1c80-4077-aadf-88393a639ca3,Plastic Shaft Seal Standard Configuration,Source3,SHAFTSEAL-106
+b10b6d96-1c80-4077-aadf-88393a639ca3,Plastic Shaft Seal Standard Configuration,Source1,FAS-SHAFTSEAL-00093
+6c4baea3-3d25-4245-a871-066dec1f5922,Carbon Steel Flat Washer Standard Configuration,Source4,DIN 125-00120
+ef6b9fbe-eb6c-4488-8b4b-810e9e36aec8,Steel Relay Standard Configuration,Source1,FAS-RELAY-00094
+dcb78f34-56a0-4503-86db-d6cb947a43ac,"Brass Flat Head Screw 3/8""-28 x 1/2""",Source4,00121
+dcb78f34-56a0-4503-86db-d6cb947a43ac,"Brass Flat Head Screw 3/8""-28 x 1/2""",Source1,FAS-FLATHEADSCREW-00095
+ed05e3d7-fa50-4d80-b755-43794823e1aa,Carbon Steel Hex Nut Standard Configuration,Source3,HEXNUT-107
+ed05e3d7-fa50-4d80-b755-43794823e1aa,Carbon Steel Hex Nut Standard Configuration,Source1,FAS-HEXNUT-00096
+ed05e3d7-fa50-4d80-b755-43794823e1aa,Carbon Steel Hex Nut Standard Configuration,Source4,00122
+f5ef6fa4-a350-490d-84a1-6aeac4fecbf6,Thrust Bearing Series 6202-2RS,Source1,FAS-THRUSTBEARING-00097
+f5ef6fa4-a350-490d-84a1-6aeac4fecbf6,Thrust Bearing Series 6202-2RS,Source2,92415A223
+75c04c64-afec-47be-904f-92b263e1ec63,Brass Lock Nut Standard Configuration,Source4,00123
+75c04c64-afec-47be-904f-92b263e1ec63,Brass Lock Nut Standard Configuration,Source3,LOCKNUT-108
+90e5d4a2-9798-4a05-9ee7-bd10e748ddc0,"Stainless Steel Hex Bolt 3/8""-11 x 2"" (DIN 933)",Source4,DIN 933-00124
+90e5d4a2-9798-4a05-9ee7-bd10e748ddc0,"Stainless Steel Hex Bolt 3/8""-11 x 2"" (DIN 933)",Source1,FAS-HB-00098
+90e5d4a2-9798-4a05-9ee7-bd10e748ddc0,"Stainless Steel Hex Bolt 3/8""-11 x 2"" (DIN 933)",Source2,93308A942
+7aa34284-7096-4734-b085-06b996b0c011,Copper Adhesive Standard Configuration,Source2,91425A497
+7aa34284-7096-4734-b085-06b996b0c011,Copper Adhesive Standard Configuration,Source1,FAS-ADHESIVE-00099
+81733396-acd5-423b-851d-d2b4a84c68ee,"Stainless Steel Socket Head Cap Screw 3/8""-13 x 1-1/2"" (DIN 912)",Source2,97506A994
+81733396-acd5-423b-851d-d2b4a84c68ee,"Stainless Steel Socket Head Cap Screw 3/8""-13 x 1-1/2"" (DIN 912)",Source3,SHCS-109
+6927dabb-d297-45c1-8878-813ae6dce3ab,Thrust Bearing Series 6203-ZZ,Source3,THRUSTBEARING-110
+6927dabb-d297-45c1-8878-813ae6dce3ab,Thrust Bearing Series 6203-ZZ,Source4,00125
+8626799f-1bb9-48d7-a663-eaaef7a8076d,Bearing Housing Series 6202-Open,Source1,FAS-BEARINGHOUSING-00100
+d9eaac15-e48e-4260-969d-0eacdaf2b4eb,Stainless Steel Socket Head Cap Screw M20x2.0x16mm (DIN 912),Source3,SHCS-111
+d9eaac15-e48e-4260-969d-0eacdaf2b4eb,Stainless Steel Socket Head Cap Screw M20x2.0x16mm (DIN 912),Source2,96275A770
+d9eaac15-e48e-4260-969d-0eacdaf2b4eb,Stainless Steel Socket Head Cap Screw M20x2.0x16mm (DIN 912),Source1,FAS-SHCS-00101
+03303e3b-6b9b-4a42-b4e7-347449c7c44c,Steel Relay Standard Configuration,Source4,00126
+630a0f4c-a976-499b-b1c5-525a4a94d279,Steel Lubricant Standard Configuration,Source3,LUBRICANT-112
+630a0f4c-a976-499b-b1c5-525a4a94d279,Steel Lubricant Standard Configuration,Source1,FAS-LUBRICANT-00102
+245f74cf-9392-4926-b979-3bf8f193a9b5,Carbon Steel Socket Head Cap Screw M20x0.8x40mm (DIN 912),Source1,FAS-SHCS-00103
+245f74cf-9392-4926-b979-3bf8f193a9b5,Carbon Steel Socket Head Cap Screw M20x0.8x40mm (DIN 912),Source4,DIN 912-00127
+1b7f5ba8-ce65-4f0b-9499-67e152c989bf,Plastic Gasket Standard Configuration,Source4,00128
+17893040-f0d0-4c8d-ab42-52cc593ff85b,Plastic Oil Seal Standard Configuration,Source2,96102A120
+17893040-f0d0-4c8d-ab42-52cc593ff85b,Plastic Oil Seal Standard Configuration,Source1,FAS-OILSEAL-00104
+30f958c6-039e-4b7e-ba8f-28423eace486,Stainless Steel Set Screw M20x0.7x40mm,Source4,00129
+30f958c6-039e-4b7e-ba8f-28423eace486,Stainless Steel Set Screw M20x0.7x40mm,Source1,FAS-SETSCREW-00105
+69371dd6-b366-48b2-b0e4-b053f125351a,Needle Bearing Series 6204-ZZ,Source3,NEEDLEBEARING-113
+69371dd6-b366-48b2-b0e4-b053f125351a,Needle Bearing Series 6204-ZZ,Source2,92201A407
+f1cd7959-44b9-46ab-948a-b80c61fd2ab1,Carbon Steel Flange Nut Standard Configuration,Source1,FAS-FLANGENUT-00106
+f1cd7959-44b9-46ab-948a-b80c61fd2ab1,Carbon Steel Flange Nut Standard Configuration,Source2,96828A719
+25f6229b-8969-4c56-8eea-a0381fa066dd,Rubber Switch Standard Configuration,Source3,SWITCH-114
+25f6229b-8969-4c56-8eea-a0381fa066dd,Rubber Switch Standard Configuration,Source4,00130
+25f6229b-8969-4c56-8eea-a0381fa066dd,Rubber Switch Standard Configuration,Source1,FAS-SWITCH-00107
+86dd9a80-ace3-4ff9-b2eb-4463ea9732dd,Steel Filter Standard Configuration,Source1,FAS-FILTER-00108
+93232d60-4319-43ea-8f61-089af552b236,Rubber Gasket Standard Configuration,Source3,GASKET-115
+93232d60-4319-43ea-8f61-089af552b236,Rubber Gasket Standard Configuration,Source1,FAS-GASKET-00109
+938a55c6-3fb4-4132-b991-ab1c3468ac1d,Steel Terminal Standard Configuration,Source3,TERMINAL-116
+938a55c6-3fb4-4132-b991-ab1c3468ac1d,Steel Terminal Standard Configuration,Source4,00131
+50e91418-5651-4985-9827-1b4e297a954c,Rubber Switch Standard Configuration,Source3,SWITCH-117
+152598a9-58ea-4f4c-87c5-38a64c62bcb6,Stainless Steel Lock Nut Standard Configuration,Source2,90944A355
+152598a9-58ea-4f4c-87c5-38a64c62bcb6,Stainless Steel Lock Nut Standard Configuration,Source1,FAS-LOCKNUT-00110
+228ae670-5b2b-4851-b867-f2d160c5355d,Plastic Quick-Connect Standard Configuration,Source4,00132
+5a10d217-648a-4ac2-bbf4-aca5da546d7c,Carbon Steel Lock Washer Standard Configuration,Source4,00133
+e4d805cf-600e-4a20-8eaa-33394f4f3070,Bearing Housing Series 6204-Open,Source3,BEARINGHOUSING-118
+e4d805cf-600e-4a20-8eaa-33394f4f3070,Bearing Housing Series 6204-Open,Source2,90500A347
+e4d805cf-600e-4a20-8eaa-33394f4f3070,Bearing Housing Series 6204-Open,Source4,00134
+e0c662ab-0089-4b0c-bb6e-15196ec4f667,Stainless Steel Threaded Rod Standard Configuration,Source2,99615A664
+e0c662ab-0089-4b0c-bb6e-15196ec4f667,Stainless Steel Threaded Rod Standard Configuration,Source1,FAS-THREADEDROD-00111
+e0c662ab-0089-4b0c-bb6e-15196ec4f667,Stainless Steel Threaded Rod Standard Configuration,Source3,THREADEDROD-119
+6a20c80d-b623-40c6-bc9b-a8b975df3a6c,Copper Gasket Standard Configuration,Source4,00135
+6a20c80d-b623-40c6-bc9b-a8b975df3a6c,Copper Gasket Standard Configuration,Source3,GASKET-120
+6a20c80d-b623-40c6-bc9b-a8b975df3a6c,Copper Gasket Standard Configuration,Source2,93626A762
+a6030e21-8dff-4f89-b25b-b9312d8799a1,Rubber Connector Standard Configuration,Source1,FAS-CONNECTOR-00112
+0c6d6440-cf66-4c8f-9ec2-f5fce6b73e52,Plastic Quick-Connect Standard Configuration,Source2,90145A585
+9fa2b742-2536-4ce4-a252-ae064d3ba137,Copper Fuse Standard Configuration,Source2,93666A358
+9fa2b742-2536-4ce4-a252-ae064d3ba137,Copper Fuse Standard Configuration,Source1,FAS-FUSE-00113
+9fa2b742-2536-4ce4-a252-ae064d3ba137,Copper Fuse Standard Configuration,Source4,00136
+bd22a107-c743-4cb7-959f-08b58684445a,Carbon Steel Lock Washer Standard Configuration,Source4,00137
+bd22a107-c743-4cb7-959f-08b58684445a,Carbon Steel Lock Washer Standard Configuration,Source1,FAS-LOCKWASHER-00114
+bd22a107-c743-4cb7-959f-08b58684445a,Carbon Steel Lock Washer Standard Configuration,Source3,LOCKWASHER-121
+79295e1d-185b-4c59-b335-4b4778d7f5cc,Carbon Steel Flange Nut Standard Configuration,Source4,00138
+79295e1d-185b-4c59-b335-4b4778d7f5cc,Carbon Steel Flange Nut Standard Configuration,Source1,FAS-FLANGENUT-00115
+79295e1d-185b-4c59-b335-4b4778d7f5cc,Carbon Steel Flange Nut Standard Configuration,Source2,99576A204

@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS `{{ project_id }}.{{ dataset }}.agent_decisions` (
+    customer_part_number STRING NOT NULL,
+    decision STRING NOT NULL,
+    is_match BOOLEAN NOT NULL,
+    supplier_part_number STRING,
+    reasoning STRING NOT NULL,
+    created_at TIMESTAMP
+);

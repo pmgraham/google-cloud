@@ -1,0 +1,37 @@
+-- =============================================================================
+-- 02_ai_generation.sql
+-- =============================================================================
+CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.composites_normalized` AS
+WITH input_data AS (
+  SELECT
+    composite_key,
+    total_parts,
+    num_sources,
+    sources_list,
+    example_parts,
+    CONCAT(
+      '''{{ ai_prompt }} ''', composite_key
+    ) AS prompt
+  FROM `{{ project_id }}.{{ dataset }}.distinct_composites`
+),
+ai_output AS (
+  SELECT * 
+  FROM AI.GENERATE_TEXT(
+    MODEL `{{ project_id }}.{{ dataset }}.{{ gemini_text_model_name }}`,
+    TABLE input_data,
+    STRUCT(
+      {{ llm_temperature }} AS temperature,
+      {{ llm_max_output_tokens }} AS max_output_tokens
+    )
+  )
+)
+SELECT
+  composite_key,
+  total_parts,
+  num_sources,
+  sources_list,
+  example_parts,
+  -- AI.GENERATE_TEXT returns the raw LLM output in a column named `result`
+  -- We clean up markdown artifacts just in case, and alias it to match downstream scripts
+  TRIM(REPLACE(REPLACE(result, '```json', ''), '```', '')) AS ml_generate_text_llm_result
+FROM ai_output;

@@ -1,0 +1,93 @@
+-- =============================================================================
+-- 04_evaluation.sql
+-- =============================================================================
+CREATE OR REPLACE TEMP TABLE _truth_pairs AS
+SELECT 
+  t1.source AS source_a, 
+  t1.part_number AS pn_a,
+  t2.source AS source_b, 
+  t2.part_number AS pn_b,
+  t1.canonical_part_id
+FROM `{{ project_id }}.{{ dataset }}.truth_table` t1
+JOIN `{{ project_id }}.{{ dataset }}.truth_table` t2
+  ON t1.canonical_part_id = t2.canonical_part_id
+  AND (t1.source != t2.source OR t1.part_number != t2.part_number)
+  AND CONCAT(t1.source, t1.part_number) < CONCAT(t2.source, t2.part_number);
+
+CREATE OR REPLACE TEMP TABLE _pipeline_pairs AS
+WITH filtered_vector_results AS (
+  SELECT
+    query.source               AS source_a, 
+    query.part_number          AS pn_a,
+    query.part_description     AS desc_a,
+    base.source                AS source_b, 
+    base.part_number           AS pn_b,
+    base.part_description      AS desc_b,
+    query.part_type            AS type_a,
+    query.size_value           AS size_a,
+    base.part_type             AS type_b,
+    base.size_value            AS size_b,
+    distance                   AS vector_distance
+  FROM VECTOR_SEARCH(
+    TABLE `{{ project_id }}.{{ dataset }}.all_parts_enriched`,
+    'embedding',
+    (SELECT * FROM `{{ project_id }}.{{ dataset }}.all_parts_enriched`),
+    'embedding',
+    top_k => {{ vector_search_top_k }},
+    distance_type => 'COSINE'
+  )
+  WHERE (query.part_type IS NULL OR base.part_type IS NULL OR LOWER(query.part_type) = LOWER(base.part_type))
+    AND (query.size_value IS NULL OR base.size_value IS NULL OR query.size_value = base.size_value)
+    AND (query.source != base.source OR query.part_number != base.part_number)
+    AND CONCAT(query.source, query.part_number) < CONCAT(base.source, base.part_number)
+),
+vector_ranked AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER(PARTITION BY source_a, pn_a ORDER BY vector_distance ASC) AS vector_rank
+  FROM filtered_vector_results
+),
+lexical_scored AS (
+  SELECT
+    *,
+    EDIT_DISTANCE(LOWER(desc_a), LOWER(desc_b)) AS lexical_distance
+  FROM vector_ranked
+),
+lexical_ranked AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER(PARTITION BY source_a, pn_a ORDER BY lexical_distance ASC) AS lexical_rank
+  FROM lexical_scored
+),
+rrf_results AS (
+  SELECT
+    *,
+    (1.0 / (vector_rank + {{ rrf_constant }})) + (1.0 / (lexical_rank + {{ rrf_constant }})) AS rrf_score
+  FROM lexical_ranked
+)
+SELECT DISTINCT
+  r.*,
+  IF(t.canonical_part_id IS NOT NULL, TRUE, FALSE) AS is_true_match,
+  t.canonical_part_id AS truth_match_group
+FROM rrf_results r
+LEFT JOIN _truth_pairs t
+  ON r.source_a = t.source_a AND r.pn_a = t.pn_a
+  AND r.source_b = t.source_b AND r.pn_b = t.pn_b
+WHERE r.rrf_score >= {{ eval_rrf_threshold }};
+
+SELECT
+  (SELECT COUNT(*) FROM _truth_pairs) AS total_true_pairs,
+  (SELECT COUNT(*) FROM _pipeline_pairs) AS total_predicted_pairs,
+  (SELECT COUNT(*) 
+   FROM _pipeline_pairs p 
+   JOIN _truth_pairs t 
+   ON p.source_a = t.source_a AND p.pn_a = t.pn_a 
+   AND p.source_b = t.source_b AND p.pn_b = t.pn_b) AS true_positives,
+   SAFE_DIVIDE(
+     (SELECT COUNT(*) FROM _pipeline_pairs p JOIN _truth_pairs t ON p.source_a = t.source_a AND p.pn_a = t.pn_a AND p.source_b = t.source_b AND p.pn_b = t.pn_b),
+     (SELECT COUNT(*) FROM _pipeline_pairs)
+   ) AS precision_score,
+   SAFE_DIVIDE(
+     (SELECT COUNT(*) FROM _pipeline_pairs p JOIN _truth_pairs t ON p.source_a = t.source_a AND p.pn_a = t.pn_a AND p.source_b = t.source_b AND p.pn_b = t.pn_b),
+     (SELECT COUNT(*) FROM _truth_pairs)
+   ) AS recall_score;

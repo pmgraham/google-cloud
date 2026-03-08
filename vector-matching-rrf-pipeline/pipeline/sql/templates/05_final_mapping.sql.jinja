@@ -1,0 +1,55 @@
+-- =============================================================================
+-- 05_final_mapping.sql
+-- =============================================================================
+
+-- Ensure agent_decisions exists so the UNION doesn't fail on a fresh pipeline run
+-- before the agent has had a chance to evaluate the queue.
+CREATE TABLE IF NOT EXISTS `{{ project_id }}.{{ dataset }}.agent_decisions` (
+    customer_part_number STRING NOT NULL,
+    decision STRING NOT NULL,
+    is_match BOOLEAN NOT NULL,
+    supplier_part_number STRING,
+    reasoning STRING NOT NULL,
+    created_at TIMESTAMP,
+    -- Pub/Sub Message Metadata
+    subscription_name STRING,
+    message_id STRING,
+    publish_time TIMESTAMP,
+    attributes JSON
+);
+
+CREATE OR REPLACE VIEW `{{ project_id }}.{{ dataset }}.final_part_mapping` AS
+WITH all_matches AS (
+  -- 1. Auto-approved 'slam dunk' matches from the main pipeline
+  SELECT 
+    customer_part_number, 
+    supplier_part_number,
+    'pipeline' AS match_source
+  FROM `{{ project_id }}.{{ dataset }}.auto_approved_matches`
+  WHERE supplier_part_number IS NOT NULL
+  
+  UNION DISTINCT
+  
+  -- 2. Matches confirmed by the AI reasoning agent from the review queue
+  SELECT 
+    customer_part_number, 
+    supplier_part_number,
+    'agent' AS match_source
+  FROM `{{ project_id }}.{{ dataset }}.agent_decisions`
+  WHERE is_match = TRUE AND supplier_part_number IS NOT NULL
+)
+SELECT 
+  customer_part_number,
+  ARRAY_AGG(STRUCT(supplier_part_number, match_source)) AS matched_supplier_parts
+FROM all_matches
+GROUP BY customer_part_number;
+
+-- 3. Create a view for all parts that the Agent could not confidently resolve
+CREATE OR REPLACE VIEW `{{ project_id }}.{{ dataset }}.parts_requiring_review` AS
+SELECT 
+  customer_part_number,
+  decision,
+  reasoning,
+  created_at AS decision_time
+FROM `{{ project_id }}.{{ dataset }}.agent_decisions`
+WHERE decision != 'MATCH';

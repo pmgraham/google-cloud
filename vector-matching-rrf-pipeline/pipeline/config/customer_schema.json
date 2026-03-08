@@ -1,0 +1,55 @@
+{
+  "project_id": "YOUR_PROJECT_ID",
+  "dataset": "YOUR_DATASET_NAME",
+  "location": "global",
+  "source_tables": [
+    {
+      "table_name": "raw_customer_parts",
+      "source_name": "Customer",
+      "pk_column": "part_number",
+      "desc_column": "part_description",
+      "composite_attributes": ["part_description", "dimensions", "material", "category"]
+    },
+    {
+      "table_name": "raw_source1_parts",
+      "source_name": "Source1",
+      "pk_column": "part_number",
+      "desc_column": "part_description",
+      "composite_attributes": ["part_description", "dimensions", "material", "category"]
+    },
+    {
+      "table_name": "raw_source2_parts",
+      "source_name": "Source2",
+      "pk_column": "part_number",
+      "desc_column": "part_description",
+      "composite_attributes": ["part_description", "dimensions", "material", "category"]
+    },
+    {
+      "table_name": "raw_source3_parts",
+      "source_name": "Source3",
+      "pk_column": "part_number",
+      "desc_column": "part_description",
+      "composite_attributes": ["part_description", "dimensions", "material", "category"]
+    },
+    {
+      "table_name": "raw_source4_parts",
+      "source_name": "Source4",
+      "pk_column": "part_number",
+      "desc_column": "part_description",
+      "composite_attributes": ["part_description", "dimensions", "material", "category"]
+    }
+  ],
+  "vertex_ai_connection": "YOUR_CONNECTION_ID",
+  "gemini_text_model_name": "gemini_flash_3_model",
+  "gemini_text_model_endpoint": "gemini-3-flash-preview",
+  "gemini_text_model_location": "global",
+  "gemini_embedding_model_name": "gemini_embedding_model",
+  "gemini_embedding_model_endpoint": "gemini-embedding-001",
+  "llm_temperature": 0.0,
+  "llm_max_output_tokens": 8192,
+  "vector_search_top_k": 100,
+  "rrf_constant": 60,
+  "match_rrf_auto_approve_threshold": 0.031,
+  "match_rrf_agent_review_threshold": 0.025,
+  "eval_rrf_threshold": 0.015
+}

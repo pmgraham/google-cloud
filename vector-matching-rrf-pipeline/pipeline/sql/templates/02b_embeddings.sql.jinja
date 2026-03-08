@@ -1,0 +1,15 @@
+-- =============================================================================
+-- 02b_embeddings.sql
+-- =============================================================================
+CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.composites_embedded` AS
+WITH input_data AS (
+  SELECT
+    composite_key AS content,
+    composite_key
+  FROM `{{ project_id }}.{{ dataset }}.distinct_composites`
+)
+SELECT * 
+FROM AI.GENERATE_EMBEDDING(
+  MODEL `{{ project_id }}.{{ dataset }}.{{ gemini_embedding_model_name }}`,
+  TABLE input_data
+);

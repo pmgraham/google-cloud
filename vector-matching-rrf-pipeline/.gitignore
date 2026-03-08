@@ -1,0 +1,68 @@
+# Environments
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Project Configuration overrides
+pipeline/config/customer_schema_local.json
+agent/agent_config_local.json
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+*.coverage
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# VSCode / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+go-agent/parts-matcher
+
+# Package Managers
+uv.lock
+
+# Temporary Internal Files
+.gemini/
+.agent/
+tmp/
+pipeline/sql/rendered_sql/
+*.bak
+decisions_output_pass_*.json
+failed_batches_pass_*.json
+decisions_output_fallback.json

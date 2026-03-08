@@ -1,0 +1,108 @@
+-- =============================================================================
+-- 03_match_groups.sql
+-- =============================================================================
+
+-- 1. Create fully enriched base table containing both Structured fields and Embeddings
+CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.all_parts_enriched` AS
+SELECT
+  p.source,
+  p.part_number,
+  p.part_description,
+
+  JSON_VALUE(n.ml_generate_text_llm_result, '$.part_type') AS part_type,
+  JSON_VALUE(n.ml_generate_text_llm_result, '$.material') AS material,
+  JSON_VALUE(n.ml_generate_text_llm_result, '$.grade') AS grade,
+  CAST(JSON_VALUE(n.ml_generate_text_llm_result, '$.size_value') AS FLOAT64) AS size_value,
+  JSON_VALUE(n.ml_generate_text_llm_result, '$.size_unit') AS size_unit,
+  CAST(JSON_VALUE(n.ml_generate_text_llm_result, '$.thread_pitch') AS FLOAT64) AS thread_pitch,
+  CAST(JSON_VALUE(n.ml_generate_text_llm_result, '$.length_value') AS FLOAT64) AS length_value,
+  JSON_VALUE(n.ml_generate_text_llm_result, '$.length_unit') AS length_unit,
+  JSON_VALUE(n.ml_generate_text_llm_result, '$.standard_ref') AS standard_ref,
+  emb.embedding AS embedding
+FROM `{{ project_id }}.{{ dataset }}.all_parts` p
+JOIN `{{ project_id }}.{{ dataset }}.composites_normalized` n
+  ON p.composite_key = n.composite_key
+JOIN `{{ project_id }}.{{ dataset }}.composites_embedded` emb
+  ON p.composite_key = emb.composite_key;
+
+-- 2. VECTOR_SEARCH requires physical tables for the base search index.
+-- Split customer vs supplier tables.
+CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.supplier_parts_embedded` AS
+SELECT * FROM `{{ project_id }}.{{ dataset }}.all_parts_enriched` WHERE source != 'Customer';
+
+CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.customer_parts_embedded` AS
+SELECT * FROM `{{ project_id }}.{{ dataset }}.all_parts_enriched` WHERE source = 'Customer';
+
+-- 3. Execute Hybrid Match: Embeddings + Structured Filter + Reciprocal Rank Fusion (RRF)
+CREATE TEMP TABLE _temp_best_matches AS
+WITH filtered_vector_results AS (
+  SELECT
+    query.part_number          AS customer_part_number,
+    query.part_description     AS customer_description,
+    base.source                AS supplier,
+    base.part_number           AS supplier_part_number,
+    base.part_description      AS supplier_description,
+    query.part_type            AS part_type,
+    query.size_value           AS size_value,
+    distance                   AS vector_distance
+  FROM VECTOR_SEARCH(
+    TABLE `{{ project_id }}.{{ dataset }}.supplier_parts_embedded`,
+    'embedding',
+    (SELECT * FROM `{{ project_id }}.{{ dataset }}.customer_parts_embedded`),
+    'embedding',
+    top_k => {{ vector_search_top_k }},
+    distance_type => 'COSINE'
+  )
+  WHERE (query.part_type IS NULL OR base.part_type IS NULL OR LOWER(query.part_type) = LOWER(base.part_type))
+    AND (query.size_value IS NULL OR base.size_value IS NULL OR query.size_value = base.size_value)
+),
+vector_ranked AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER(PARTITION BY customer_part_number ORDER BY vector_distance ASC) AS vector_rank
+  FROM filtered_vector_results
+),
+lexical_scored AS (
+  SELECT
+    *,
+    -- Use Edit Distance on the raw description strings as the lexical match component
+    EDIT_DISTANCE(LOWER(customer_description), LOWER(supplier_description)) AS lexical_distance
+  FROM vector_ranked
+),
+lexical_ranked AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER(PARTITION BY customer_part_number ORDER BY lexical_distance ASC) AS lexical_rank
+  FROM lexical_scored
+),
+rrf_results AS (
+  SELECT
+    *,
+    -- Combine ranks using the standard RRF formula k=60 (or configurable value)
+    (1.0 / (vector_rank + {{ rrf_constant }})) + (1.0 / (lexical_rank + {{ rrf_constant }})) AS rrf_score
+  FROM lexical_ranked
+)
+SELECT
+  customer_part_number,
+  customer_description,
+  supplier,
+  supplier_part_number,
+  supplier_description,
+  part_type,
+  size_value,
+  vector_distance,
+  lexical_distance,
+  rrf_score,
+  CURRENT_TIMESTAMP() AS created_at
+FROM rrf_results
+WHERE rrf_score >= {{ match_rrf_agent_review_threshold }};
+
+-- 4. Split results into Auto-Approved (Slam Dunks) vs Agent Review (Borderline)
+CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.auto_approved_matches` AS
+SELECT * FROM _temp_best_matches 
+WHERE rrf_score >= {{ match_rrf_auto_approve_threshold }};
+
+CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.agent_review_queue` AS
+SELECT * FROM _temp_best_matches 
+WHERE rrf_score >= {{ match_rrf_agent_review_threshold }} 
+  AND rrf_score < {{ match_rrf_auto_approve_threshold }};
