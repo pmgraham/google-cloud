@@ -1,0 +1,1 @@
+COPY (SELECT * FROM {{ table_name }}) TO '{{ output_path }}' (FORMAT GDAL, DRIVER 'xlsx')

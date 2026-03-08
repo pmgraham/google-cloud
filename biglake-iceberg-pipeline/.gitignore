@@ -1,0 +1,62 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+*.tfvars
+.terraform.lock.hcl
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+crash.log
+crash.*.log
+
+# Google Cloud
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+service-account*.json
+credentials*.json
+key*.json
+
+# Python (Cloud Functions)
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+venv/
+.venv/
+env/
+.env
+.env.*
+!.env.example
+pipeline.env
+
+# Node (if applicable)
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Archives / data
+*.zip
+*.tar.gz
+*.parquet
+*.csv
+*.avro
