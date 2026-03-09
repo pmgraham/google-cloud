@@ -52,4 +52,4 @@ cd data-insights-agent
 
 ## 📜 License
 
-Most projects within this monorepo are licensed under the Apache 2.0 License. Please check the `LICENSE` file within each project directory for specific terms.
+Most projects within this monorepo are licensed under the MIT License. Please check the `LICENSE` file within each project directory for specific terms.
