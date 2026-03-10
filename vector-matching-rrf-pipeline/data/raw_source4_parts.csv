@@ -1,0 +1,139 @@
+part_number,part_description,material,dimensions,category
+00001,Ball Bearing  Series 6201-ZZ Nylon,Nylon,Series 6201-ZZ,European Bearings
+00002,O-Ring  12mm ID x 1.5mm CS Copper,Copper,12mm ID x 1.5mm CS,European Seals & Gaskets
+00003,Set Screw  M8x2.0x25mm Yellow Brass,Yellow Brass,M8x2.0x25mm,European Fasteners
+00004,Hex Nut   Stainless,Stainless,"",European Fasteners
+00005,Gasket   Polyamide,Polyamide,"",European Seals & Gaskets
+00006,Lock Nut   Type 304,Type 304,"",European Fasteners
+00007,Lock Nut   CS,CS,"",European Fasteners
+00008,Relay   52100,52100,"",European Electrical
+00009,Spring   Rubber,Rubber,"",European Other
+00010,Switch   Polyamide,Polyamide,"",European Electrical
+00011,O-Ring  15mm ID x 2.0mm CS Viton,Viton,15mm ID x 2.0mm CS,European Seals & Gaskets
+00012,Cylinder   Nylon,Nylon,"",European Hydraulic/Pneumatic
+00013,Needle Bearing  Series 6202-ZZ FKM,FKM,Series 6202-ZZ,European Bearings
+00014,O-Ring  44mm ID x 2.0mm CS Copper,Copper,44mm ID x 2.0mm CS,European Seals & Gaskets
+00015,Flange Nut   Plain Steel,Plain Steel,"",European Fasteners
+00016,O-Ring  30mm ID x 3.0mm CS FKM,FKM,30mm ID x 3.0mm CS,European Seals & Gaskets
+00017,"Set Screw  5/16""-20 x 1-6.35mm Brass",Brass,"5/16""-20 x 1-6.35mm",European Fasteners
+00018,Cylinder   Fluorocarbon,Fluorocarbon,"",European Hydraulic/Pneumatic
+00019,Lock Washer   Brass,Brass,"",European Fasteners
+00020,Shaft Seal   Bare Copper,Bare Copper,"",European Seals & Gaskets
+00021,Flat Head Screw  6.35mm-20 x 12.7mm Yellow Brass,Yellow Brass,6.35mm-20 x 12.7mm,European Fasteners
+00022,Flat Head Screw  M16x2.0x60mm Black Oxide,Black Oxide,M16x2.0x60mm,European Fasteners
+00023,Bearing Housing  Series 6205-Open Buna-N,Buna-N,Series 6205-Open,European Bearings
+00024,Relay   Polyamide,Polyamide,"",European Electrical
+00025,Flat Head Screw  M10x1.0x16mm CS,CS,M10x1.0x16mm,European Fasteners
+00026,Valve   Copper,Copper,"",European Hydraulic/Pneumatic
+00027,Flat Head Screw  M12x2.5x10mm Brass,Brass,M12x2.5x10mm,European Fasteners
+00028,Lock Nut   Carbon Steel,Carbon Steel,"",European Fasteners
+00029,Threaded Rod   Stainless,Stainless,"",European Fasteners
+00030,O-Ring  18mm ID x 3.0mm CS Copper,Copper,18mm ID x 3.0mm CS,European Seals & Gaskets
+00031,Set Screw  6.35mm-18 x 1-12.7mm 18-8,18-8,6.35mm-18 x 1-12.7mm,European Fasteners
+00032,Set Screw  M4x1.25x16mm SS,SS,M4x1.25x16mm,European Fasteners
+00033,Valve   Rubber,Rubber,"",European Hydraulic/Pneumatic
+DIN 125-00034,Flat Washer DIN 125-  Stainless,Stainless,"",European Fasteners
+00035,Gasket   Chrome Steel,Chrome Steel,"",European Seals & Gaskets
+00036,Hex Nut   Gr 8,Gr 8,"",European Fasteners
+00037,Fitting   52100,52100,"",European Hydraulic/Pneumatic
+00038,Hose   Fluorocarbon,Fluorocarbon,"",European Hydraulic/Pneumatic
+00039,Lock Washer   Carbon Steel,Carbon Steel,"",European Fasteners
+00040,Gasket   FKM,FKM,"",European Seals & Gaskets
+00041,Hex Nut   CS,CS,"",European Fasteners
+00042,Fitting   NBR,NBR,"",European Hydraulic/Pneumatic
+00043,Bearing Housing  Series 6204-ZZ Rubber,Rubber,Series 6204-ZZ,European Bearings
+00044,Quick-Connect   FKM,FKM,"",European Hydraulic/Pneumatic
+00045,Set Screw  M10x2.5x30mm CS,CS,M10x2.5x30mm,European Fasteners
+00046,Connector   Nitrile,Nitrile,"",European Electrical
+00047,Relay   Polyamide,Polyamide,"",European Electrical
+00048,Shaft Seal   Copper,Copper,"",European Seals & Gaskets
+00049,Flat Head Screw  M12x1.0x50mm Brass,Brass,M12x1.0x50mm,European Fasteners
+00050,Fitting   Fluorocarbon,Fluorocarbon,"",European Hydraulic/Pneumatic
+DIN 912-00051,Socket Head Cap Screw DIN 912- M20x1.25x25mm CS,CS,M20x1.25x25mm,European Fasteners
+00052,Fitting   Polyamide,Polyamide,"",European Hydraulic/Pneumatic
+00053,Threaded Rod   A4-80,A4-80,"",European Fasteners
+DIN 912-00054,Socket Head Cap Screw DIN 912- 6.35mm-16 x 1-12.7mm Gr 5,Gr 5,6.35mm-16 x 1-12.7mm,European Fasteners
+00055,Roller Bearing  Series 6205-Open Chrome Steel,Chrome Steel,Series 6205-Open,European Bearings
+00056,Quick-Connect   Bare Copper,Bare Copper,"",European Hydraulic/Pneumatic
+DIN 931-00057,"Hex Bolt DIN 931- 5/16""-13 x 1-12.7mm Carbon Steel",Carbon Steel,"5/16""-13 x 1-12.7mm",European Fasteners
+DIN 125-00058,Flat Washer DIN 125-  A4-80,A4-80,"",European Fasteners
+00059,Terminal   Nylon,Nylon,"",European Electrical
+DIN 125-00060,Flat Washer DIN 125-  Yellow Brass,Yellow Brass,"",European Fasteners
+00061,Threaded Rod   A4-80,A4-80,"",European Fasteners
+00062,Set Screw  M5x2.0x25mm Stainless,Stainless,M5x2.0x25mm,European Fasteners
+00063,Ball Bearing  Series 6203-Open 52100,52100,Series 6203-Open,European Bearings
+00064,Bearing Housing  Series 6203-Open Bare Copper,Bare Copper,Series 6203-Open,European Bearings
+00065,Cylinder   Chrome Steel,Chrome Steel,"",European Hydraulic/Pneumatic
+00066,Relay   Polyamide,Polyamide,"",European Electrical
+00067,Set Screw  M8x0.8x50mm CS,CS,M8x0.8x50mm,European Fasteners
+00068,Cylinder   Bare Copper,Bare Copper,"",European Hydraulic/Pneumatic
+00069,Quick-Connect   Copper,Copper,"",European Hydraulic/Pneumatic
+00070,Lock Nut   CS,CS,"",European Fasteners
+00071,Ball Bearing  Series 6200-Open FKM,FKM,Series 6200-Open,European Bearings
+00072,Connector   Chrome Steel,Chrome Steel,"",European Electrical
+00073,Thrust Bearing  Series 6201-Open Viton,Viton,Series 6201-Open,European Bearings
+00074,Needle Bearing  Series 6203-2RS Bare Copper,Bare Copper,Series 6203-2RS,European Bearings
+00075,Flange Nut   Stainless,Stainless,"",European Fasteners
+00076,Needle Bearing  Series 6201-Open NBR,NBR,Series 6201-Open,European Bearings
+00077,Switch   Bare Copper,Bare Copper,"",European Electrical
+00078,"Flat Head Screw  6.35mm-18 x 2"" Brass",Brass,"6.35mm-18 x 2""",European Fasteners
+00079,Shaft Seal   Copper,Copper,"",European Seals & Gaskets
+00080,Flange Nut   Yellow Brass,Yellow Brass,"",European Fasteners
+00081,Hex Nut   316 SS,316 SS,"",European Fasteners
+00082,Wire   Polyamide,Polyamide,"",European Electrical
+00083,Flange Nut   316 SS,316 SS,"",European Fasteners
+00084,Flange Nut   304 SS,304 SS,"",European Fasteners
+00085,Threaded Rod   Carbon Steel,Carbon Steel,"",European Fasteners
+DIN 912-00086,"Socket Head Cap Screw DIN 912- 5/8""-13 x 1-12.7mm SS",SS,"5/8""-13 x 1-12.7mm",European Fasteners
+00087,Flat Head Screw  M8x1.75x40mm Stainless,Stainless,M8x1.75x40mm,European Fasteners
+00088,Oil Seal   Fluorocarbon,Fluorocarbon,"",European Seals & Gaskets
+00089,Gasket   Polyamide,Polyamide,"",European Seals & Gaskets
+DIN 125-00090,Flat Washer DIN 125-  CS,CS,"",European Fasteners
+00091,Switch   Rubber,Rubber,"",European Electrical
+00092,Needle Bearing  Series 6200-ZZ 52100,52100,Series 6200-ZZ,European Bearings
+00093,Bearing Housing  Series 6204-Open Chrome Steel,Chrome Steel,Series 6204-Open,European Bearings
+00094,Spring   Buna-N,Buna-N,"",European Other
+00095,Filter   Bare Copper,Bare Copper,"",European Other
+DIN 125-00096,Flat Washer DIN 125-  Carbon Steel,Carbon Steel,"",European Fasteners
+00097,Hex Nut   Gr 8,Gr 8,"",European Fasteners
+00098,Relay   Bare Copper,Bare Copper,"",European Electrical
+00099,Threaded Rod   A4-80,A4-80,"",European Fasteners
+00100,Flat Head Screw  12.7mm-18 x 1-12.7mm Grade 5,Grade 5,12.7mm-18 x 1-12.7mm,European Fasteners
+00101,O-Ring  11mm ID x 2.5mm CS Chrome Steel,Chrome Steel,11mm ID x 2.5mm CS,European Seals & Gaskets
+00102,Set Screw  12.7mm-24 x 1-12.7mm Carbon Steel,Carbon Steel,12.7mm-24 x 1-12.7mm,European Fasteners
+DIN 125-00103,Flat Washer DIN 125-  Type 316,Type 316,"",European Fasteners
+00104,Shaft Seal   Chrome Steel,Chrome Steel,"",European Seals & Gaskets
+00105,Switch   Copper,Copper,"",European Electrical
+00106,Adhesive   Bare Copper,Bare Copper,"",European Other
+00107,Fitting   Chrome Steel,Chrome Steel,"",European Hydraulic/Pneumatic
+00108,Ball Bearing  Series 6202-ZZ Copper,Copper,Series 6202-ZZ,European Bearings
+00109,Wire   Bearing Steel,Bearing Steel,"",European Electrical
+00110,Lock Nut   Type 316,Type 316,"",European Fasteners
+00111,Lubricant   FKM,FKM,"",European Other
+DIN 912-00112,Socket Head Cap Screw DIN 912- M6x0.7x30mm Grade 5,Grade 5,M6x0.7x30mm,European Fasteners
+00113,Ball Bearing  Series 6201-ZZ NBR,NBR,Series 6201-ZZ,European Bearings
+00114,Bearing Housing  Series 6202-2RS Viton,Viton,Series 6202-2RS,European Bearings
+DIN 912-00115,Socket Head Cap Screw DIN 912- 6.35mm-11 x 1-12.7mm Brass,Brass,6.35mm-11 x 1-12.7mm,European Fasteners
+00116,Lock Washer   Gr 5,Gr 5,"",European Fasteners
+00117,Set Screw  9.5mm-11 x 1-6.35mm 18-8,18-8,9.5mm-11 x 1-6.35mm,European Fasteners
+00118,Clip   Chrome Steel,Chrome Steel,"",European Other
+00119,"Set Screw  6.35mm-24 x 1"" Gr 5",Gr 5,"6.35mm-24 x 1""",European Fasteners
+DIN 125-00120,Flat Washer DIN 125-  Grade 5,Grade 5,"",European Fasteners
+00121,Flat Head Screw  9.5mm-28 x 12.7mm Yellow Brass,Yellow Brass,9.5mm-28 x 12.7mm,European Fasteners
+00122,Hex Nut   Grade 5,Grade 5,"",European Fasteners
+00123,Lock Nut   Brass,Brass,"",European Fasteners
+DIN 933-00124,"Hex Bolt DIN 933- 9.5mm-11 x 2"" A2-70",A2-70,"9.5mm-11 x 2""",European Fasteners
+00125,Thrust Bearing  Series 6203-ZZ Nylon,Nylon,Series 6203-ZZ,European Bearings
+00126,Relay   Bearing Steel,Bearing Steel,"",European Electrical
+DIN 912-00127,Socket Head Cap Screw DIN 912- M20x0.8x40mm Carbon Steel,Carbon Steel,M20x0.8x40mm,European Fasteners
+00128,Gasket   Polyamide,Polyamide,"",European Seals & Gaskets
+00129,Set Screw  M20x0.7x40mm 316,316,M20x0.7x40mm,European Fasteners
+00130,Switch   Rubber,Rubber,"",European Electrical
+00131,Terminal   Bearing Steel,Bearing Steel,"",European Electrical
+00132,Quick-Connect   Nylon,Nylon,"",European Hydraulic/Pneumatic
+00133,Lock Washer   Plain Steel,Plain Steel,"",European Fasteners
+00134,Bearing Housing  Series 6204-Open Copper,Copper,Series 6204-Open,European Bearings
+00135,Gasket   Copper,Copper,"",European Seals & Gaskets
+00136,Fuse   Bare Copper,Bare Copper,"",European Electrical
+00137,Lock Washer   Gr 5,Gr 5,"",European Fasteners
+00138,Flange Nut   Grade 5,Grade 5,"",European Fasteners
