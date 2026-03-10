@@ -4,5 +4,6 @@ CREATE TABLE IF NOT EXISTS `{{ project_id }}.{{ dataset }}.agent_decisions` (
     is_match BOOLEAN NOT NULL,
     supplier_part_number STRING,
     reasoning STRING NOT NULL,
+    is_human_reviewed BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP
 );

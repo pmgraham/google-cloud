@@ -74,6 +74,7 @@ type BQDecision struct {
 	IsMatch            bool      `json:"is_match" bigquery:"is_match"`
 	SupplierPartNumber string    `json:"supplier_part_number" bigquery:"supplier_part_number"`
 	Reasoning          string    `json:"reasoning" bigquery:"reasoning"`
+	IsHumanReviewed    bool      `json:"is_human_reviewed" bigquery:"is_human_reviewed"`
 	CreatedAt          time.Time `json:"created_at" bigquery:"created_at"`
 }
 
@@ -382,6 +383,7 @@ func singlePassWorker(ctx context.Context, model *genai.GenerativeModel, jobs <-
 					IsMatch:            isMatch,
 					SupplierPartNumber: c.CandidatePartNumber,
 					Reasoning:          reasoningStr,
+					IsHumanReviewed:    false,
 					CreatedAt:          now,
 				})
 			}
@@ -409,6 +411,7 @@ func padRemainingFailures(ctx context.Context, bqClient *bigquery.Client, failed
 					IsMatch:            false,
 					SupplierPartNumber: c.CandidatePartNumber,
 					Reasoning:          "Agent completely failed to reliably execute this schema payload natively across 5 consecutive DLQ passes. Explicitly falling back to mandatory human-in-the-loop validation blocks.",
+					IsHumanReviewed:    false,
 					CreatedAt:          now,
 				})
 				insertedCount++
