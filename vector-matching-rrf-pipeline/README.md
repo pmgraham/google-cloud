@@ -28,9 +28,9 @@ The logic is split into two complementary phases to maximize both scale and accu
 When the initial data is loaded into BigQuery, plain SQL rules are not enough to bridge the gap between "SCREW M16" and "M16X1.5 Hex Bolt".
 
 1.  **AI Data Extraction (`pipeline/sql/templates/02_ai_generation.sql.jinja`)**: 
-    We use BigQuery's `ML.GENERATE_TEXT` with a Gemini model to read the messy, raw `part_description` fields and structure them into a standardized JSON format (extracting `part_type`, `size_value`, `material`, etc.).
+    We use BigQuery's `AI.GENERATE_TEXT` with a Gemini model to read the messy, raw `part_description` fields and structure them into a standardized JSON format (extracting `part_type`, `size_value`, `material`, etc.).
 2.  **Semantic Embeddings (`pipeline/sql/templates/02b_embeddings.sql.jinja`)**: 
-    We use `ML.GENERATE_EMBEDDING` to create mathematical vector representations of the internal text. This captures the *meaning* of the part, resolving abbreviations and synonyms.
+    We use `AI.GENERATE_EMBEDDING` to create mathematical vector representations of the internal text. This captures the *meaning* of the part, resolving abbreviations and synonyms.
 3.  **Vector Search & Lexical Scoring (`pipeline/sql/templates/03_match_groups.sql.jinja`)**: 
     We perform a `VECTOR_SEARCH` to find the closest semantic neighbors for every customer part against the supplier database. **Crucially, this search is performed globally across all normalized supplier catalogs (`source != 'Customer'`). Every customer part is mathematically evaluated against every possible supplier simultaneously.** We combine this Vector Distance with a Lexical Edit Distance (comparing the text characters) and calculate a Reciprocal Rank Fusion (RRF) score.
     *High-confidence matches are pushed directly to `auto_approved_matches`, while borderline edge cases are queued for human or agent review in `agent_review_queue`.*
