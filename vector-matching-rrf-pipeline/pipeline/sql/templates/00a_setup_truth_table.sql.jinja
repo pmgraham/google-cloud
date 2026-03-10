@@ -1,0 +1,13 @@
+-- =============================================================================
+-- 00a_setup_truth_table.sql
+-- =============================================================================
+-- Purpose: 
+-- Creates the truth_table required for the evaluation step if it does not
+-- already exist.
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS `{{ project_id }}.{{ dataset }}.truth_table` (
+    source STRING,
+    part_number STRING,
+    canonical_part_id STRING
+);

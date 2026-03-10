@@ -1,0 +1,24 @@
+-- =============================================================================
+-- 08_reporting_agent.sql
+-- =============================================================================
+-- Purpose:
+-- Provides a summary view of the agent's decision-making outcomes.
+-- =============================================================================
+
+CREATE OR REPLACE VIEW `{{ project_id }}.{{ dataset }}.reporting_agent_metrics` AS
+
+SELECT
+  COUNT(*) AS total_decisions_made,
+  COUNT(DISTINCT customer_part_number) AS total_unique_parts_reviewed,
+  
+  -- Breakdowns by decision
+  COUNTIF(decision = 'MATCH') AS total_matches_found,
+  COUNTIF(decision = 'NO_MATCH') AS total_no_matches_found,
+  COUNTIF(decision = 'REQUIRES_HUMAN_REVIEW') AS total_requires_human_review,
+  
+  -- Percentages
+  SAFE_DIVIDE(COUNTIF(decision = 'MATCH'), COUNT(*)) AS pct_matches,
+  SAFE_DIVIDE(COUNTIF(decision = 'NO_MATCH'), COUNT(*)) AS pct_no_matches,
+  SAFE_DIVIDE(COUNTIF(decision = 'REQUIRES_HUMAN_REVIEW'), COUNT(*)) AS pct_human_review
+
+FROM `{{ project_id }}.{{ dataset }}.agent_decisions`;
