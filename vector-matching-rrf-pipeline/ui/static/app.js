@@ -29,9 +29,20 @@ function setupTabs() {
         });
     });
 }
+let currentSearchQuery = '';
+
 document.addEventListener('DOMContentLoaded', () => {
     setupTabs();
     fetchMatches();
+    
+    // Setup Search
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            currentSearchQuery = e.target.value.toLowerCase().trim();
+            renderList();
+        });
+    }
 });
 
 async function fetchMatches() {
@@ -44,7 +55,7 @@ async function fetchMatches() {
         currentData = data.groups;
         
         document.getElementById('total-groups-count').textContent = 
-            currentData ? `${currentData.length} parts pending list` : "0 parts pending";
+            currentData ? `${currentData.length} parts in queue` : "0 parts in queue";
             
         renderList();
         
@@ -76,10 +87,46 @@ function renderList() {
     
     listContainer.innerHTML = '';
     
+    // Filter the data based on search query
+    let filteredData = currentData;
+    if (currentSearchQuery) {
+        filteredData = currentData.map(group => {
+            const cpMatches = group.customer_part_number.toLowerCase().includes(currentSearchQuery) || 
+                              (group.customer_description && group.customer_description.toLowerCase().includes(currentSearchQuery));
+            
+            const matchingSuppliers = group.matches.filter(match => {
+                return cpMatches || // Give match if Customer Part matches
+                       match.supplier_part_number.toLowerCase().includes(currentSearchQuery) ||
+                       (match.supplier_description && match.supplier_description.toLowerCase().includes(currentSearchQuery)) ||
+                       (match.reasoning && match.reasoning.toLowerCase().includes(currentSearchQuery));
+            });
+
+            if (matchingSuppliers.length > 0) {
+                return { ...group, matches: matchingSuppliers };
+            }
+            return null;
+        }).filter(Boolean);
+    }
+    
+    if (filteredData.length === 0 && currentSearchQuery) {
+        listContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-search" style="color: var(--gray-400);"></i>
+                <h2>No matches found</h2>
+                <p>No results for "${currentSearchQuery}"</p>
+            </div>
+        `;
+        document.getElementById('total-groups-count').textContent = "0 matches found";
+        return;
+    }
+
+    document.getElementById('total-groups-count').textContent = 
+        filteredData ? `${filteredData.length} parts in queue` : "0 parts in queue";
+    
     const groupTemplate = document.getElementById('customer-group-template');
     const rowTemplate = document.getElementById('supplier-row-template');
     
-    currentData.forEach((group, gIndex) => {
+    filteredData.forEach((group, gIndex) => {
         // Skip empty groups
         if (!group.matches || group.matches.length === 0) return;
         
@@ -99,7 +146,7 @@ function renderList() {
             const btn = rowEl.querySelector('.btn-review-sm');
             btn.onclick = (e) => {
                 e.stopPropagation(); // Prevent toggling the group
-                openReviewModal(gIndex, mIndex);
+                openReviewModal(group.customer_part_number, match.supplier_part_number);
             };
             
             suppliersContainer.appendChild(rowEl);
@@ -120,9 +167,29 @@ function toggleGroup(headerElement) {
 
 let activeMatchContext = null;
 
-function openReviewModal(gIndex, mIndex) {
-    const group = currentData[gIndex];
-    const match = group.matches[mIndex];
+function openReviewModal(customerPartNumber, supplierPartNumber) {
+    let group = null;
+    let match = null;
+    let gIndex = -1;
+    let mIndex = -1;
+
+    for (let i = 0; i < currentData.length; i++) {
+        if (currentData[i].customer_part_number === customerPartNumber) {
+            group = currentData[i];
+            gIndex = i;
+            for (let j = 0; j < group.matches.length; j++) {
+                if (group.matches[j].supplier_part_number === supplierPartNumber) {
+                    match = group.matches[j];
+                    mIndex = j;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+
+    if (!match) return;
+
     activeMatchContext = { gIndex, mIndex, match };
     
     const modalBody = document.getElementById('modal-body');
@@ -136,21 +203,55 @@ function openReviewModal(gIndex, mIndex) {
     content.querySelector('.cpn-text').textContent = match.customer_part_number;
     content.querySelector('.spn-text').textContent = match.supplier_part_number;
     
-    // Add descriptions
-    content.querySelectorAll('.part-details')[0].innerHTML = `
-        <div class="detail-row">
-            <span class="detail-label">Desc</span>
-            <span class="detail-value">${match.customer_description || 'N/A'}</span>
-        </div>
-    `;
-    content.querySelectorAll('.part-details')[1].innerHTML = `
-        <div class="detail-row">
-            <span class="detail-label">Desc</span>
-            <span class="detail-value">${match.supplier_description || 'N/A'}</span>
-        </div>
-    `;
+    const generateDetailsHTML = (desc, attrs) => {
+        let html = `
+            <div class="detail-row">
+                <span class="detail-label">Description</span>
+                <span class="detail-value">${desc || 'N/A'}</span>
+            </div>
+        `;
+        
+        if (attrs) {
+            for (const [key, value] of Object.entries(attrs)) {
+                if (value) {
+                    const formattedKey = key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    html += `
+                        <div class="detail-row">
+                            <span class="detail-label">${formattedKey}</span>
+                            <span class="detail-value">${value}</span>
+                        </div>
+                    `;
+                }
+            }
+        }
+        return html;
+    };
     
-    content.querySelector('.reasoning-text').textContent = match.reasoning || "No AI reasoning provided.";
+    // Add descriptions and attributes
+    content.querySelectorAll('.part-details')[0].innerHTML = generateDetailsHTML(match.customer_description, match.c_attributes);
+    content.querySelectorAll('.part-details')[1].innerHTML = generateDetailsHTML(match.supplier_description, match.s_attributes);
+    
+    // Confidence Badge Calculation
+    const badge = content.querySelector('.confidence-badge');
+    const rrfScore = match.rrf_score || 0;
+    
+    let confidenceClass = 'low';
+    let confidenceText = 'Low Confidence';
+    
+    // Using empirical RRF thresholds typically > 0.08 is extremely high. 
+    if (rrfScore >= 0.08) {
+        confidenceClass = 'high';
+        confidenceText = 'High Confidence';
+    } else if (rrfScore >= 0.03) {
+        confidenceClass = 'medium';
+        confidenceText = 'Medium Confidence';
+    }
+    
+    badge.className = `confidence-badge ${confidenceClass}`;
+    badge.textContent = confidenceText;
+    
+    // AI Reasoning parsing - ensuring the text matches the raw value
+    content.querySelector('.reasoning-text').textContent = match.reasoning || "No reasoning extracted from model for this match.";
     
     modalBody.innerHTML = '';
     modalBody.appendChild(content);
@@ -199,9 +300,9 @@ async function handleDecision(isMatch) {
         closeModal();
         renderList();
         
-        // Update count
+        // Update count for the entire dataset
         document.getElementById('total-groups-count').textContent = 
-            currentData ? `${currentData.length} parts pending list` : "0 parts pending";
+            currentData ? `${currentData.length} parts in queue` : "0 parts in queue";
         
     } catch (error) {
         console.error('Error submitting decision:', error);

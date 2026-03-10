@@ -76,12 +76,17 @@ async def get_matches():
             d.is_match,
             d.reasoning,
             c.part_description as customer_description,
-            s.part_description as supplier_description
+            s.part_description as supplier_description,
+            c.part_type as c_part_type, c.material as c_material, c.grade as c_grade, c.size_value as c_size, c.size_unit as c_size_unit, c.thread_pitch as c_thread_pitch, c.length_value as c_length, c.length_unit as c_length_unit, c.standard_ref as c_standard_ref,
+            s.part_type as s_part_type, s.material as s_material, s.grade as s_grade, s.size_value as s_size, s.size_unit as s_size_unit, s.thread_pitch as s_thread_pitch, s.length_value as s_length, s.length_unit as s_length_unit, s.standard_ref as s_standard_ref,
+            q.rrf_score
         FROM `{PROJECT_ID}.{DATASET}.agent_decisions` d
-        LEFT JOIN `{PROJECT_ID}.{DATASET}.raw_customer_parts` c
-            ON d.customer_part_number = c.part_number
-        LEFT JOIN `{PROJECT_ID}.{DATASET}.raw_source1_parts` s
-            ON d.supplier_part_number = s.part_number
+        LEFT JOIN `{PROJECT_ID}.{DATASET}.all_parts_enriched` c
+            ON d.customer_part_number = c.part_number AND LOWER(c.source) = 'customer'
+        LEFT JOIN `{PROJECT_ID}.{DATASET}.all_parts_enriched` s
+            ON d.supplier_part_number = s.part_number AND LOWER(s.source) != 'customer'
+        LEFT JOIN `{PROJECT_ID}.{DATASET}.agent_review_queue` q
+            ON d.customer_part_number = q.customer_part_number AND d.supplier_part_number = q.supplier_part_number
         WHERE d.decision = 'REQUIRES_HUMAN_REVIEW' OR d.decision IS NULL
         ORDER BY d.customer_part_number, d.supplier_part_number
         LIMIT 500
@@ -96,8 +101,27 @@ async def get_matches():
                 "decision": row.decision,
                 "is_match": row.is_match,
                 "reasoning": row.reasoning,
+                "rrf_score": row.rrf_score,
                 "customer_description": row.customer_description,
                 "supplier_description": row.supplier_description,
+                "c_attributes": {
+                    "type": row.c_part_type,
+                    "material": row.c_material,
+                    "grade": row.c_grade,
+                    "size": f"{row.c_size} {row.c_size_unit}".strip() if row.c_size else None,
+                    "thread_pitch": row.c_thread_pitch,
+                    "length": f"{row.c_length} {row.c_length_unit}".strip() if row.c_length else None,
+                    "standard": row.c_standard_ref
+                },
+                "s_attributes": {
+                    "type": row.s_part_type,
+                    "material": row.s_material,
+                    "grade": row.s_grade,
+                    "size": f"{row.s_size} {row.s_size_unit}".strip() if row.s_size else None,
+                    "thread_pitch": row.s_thread_pitch,
+                    "length": f"{row.s_length} {row.s_length_unit}".strip() if row.s_length else None,
+                    "standard": row.s_standard_ref
+                }
             })
             
         # Group by customer_part_number

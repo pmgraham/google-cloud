@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agent Decisions Review</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=3">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
@@ -41,8 +41,14 @@
                 <!-- Data List View -->
                 <div class="list-container">
                     <div class="list-header">
-                        <h2>Pending Match Reviews</h2>
-                        <span class="match-count" id="total-groups-count">Loading...</span>
+                        <div class="header-title-area" style="display: flex; align-items: center; gap: 16px;">
+                            <h2>Pending Match Reviews</h2>
+                            <span class="match-count" id="total-groups-count">Loading...</span>
+                        </div>
+                        <div class="search-container">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="search-input" class="search-input" placeholder="Search by part #, desc, reason...">
+                        </div>
                     </div>
                     
                     <div class="matches-list" id="matches-list">
@@ -116,14 +122,7 @@
                     <div class="part-type-label">Customer Part Number</div>
                     <div class="part-number cpn-text">CPN-XXXXX</div>
                     <div class="part-details">
-                        <div class="detail-row">
-                            <span class="detail-label">Status</span>
-                            <span class="detail-value">Current</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Source</span>
-                            <span class="detail-value">Primary Catalog</span>
-                        </div>
+                        <!-- Dynamic details injected here -->
                     </div>
                 </div>
 
@@ -132,14 +131,7 @@
                     <div class="part-type-label">Supplier Part Number</div>
                     <div class="part-number spn-text">SPN-XXXXX</div>
                     <div class="part-details">
-                        <div class="detail-row">
-                            <span class="detail-label">Status</span>
-                            <span class="detail-value">Candidate</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Source</span>
-                            <span class="detail-value">External Vendor</span>
-                        </div>
+                        <!-- Dynamic details injected here -->
                     </div>
                 </div>
             </div>
@@ -147,10 +139,10 @@
             <div class="reasoning-section">
                 <div class="reasoning-header">
                     <h4><i class="fas fa-robot"></i> AI Decision Reasoning</h4>
-                    <span class="confidence-badge">High Confidence</span>
+                    <span class="confidence-badge">Evaluating...</span>
                 </div>
                 <div class="reasoning-content">
-                    <p class="reasoning-text">AI confident in identifying these parts as identical. Analysis pending...</p>
+                    <p class="reasoning-text">Loading analysis...</p>
                 </div>
             </div>
 
@@ -165,6 +157,6 @@
         </div>
     </template>
     
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=4"></script>
 </body>
 </html>
