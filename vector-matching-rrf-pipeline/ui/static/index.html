@@ -51,6 +51,17 @@
                         </div>
                     </div>
                     
+                    <!-- Gemini Command Bar -->
+                    <div class="gemini-bar" id="gemini-bar">
+                        <i class="fas fa-sparkles gemini-icon"></i>
+                        <input type="text" id="gemini-input" placeholder="Ask Gemini to filter or manage matches (e.g. 'Show me high confidence nuts')">
+                        <button id="gemini-submit"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                    <div id="gemini-response-bubble" class="gemini-response hidden">
+                        <span id="gemini-response-text"></span>
+                        <button id="gemini-clear-btn" title="Clear Filter"><i class="fas fa-times"></i></button>
+                    </div>
+
                     <div class="matches-list" id="matches-list">
                         <!-- Loading State -->
                         <div class="loading-state">
@@ -157,6 +168,6 @@
         </div>
     </template>
     
-    <script src="/static/app.js?v=4"></script>
+    <script src="/static/app.js?v=5"></script>
 </body>
 </html>

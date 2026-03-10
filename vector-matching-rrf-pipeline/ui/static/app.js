@@ -1,4 +1,6 @@
 let currentData = null;
+let currentSearchQuery = '';
+let currentSqlFilter = null;
 
 function setupTabs() {
     const tabs = document.querySelectorAll('.sidebar .nav-links li');
@@ -29,8 +31,6 @@ function setupTabs() {
         });
     });
 }
-let currentSearchQuery = '';
-
 document.addEventListener('DOMContentLoaded', () => {
     setupTabs();
     fetchMatches();
@@ -43,11 +43,28 @@ document.addEventListener('DOMContentLoaded', () => {
             renderList();
         });
     }
+
+    // Setup Gemini
+    const geminiInput = document.getElementById('gemini-input');
+    const geminiSubmit = document.getElementById('gemini-submit');
+    const geminiClear = document.getElementById('gemini-clear-btn');
+
+    if (geminiSubmit) {
+        geminiSubmit.addEventListener('click', handleGeminiCommand);
+        geminiInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleGeminiCommand();
+        });
+        geminiClear.addEventListener('click', clearGeminiFilter);
+    }
 });
 
 async function fetchMatches() {
     try {
-        const response = await fetch('/api/matches');
+        let url = '/api/matches';
+        if (currentSqlFilter) {
+            url += `?sql_filter=${encodeURIComponent(currentSqlFilter)}`;
+        }
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -307,5 +324,84 @@ async function handleDecision(isMatch) {
     } catch (error) {
         console.error('Error submitting decision:', error);
         alert(`Failed to submit decision: ${error.message}`);
+    }
+}
+
+// --- Gemini Integration ---
+
+async function handleGeminiCommand() {
+    const geminiInput = document.getElementById('gemini-input');
+    const command = geminiInput.value.trim();
+    if (!command) return;
+    
+    const submitBtn = document.getElementById('gemini-submit');
+    geminiInput.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    try {
+        const response = await fetch('/api/gemini_command', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command })
+        });
+        
+        if (!response.ok) throw new Error("Failed to process command.");
+        const result = await response.json();
+        
+        showGeminiResponse(result.message);
+        
+        if (result.action === 'filter_list') {
+            currentSqlFilter = result.sql_filter;
+            await fetchMatches();
+        } else if (result.action === 'bulk_accept' || result.action === 'bulk_reject') {
+            const isMatch = result.action === 'bulk_accept';
+            const actionText = isMatch ? 'ACCEPT' : 'REJECT';
+            if (confirm(`Are you sure you want to ${actionText} all remaining matches that match your command?`)) {
+                await executeBulkDecision(isMatch, result.sql_filter || currentSqlFilter);
+            }
+        } else if (result.action === 'clear_filter') {
+            clearGeminiFilter();
+        }
+        
+    } catch (e) {
+        showGeminiResponse(`Error: ${e.message}`);
+    } finally {
+        geminiInput.disabled = false;
+        geminiInput.value = '';
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        geminiInput.focus();
+    }
+}
+
+function showGeminiResponse(msg) {
+    const bubble = document.getElementById('gemini-response-bubble');
+    document.getElementById('gemini-response-text').innerHTML = `<i class="fas fa-sparkles"></i> ${msg}`;
+    bubble.classList.remove('hidden');
+}
+
+function clearGeminiFilter() {
+    currentSqlFilter = null;
+    document.getElementById('gemini-response-bubble').classList.add('hidden');
+    document.getElementById('gemini-input').value = '';
+    fetchMatches();
+}
+
+async function executeBulkDecision(isMatch, sqlFilter) {
+    try {
+        const response = await fetch('/api/bulk_decide', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                decision: isMatch ? 'ACCEPTED' : 'REJECTED',
+                is_match: isMatch,
+                sql_filter: sqlFilter
+            })
+        });
+        if (!response.ok) throw new Error("Failed bulk update");
+        
+        await fetchMatches();
+        showGeminiResponse(`Successfully completed bulk updates.`);
+    } catch (e) {
+        showGeminiResponse(`Error during bulk update: ${e.message}`);
     }
 }

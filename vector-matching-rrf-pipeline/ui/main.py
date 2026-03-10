@@ -3,8 +3,9 @@ import json
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from google.cloud import bigquery
+from google import genai
 
 # Try to load local config, or use defaults
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "pipeline", "config", "customer_schema_local.json")
@@ -27,6 +28,12 @@ except Exception as e:
     print(f"Warning: Could not initialize BigQuery client: {e}")
     bq_client = None
 
+try:
+    genai_client = genai.Client(vertexai=True, project=PROJECT_ID, location='us-central1')
+except Exception as e:
+    print(f"Warning: Could not initialize GenAI client: {e}")
+    genai_client = None
+
 # Serve static files from the 'static' directory
 # Mount it later to allow index.html at root
 
@@ -38,7 +45,7 @@ class DecisionRequest(BaseModel):
     reasoning: str
 
 @app.get("/api/matches")
-async def get_matches():
+async def get_matches(sql_filter: str = None):
     if not bq_client:
         raise HTTPException(status_code=500, detail="BigQuery client not initialized")
     
@@ -67,7 +74,11 @@ async def get_matches():
     
     # Wait, the customer parts and supplier parts join might be complex if there are multiple sources.
     # What if we just fetch from agent_decisions first? And maybe get more details if needed.
-    # For simplicity, let's just get the main info from agent_decisions.
+    
+    where_clause = "(d.decision = 'REQUIRES_HUMAN_REVIEW' OR d.decision IS NULL)"
+    if sql_filter:
+        where_clause += f" AND ({sql_filter})"
+        
     query = f"""
         SELECT 
             d.customer_part_number,
@@ -87,7 +98,7 @@ async def get_matches():
             ON d.supplier_part_number = s.part_number AND LOWER(s.source) != 'customer'
         LEFT JOIN `{PROJECT_ID}.{DATASET}.agent_review_queue` q
             ON d.customer_part_number = q.customer_part_number AND d.supplier_part_number = q.supplier_part_number
-        WHERE d.decision = 'REQUIRES_HUMAN_REVIEW' OR d.decision IS NULL
+        WHERE {where_clause}
         ORDER BY d.customer_part_number, d.supplier_part_number
         LIMIT 500
     """
@@ -158,6 +169,94 @@ async def submit_decision(req: DecisionRequest):
             bigquery.ScalarQueryParameter("is_match", "BOOL", req.is_match),
             bigquery.ScalarQueryParameter("cpn", "STRING", req.customer_part_number),
             bigquery.ScalarQueryParameter("spn", "STRING", req.supplier_part_number),
+        ]
+    )
+    
+    try:
+        bq_client.query(query, job_config=job_config).result()
+        return {"status": "success"}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+class GeminiCommandRequest(BaseModel):
+    command: str
+
+class GeminiAction(BaseModel):
+    action: str = Field(description="The action taking place. Options: 'filter_list', 'bulk_accept', 'bulk_reject', 'clear_filter'")
+    sql_filter: str | None = Field(description="A valid BigQuery SQL WHERE clause component using the aliases `c` (customer part), `s` (supplier part), `d` (agent_decisions), or `q` (agent_review_queue) to filter the results based on the user's command. For example: `LOWER(c.material) = 'stainless steel' AND q.rrf_score >= 0.08`. Use safe syntax. Return null if action is clear_filter. IMPORTANT: do not include the WHERE keyword itself, just the conditions. Date fields should not be filtered. DO not filter on d.decision as it is already filtered in the main query.")
+    message: str = Field(description="A short natural language response to display back to the user.")
+
+@app.post("/api/gemini_command")
+async def process_gemini_command(req: GeminiCommandRequest):
+    if not genai_client:
+        raise HTTPException(status_code=500, detail="GenAI client not initialized")
+
+    prompt = f"""
+    The user is managing a queue of matched industrial parts. 
+    You must map their natural language command to a specific action and optional SQL filter.
+    
+    Database Context:
+    - Table aliases: `d` (agent_decisions), `c` (customer parts from all_parts_enriched), `s` (supplier parts from all_parts_enriched), `q` (agent_review_queue).
+    - Confidence scores: `q.rrf_score`. High confidence is >= 0.08. Medium is >= 0.03. Low is < 0.03.
+    - Attributes available on `c` and `s`: `part_type`, `material`, `grade`, `size_value`, `size_unit`, `thread_pitch`, `length_value`, `length_unit`, `standard_ref`, `part_description`.
+    - `d.is_match` (boolean), `d.decision` (string), `d.reasoning` (string).
+    
+    User Command: "{req.command}"
+    """
+    
+    try:
+        response = genai_client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+            config=genai.types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=GeminiAction,
+                temperature=0,
+            ),
+        )
+        return json.loads(response.text)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+class BulkDecisionRequest(BaseModel):
+    decision: str
+    is_match: bool
+    sql_filter: str | None = None
+
+@app.post("/api/bulk_decide")
+async def bulk_decide(req: BulkDecisionRequest):
+    if not bq_client:
+        raise HTTPException(status_code=500, detail="BigQuery client not initialized")
+        
+    where_clause = "(d.decision = 'REQUIRES_HUMAN_REVIEW' OR d.decision IS NULL)"
+    if req.sql_filter:
+        where_clause += f" AND ({req.sql_filter})"
+        
+    query = f"""
+        UPDATE `{PROJECT_ID}.{DATASET}.agent_decisions` d_main
+        SET decision = @decision, is_match = @is_match
+        WHERE EXISTS (
+            SELECT 1
+            FROM `{PROJECT_ID}.{DATASET}.agent_decisions` d
+            LEFT JOIN `{PROJECT_ID}.{DATASET}.all_parts_enriched` c
+                ON d.customer_part_number = c.part_number AND LOWER(c.source) = 'customer'
+            LEFT JOIN `{PROJECT_ID}.{DATASET}.all_parts_enriched` s
+                ON d.supplier_part_number = s.part_number AND LOWER(s.source) != 'customer'
+            LEFT JOIN `{PROJECT_ID}.{DATASET}.agent_review_queue` q
+                ON d.customer_part_number = q.customer_part_number AND d.supplier_part_number = q.supplier_part_number
+            WHERE d.customer_part_number = d_main.customer_part_number 
+              AND d.supplier_part_number = d_main.supplier_part_number
+              AND {where_clause}
+        )
+    """
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("decision", "STRING", req.decision),
+            bigquery.ScalarQueryParameter("is_match", "BOOL", req.is_match),
         ]
     )
     
