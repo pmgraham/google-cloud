@@ -2,6 +2,7 @@ import json
 import os
 import argparse
 import subprocess
+import uuid
 from jinja2 import Environment, FileSystemLoader
 from google.cloud import bigquery
 
@@ -88,6 +89,47 @@ def run_go_agent(repo_dir: str, config: dict) -> None:
         print(f"  ❌ Execution failed: {e}")
         raise
 
+def record_pipeline_start(config: dict, dry_run: bool) -> str:
+    """Creates the pipeline_runtime table if it doesn't exist and records the start time."""
+    if dry_run:
+        print("[DRY RUN] Would create pipeline_runtime table and record start time.")
+        return "dry-run-id"
+        
+    client = bigquery.Client(project=config.get('project_id'))
+    table_id = f"{config.get('project_id')}.{config.get('dataset')}.pipeline_runtime"
+    
+    schema = [
+        bigquery.SchemaField("run_id", "STRING", mode="REQUIRED"),
+        bigquery.SchemaField("started_at", "TIMESTAMP", mode="REQUIRED"),
+        bigquery.SchemaField("finished_at", "TIMESTAMP", mode="NULLABLE"),
+    ]
+    table = bigquery.Table(table_id, schema=schema)
+    client.create_table(table, exists_ok=True)
+    
+    run_id = str(uuid.uuid4())
+    query = f"""
+        INSERT INTO `{config.get('project_id')}.{config.get('dataset')}.pipeline_runtime` (run_id, started_at)
+        VALUES ('{run_id}', CURRENT_TIMESTAMP())
+    """
+    client.query(query).result()
+    print(f"[Runtime Tracking] Pipeline started. Run ID: {run_id}")
+    return run_id
+
+def record_pipeline_finish(config: dict, run_id: str, dry_run: bool) -> None:
+    """Updates the pipeline_runtime table with the finish time for the given run_id."""
+    if dry_run:
+        print("[DRY RUN] Would update pipeline_runtime table and record finish time.")
+        return
+        
+    client = bigquery.Client(project=config.get('project_id'))
+    query = f"""
+        UPDATE `{config.get('project_id')}.{config.get('dataset')}.pipeline_runtime`
+        SET finished_at = CURRENT_TIMESTAMP()
+        WHERE run_id = '{run_id}'
+    """
+    client.query(query).result()
+    print(f"[Runtime Tracking] Pipeline finished. Run ID: {run_id}")
+
 def main():
     parser = argparse.ArgumentParser(description="Render and execute BigQuery SQL templates.")
     parser.add_argument("--dry-run", action="store_true", help="Validate queries without executing them.")
@@ -111,6 +153,8 @@ def main():
     with open(prompt_path, 'r') as f:
         config['ai_prompt'] = f.read()
 
+    run_id = record_pipeline_start(config, args.dry_run)
+
     rendered_queries = render_templates(config, template_dir)
     
     out_dir = os.path.join(pipeline_dir, 'sql', 'rendered_sql')
@@ -125,6 +169,8 @@ def main():
     
     if not args.dry_run and args.run_agent:
         run_go_agent(repo_dir, config)
+
+    record_pipeline_finish(config, run_id, args.dry_run)
 
 if __name__ == "__main__":
     main()
