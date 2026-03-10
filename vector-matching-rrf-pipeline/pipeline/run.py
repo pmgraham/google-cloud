@@ -44,7 +44,7 @@ def execute_queries(rendered_queries: list[tuple[str, str]], dry_run: bool) -> N
                 print(f"  [DRY RUN] Success. Query will process {bytes_processed} bytes.")
             else:
                 query_job.result() # Wait for the job to complete
-                print(f"  [EXECUTE] Successfully executed.")
+                print("  [EXECUTE] Successfully executed.")
                 
         except Exception as e:
             print(f"  [ERROR] Failed to execute {name}:\n{e}")

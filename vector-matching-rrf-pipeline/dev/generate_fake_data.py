@@ -1,7 +1,6 @@
 import polars as pl
 import random
 import uuid
-import os
 
 # Set seed for reproducibility
 random.seed(42)
@@ -229,8 +228,10 @@ def get_source_data(record, counter):
         if p['category'] == 'Fasteners' and p['part_type'] in standards:
             part_description += f", meets {random.choice(standards[p['part_type']])[0]} / {random.choice(standards[p['part_type']])[1]}"
         # Nullify specific fields as per specs
-        if random.random() < 0.7: material = None
-        if random.random() < 0.7: dimensions = None
+        if random.random() < 0.7:
+            material = None
+        if random.random() < 0.7:
+            dimensions = None
 
     # 4. Source3 (Legacy MRO: Short codes, messy, nulls)
     elif source == 'Source3':
@@ -247,7 +248,8 @@ def get_source_data(record, counter):
         
         material = None
         dimensions = None
-        if random.random() < 0.5: category = None
+        if random.random() < 0.5:
+            category = None
 
     # 5. Source4 (International: European standard focus, metric only)
     elif source == 'Source4':
