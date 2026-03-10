@@ -11,7 +11,8 @@ CREATE TABLE IF NOT EXISTS `{{ project_id }}.{{ dataset }}.agent_decisions` (
     supplier_part_number STRING,
     reasoning STRING NOT NULL,
     is_human_reviewed BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
 );
 
 CREATE OR REPLACE VIEW `{{ project_id }}.{{ dataset }}.final_part_mapping` AS
