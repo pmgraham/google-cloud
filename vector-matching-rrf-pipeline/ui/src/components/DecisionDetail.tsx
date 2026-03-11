@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { ReactNode, useEffect } from 'react';
 import { AgentDecision } from '../types';
-import { Check, X, AlertTriangle, HelpCircle, CheckCircle2, AlertCircle, FileQuestion, ArrowRightLeft, Factory, Tag, DollarSign, Bot } from 'lucide-react';
+import { Check, X, AlertTriangle, HelpCircle, CheckCircle2, AlertCircle, FileQuestion, XCircle, ArrowRightLeft, Factory, Tag, DollarSign, Bot } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface DecisionDetailProps {
@@ -226,6 +226,9 @@ export function DecisionDetail({ decision, groupCandidates, viewMode = 'single',
                                  if (!dec) return <FileQuestion size={16} className="text-zinc-400" />;
                                  if (dec === 'MATCH' || dec === 'Human Confirmed' || (dec.includes('High Confidence') && isM)) {
                                    return <CheckCircle2 size={16} className="text-emerald-500" />;
+                                 }
+                                 if (dec === 'Human Rejected') {
+                                   return <XCircle size={16} className="text-rose-500" />;
                                  }
                                  if (dec.includes('Ambiguous') || dec === 'REQUIRES_HUMAN_REVIEW') {
                                    return <HelpCircle size={16} className="text-amber-500" />;

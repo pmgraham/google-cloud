@@ -31,6 +31,7 @@
     const FileQuestion = getIcon('FileQuestion');
     const Check = getIcon('Check');
     const X = getIcon('X');
+    const XCircle = getIcon('XCircle') || getIcon('XCircle');
     const AlertTriangle = getIcon('TriangleAlert') || getIcon('AlertTriangle');
     const ArrowRightLeft = getIcon('ArrowLeftRight') || getIcon('ArrowRightLeft');
     const ChevronDown = ({ size = 16, className = "" }) => React.createElement('svg', { xmlns: 'http://www.w3.org/2000/svg', width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round', className }, React.createElement('path', { d: 'm6 9 6 6 6-6' }));
@@ -225,6 +226,9 @@
       if (!decision) return <FileQuestion size={16} className="text-zinc-400" />;
       if (decision === 'MATCH' || decision === 'Human Confirmed' || (decision.includes('High Confidence') && isMatch)) {
         return <CheckCircle2 size={16} className="text-emerald-500" />;
+      }
+      if (decision === 'Human Rejected') {
+        return <XCircle size={16} className="text-rose-500" />;
       }
       if (decision.includes('Ambiguous') || decision === 'REQUIRES_HUMAN_REVIEW') {
         return <HelpCircle size={16} className="text-amber-500" />;
