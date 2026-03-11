@@ -30,8 +30,11 @@ def get_search_condition(search: str):
     )"""
 
 @app.get("/api/decisions")
-def get_decisions(status: str = Query('pending'), search: str = Query(None)):
+def get_decisions(status: str = Query('pending'), search: str = Query(None), page: int = Query(1, ge=1)):
     search_string = f"%{search}%" if search else None
+    
+    limit = 50
+    offset = (page - 1) * limit
     
     if status == 'pending':
         query = f"""
@@ -180,13 +183,18 @@ def get_decisions(status: str = Query('pending'), search: str = Query(None)):
       SELECT * FROM ({query})
       WHERE {get_search_condition(search_string)}
       ORDER BY created_at DESC
-      LIMIT 100
+      LIMIT @limit OFFSET @offset
     """
     
+    query_params = [
+        bigquery.ScalarQueryParameter("limit", "INT64", limit),
+        bigquery.ScalarQueryParameter("offset", "INT64", offset),
+    ]
+    if search_string:
+        query_params.append(bigquery.ScalarQueryParameter("search", "STRING", search_string))
+        
     job_config = bigquery.QueryJobConfig(
-        query_parameters=[
-            bigquery.ScalarQueryParameter("search", "STRING", search_string)
-        ] if search_string else []
+        query_parameters=query_params
     )
     
     query_job = client.query(final_query, job_config=job_config)
