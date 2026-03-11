@@ -77,7 +77,7 @@
       }
     };
 
-    function DecisionList({ decisions, selectedId, onSelect }) {
+    function DecisionList({ decisions, selectedId, onSelect, decisionFilter }) {
       const [collapsedGroups, setCollapsedGroups] = useState({});
       const [defaultCollapsed, setDefaultCollapsed] = useState(false);
 
@@ -99,7 +99,7 @@
         return acc;
       }, {});
       
-      const groupKeys = Object.keys(groupedDecisions);
+      const groupKeys = Object.keys(groupedDecisions).sort((a, b) => a.localeCompare(b));
       
       const expandAll = () => {
         setDefaultCollapsed(false);
@@ -130,7 +130,9 @@
           )}
           <div className="divide-y divide-zinc-200 pb-12 overflow-y-auto">
           {Object.entries(groupedDecisions).map(([customerPart, group]) => {
-            const isCollapsed = collapsedGroups.hasOwnProperty(customerPart) ? collapsedGroups[customerPart] : defaultCollapsed;
+            const isCollapsed = customerPart in collapsedGroups ? collapsedGroups[customerPart] : defaultCollapsed;
+            const filteredGroup = decisionFilter ? group.filter(d => d.decision === decisionFilter) : group;
+            
             return (
             <div key={customerPart} className="relative bg-white border-b border-zinc-200 last:border-0">
               <div 
@@ -142,12 +144,17 @@
                   <span className="text-xs font-semibold text-zinc-600 uppercase tracking-wider">{customerPart}</span>
                 </div>
                 <span className="bg-white text-zinc-500 px-2 py-0.5 rounded-full text-[10px] font-medium border border-zinc-200/60 shadow-sm">
-                  {group.length} {group.length === 1 ? 'match' : 'matches'}
+                  {filteredGroup.length} {filteredGroup.length === 1 ? 'match' : 'matches'}
                 </span>
               </div>
               {!isCollapsed && (
               <div className="divide-y divide-zinc-100">
-                {group.map((decision) => {
+                {filteredGroup.length === 0 ? (
+                  <div className="p-4 text-sm text-zinc-500 italic text-center">
+                    No matches found for this filter.
+                  </div>
+                ) : (
+                  filteredGroup.map((decision) => {
                   const isSelected = decision.id === selectedId;
                   const isAutoApproved = decision.reasoning?.includes('Auto-approved');
                   
@@ -192,7 +199,8 @@
                       </div>
                     </button>
                   );
-                })}
+                })
+              )}
               </div>
               )}
             </div>
@@ -354,6 +362,7 @@
       const [decisions, setDecisions] = useState([]);
       const [selectedId, setSelectedId] = useState(null);
       const [statusFilter, setStatusFilter] = useState('pending');
+      const [decisionFilter, setDecisionFilter] = useState('');
       const [searchQuery, setSearchQuery] = useState('');
       const [isLoading, setIsLoading] = useState(false);
       const [page, setPage] = useState(1);
@@ -474,6 +483,24 @@
                   ))}
                 </div>
               </div>
+
+              {statusFilter === 'pending' && (
+                <div className="mt-3 flex items-center gap-2">
+                  <div className="w-[14px] flex justify-center">
+                    <Filter size={14} className="text-zinc-400" />
+                  </div>
+                  <select
+                    className="w-full text-xs font-medium py-1.5 px-2 bg-white border border-zinc-200 rounded-md text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all cursor-pointer"
+                    value={decisionFilter}
+                    onChange={(e) => setDecisionFilter(e.target.value)}
+                  >
+                    <option value="">All Pending Decisions</option>
+                    <option value="MATCH">AI Match</option>
+                    <option value="NO_MATCH">AI No Match</option>
+                    <option value="REQUIRES_HUMAN_REVIEW">Review Needed</option>
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto">
@@ -487,6 +514,7 @@
                     decisions={decisions} 
                     selectedId={selectedId} 
                     onSelect={setSelectedId} 
+                    decisionFilter={decisionFilter}
                   />
                   {hasMore && (
                     <div ref={lastElementRef} className="py-4 text-center text-zinc-400 text-sm">

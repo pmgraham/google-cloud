@@ -182,7 +182,7 @@ def get_decisions(status: str = Query('pending'), search: str = Query(None), pag
     final_query = f"""
       SELECT * FROM ({query})
       WHERE {get_search_condition(search_string)}
-      ORDER BY created_at DESC
+      ORDER BY customer_part_number ASC
       LIMIT @limit OFFSET @offset
     """
     

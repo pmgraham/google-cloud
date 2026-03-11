@@ -9,9 +9,10 @@ interface DecisionListProps {
   decisions: AgentDecision[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  decisionFilter?: string;
 }
 
-export function DecisionList({ decisions, selectedId, onSelect }: DecisionListProps) {
+export function DecisionList({ decisions, selectedId, onSelect, decisionFilter }: DecisionListProps) {
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [defaultCollapsed, setDefaultCollapsed] = useState<boolean>(false);
 
@@ -33,7 +34,7 @@ export function DecisionList({ decisions, selectedId, onSelect }: DecisionListPr
     return acc;
   }, {} as Record<string, AgentDecision[]>);
   
-  const groupKeys = Object.keys(groupedDecisions);
+  const groupKeys = Object.keys(groupedDecisions).sort((a, b) => a.localeCompare(b));
   
   const expandAll = () => {
     setDefaultCollapsed(false);
@@ -80,56 +81,62 @@ export function DecisionList({ decisions, selectedId, onSelect }: DecisionListPr
             </span>
           </div>
           {!isCollapsed && (
-          <div className="divide-y divide-zinc-100">
-            {group.map((decision) => {
-              const isSelected = decision.id === selectedId;
-              const isAutoApproved = decision.reasoning?.includes('Auto-approved');
-              
-              return (
-                <button
-                  key={decision.id}
-                  onClick={() => onSelect(decision.id)}
-                  className={cn(
-                    "w-full text-left p-4 transition-all hover:bg-zinc-50 focus:outline-none",
-                    isSelected ? "bg-indigo-50/50 ring-1 ring-inset ring-indigo-500/20" : ""
-                  )}
-                >
-                  <div className="flex justify-between items-start mb-1 gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <StatusIcon decision={decision.decision} isMatch={decision.is_match} />
-                      <span className="font-mono text-sm font-medium text-zinc-900 truncate">
-                        {decision.supplier_part_number || "No Match"}
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-medium shrink-0 pt-0.5">
-                      {decision.created_at ? formatDistanceToNow(new Date(decision.created_at), { addSuffix: true }) : ''}
-                    </span>
-                  </div>
+            <div className="divide-y divide-zinc-100">
+              {filteredGroup.length === 0 ? (
+                <div className="p-4 text-sm text-zinc-500 italic text-center">
+                  No matches found for this filter.
+                </div>
+              ) : (
+                filteredGroup.map((decision) => {
+                  const isSelected = decision.id === selectedId;
+                  const isAutoApproved = decision.reasoning?.includes('Auto-approved');
                   
-                  <div className="pl-6">
-                    <p className="text-xs text-zinc-500 truncate mb-2">
-                      {decision.supplier_description || decision.customer_description || "Unknown part"}
-                    </p>
-                    
-                    <div className="flex items-center gap-2">
-                      <span className={cn(
-                        "text-[10px] px-2 py-0.5 rounded-full font-medium border",
-                        decision.is_human_reviewed 
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : isAutoApproved
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
-                            : "bg-amber-50 text-amber-700 border-amber-200"
-                      )}>
-                        {decision.is_human_reviewed ? 'Reviewed' : isAutoApproved ? 'Auto Approved' : 'Pending'}
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+                  return (
+                    <button
+                      key={decision.id}
+                      onClick={() => onSelect(decision.id)}
+                      className={cn(
+                        "w-full text-left p-4 transition-all hover:bg-zinc-50 focus:outline-none",
+                        isSelected ? "bg-indigo-50/50 ring-1 ring-inset ring-indigo-500/20" : ""
+                      )}
+                    >
+                      <div className="flex justify-between items-start mb-1 gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <StatusIcon decision={decision.decision} isMatch={decision.is_match} />
+                          <span className="font-mono text-sm font-medium text-zinc-900 truncate">
+                            {decision.supplier_part_number || "No Match"}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-medium shrink-0 pt-0.5">
+                          {decision.created_at ? formatDistanceToNow(new Date(decision.created_at), { addSuffix: true }) : ''}
+                        </span>
+                      </div>
+                      
+                      <div className="pl-6">
+                        <p className="text-xs text-zinc-500 truncate mb-2">
+                          {decision.supplier_description || decision.customer_description || "Unknown part"}
+                        </p>
+                        
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            "text-[10px] px-2 py-0.5 rounded-full font-medium border",
+                            decision.is_human_reviewed 
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : isAutoApproved
+                                ? "bg-blue-50 text-blue-700 border-blue-200"
+                                : "bg-amber-50 text-amber-700 border-amber-200"
+                          )}>
+                            {decision.is_human_reviewed ? 'Reviewed' : isAutoApproved ? 'Auto Approved' : 'Pending'}
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+            )}
           </div>
-          )}
-        </div>
         );
       })}
       </div>
