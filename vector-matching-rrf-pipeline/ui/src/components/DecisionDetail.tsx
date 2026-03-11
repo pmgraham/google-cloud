@@ -22,7 +22,22 @@ export function DecisionDetail({ decision, groupCandidates, viewMode = 'single',
       if (element) {
         // Add a small delay to ensure rendering is complete before scrolling
         setTimeout(() => {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Get the scrolling container (the flex-1 overflow-y-auto div)
+          const container = element.closest('.overflow-y-auto');
+          if (container) {
+            // Calculate the offset to align the candidate card perfectly with the top sticky Customer Part card
+            // The sticky Element has top-6 (24px) + mt-[40px] (40px) = 64px from top of container
+            const containerRect = container.getBoundingClientRect();
+            const elementRect = element.getBoundingClientRect();
+            const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
+            
+            // Scroll the container so the candidate card aligns with the top of the sticky customer card
+            // We want the element to sit exactly at the sticky point + margin = 64px from container top
+            container.scrollTo({
+              top: relativeTop - 64,
+              behavior: 'smooth'
+            });
+          }
           
           // Add a temporary highlight effect
           element.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'transition-all', 'duration-500');
@@ -155,7 +170,7 @@ export function DecisionDetail({ decision, groupCandidates, viewMode = 'single',
           <div className="max-w-6xl mx-auto flex gap-8 items-start relative pb-12">
             {/* Left Column: Customer Part */}
             <div className="w-1/3 flex flex-col sticky top-6">
-              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col">
+              <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col mt-[40px]">
                 <div className="bg-zinc-50/80 border-b border-zinc-200 px-4 py-3">
                   <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Customer Part</h3>
                   <div className="font-mono text-lg font-medium text-zinc-900 mt-1">
@@ -172,7 +187,7 @@ export function DecisionDetail({ decision, groupCandidates, viewMode = 'single',
 
             {/* Right Column: Stacked Candidates */}
             <div className="w-2/3 space-y-6 pb-12">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-6">
                 <h3 className="font-semibold text-lg text-zinc-900">Candidate Matches</h3>
                 <span className="bg-zinc-100 text-zinc-600 px-2.5 py-0.5 rounded-full text-xs font-medium border border-zinc-200">
                   {groupCandidates?.length || 0}
