@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { ReactNode, useState } from 'react';
 import { AgentDecision } from '../types';
-import { CheckCircle2, AlertCircle, HelpCircle, FileQuestion, ChevronDown, ChevronRight } from 'lucide-react';
+import { HelpCircle, FileQuestion, ChevronDown, ChevronRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '../lib/utils';
 
@@ -66,6 +66,7 @@ export function DecisionList({ decisions, selectedId, onSelect, decisionFilter }
       <div className="divide-y divide-zinc-200 pb-12 overflow-y-auto">
       {Object.entries(groupedDecisions).map(([customerPart, group]) => {
         const isCollapsed = customerPart in collapsedGroups ? collapsedGroups[customerPart] : defaultCollapsed;
+        const filteredGroup = decisionFilter ? group.filter(d => d.decision === decisionFilter) : group;
         return (
         <div key={customerPart} className="relative bg-white border-b border-zinc-200 last:border-0">
           <div 
@@ -77,7 +78,7 @@ export function DecisionList({ decisions, selectedId, onSelect, decisionFilter }
               <span className="text-xs font-semibold text-zinc-600 uppercase tracking-wider">{customerPart}</span>
             </div>
             <span className="bg-white text-zinc-500 px-2 py-0.5 rounded-full text-[10px] font-medium border border-zinc-200/60 shadow-sm">
-              {group.length} {group.length === 1 ? 'match' : 'matches'}
+              {filteredGroup.length} {filteredGroup.length === 1 ? 'match' : 'matches'}
             </span>
           </div>
           {!isCollapsed && (

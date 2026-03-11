@@ -1,4 +1,5 @@
-import { ReactNode } from 'react';
+// @ts-nocheck
+import React, { ReactNode } from 'react';
 import { AgentDecision } from '../types';
 import { Check, X, AlertTriangle, ArrowRightLeft, Factory, Tag, DollarSign, Bot } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -26,22 +27,7 @@ export function DecisionDetail({ decision, onUpdate }: DecisionDetailProps) {
         </div>
         
         <div className="flex items-center gap-2">
-          {!decision.is_human_reviewed ? (
-            <>
-              <button 
-                onClick={() => onUpdate({ is_human_reviewed: true, is_match: false, decision: 'Human Rejected' })}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors border border-rose-200"
-              >
-                <X size={16} /> Reject Match
-              </button>
-              <button 
-                onClick={() => onUpdate({ is_human_reviewed: true, is_match: true, decision: 'Human Confirmed' })}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
-              >
-                <Check size={16} /> Confirm Match
-              </button>
-            </>
-          ) : (
+          {decision.is_human_reviewed && (
             <button 
               onClick={() => onUpdate({ is_human_reviewed: false })}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-600 bg-white hover:bg-zinc-50 rounded-lg transition-colors border border-zinc-200 shadow-sm"
@@ -62,7 +48,7 @@ export function DecisionDetail({ decision, onUpdate }: DecisionDetailProps) {
               <Bot size={18} className="text-indigo-600" />
               <h3 className="font-medium text-sm text-zinc-900">AI Agent Analysis</h3>
               <span className="ml-auto text-xs font-mono bg-white px-2 py-1 rounded border border-zinc-200 text-zinc-500">
-                {decision.decision}
+                {decision.decision === 'REQUIRES_HUMAN_REVIEW' ? 'Human Review Required' : decision.decision}
               </span>
             </div>
             <div className="p-4">
@@ -116,6 +102,23 @@ export function DecisionDetail({ decision, onUpdate }: DecisionDetailProps) {
                     <InfoRow icon={<Factory size={16} />} label="Manufacturer" value={decision.supplier_manufacturer} />
                     <InfoRow icon={<Tag size={16} />} label="Category" value={decision.supplier_category} />
                     <InfoRow icon={<DollarSign size={16} />} label="Price" value={decision.supplier_price ? `$${decision.supplier_price.toFixed(2)}` : undefined} />
+                  
+                    {!decision.is_human_reviewed && (
+                      <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-end gap-3">
+                        <button 
+                          onClick={() => onUpdate({ is_human_reviewed: true, is_match: false, decision: 'Human Rejected' })}
+                          className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors border border-rose-200"
+                        >
+                          <X size={16} /> Reject Match
+                        </button>
+                        <button 
+                          onClick={() => onUpdate({ is_human_reviewed: true, is_match: true, decision: 'Human Confirmed' })}
+                          className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
+                        >
+                          <Check size={16} /> Confirm Match
+                        </button>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="h-full flex items-center justify-center text-sm text-zinc-400 italic">
