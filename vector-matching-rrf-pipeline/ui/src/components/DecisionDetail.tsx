@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { ReactNode, useEffect } from 'react';
 import { AgentDecision } from '../types';
-import { Check, X, AlertTriangle, ArrowRightLeft, Factory, Tag, DollarSign, Bot } from 'lucide-react';
+import { Check, X, AlertTriangle, HelpCircle, CheckCircle2, AlertCircle, FileQuestion, ArrowRightLeft, Factory, Tag, DollarSign, Bot } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface DecisionDetailProps {
@@ -86,7 +86,7 @@ export function DecisionDetail({ decision, groupCandidates, viewMode = 'single',
               onClick={() => onUpdate(decision.id, { is_human_reviewed: false })}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-600 bg-white hover:bg-zinc-50 rounded-lg transition-colors border border-zinc-200 shadow-sm"
             >
-              <AlertTriangle size={16} /> Needs Review
+              <HelpCircle size={16} /> Needs Review
             </button>
           )}
         </div>
@@ -219,10 +219,24 @@ export function DecisionDetail({ decision, groupCandidates, viewMode = 'single',
                       {/* Inline Agent Analysis for Candidate */}
                       <div className="flex items-center gap-2 text-right">
                           <div className="flex flex-col items-end">
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <Bot size={14} className="text-indigo-600" />
-                              <span className="text-xs font-medium text-zinc-700">Agent Analysis</span>
-                            </div>
+                             <div className="flex items-center gap-1.5 mb-1">
+                               {(() => {
+                                 const dec = candidate.decision;
+                                 const isM = candidate.is_match;
+                                 if (!dec) return <FileQuestion size={16} className="text-zinc-400" />;
+                                 if (dec === 'MATCH' || dec === 'Human Confirmed' || (dec.includes('High Confidence') && isM)) {
+                                   return <CheckCircle2 size={16} className="text-emerald-500" />;
+                                 }
+                                 if (dec.includes('Ambiguous') || dec === 'REQUIRES_HUMAN_REVIEW') {
+                                   return <HelpCircle size={16} className="text-amber-500" />;
+                                 }
+                                 if (!isM) {
+                                   return <AlertCircle size={16} className="text-rose-500" />;
+                                 }
+                                 return <HelpCircle size={16} className="text-amber-500" />;
+                               })()}
+                               <span className="text-xs font-medium text-zinc-700">Agent Analysis</span>
+                             </div>
                             <span className="text-[10px] font-mono bg-white px-2 py-0.5 rounded border border-zinc-200 text-zinc-500">
                               {candidate.decision === 'REQUIRES_HUMAN_REVIEW' ? 'Human Review Required' : candidate.decision}
                             </span>

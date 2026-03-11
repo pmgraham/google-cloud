@@ -10,6 +10,7 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   
+  <script>window.react = window.React;</script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
   <script src="https://unpkg.com/lucide@0.292.0"></script>
@@ -225,13 +226,13 @@
       if (decision === 'MATCH' || decision === 'Human Confirmed' || (decision.includes('High Confidence') && isMatch)) {
         return <CheckCircle2 size={16} className="text-emerald-500" />;
       }
-      if (decision.includes('Ambiguous')) {
+      if (decision.includes('Ambiguous') || decision === 'REQUIRES_HUMAN_REVIEW') {
         return <HelpCircle size={16} className="text-amber-500" />;
       }
       if (!isMatch) {
         return <AlertCircle size={16} className="text-rose-500" />;
       }
-      return <FileQuestion size={16} className="text-zinc-400" />;
+      return <HelpCircle size={16} className="text-amber-500" />;
     }
 
     function DecisionDetail({ decision, groupCandidates, viewMode = 'single', onViewModeChange, onUpdate, decisionFilter }) {
@@ -309,7 +310,7 @@
                   onClick={() => onUpdate(decision.id, { is_human_reviewed: false })}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-600 bg-white hover:bg-zinc-50 rounded-lg transition-colors border border-zinc-200 shadow-sm"
                 >
-                  <AlertTriangle size={16} /> Needs Review
+                  <HelpCircle size={16} /> Needs Review
                 </button>
               )}
             </div>
@@ -455,7 +456,7 @@
                           <div className="flex items-center gap-2 text-right">
                              <div className="flex flex-col items-end">
                                <div className="flex items-center gap-1.5 mb-1">
-                                 <Bot size={14} className="text-indigo-600" />
+                                 <StatusIcon decision={candidate.decision} isMatch={candidate.is_match} />
                                  <span className="text-xs font-medium text-zinc-700">Agent Analysis</span>
                                </div>
                                <span className="text-[10px] font-mono bg-white px-2 py-0.5 rounded border border-zinc-200 text-zinc-500">
