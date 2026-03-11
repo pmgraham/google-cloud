@@ -1,0 +1,5 @@
+{
+  "name": "Part Match Reviewer",
+  "description": "A UI for reviewing AI agent decisions on manufacturing part matching.",
+  "requestFramePermissions": []
+}
