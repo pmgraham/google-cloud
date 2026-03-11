@@ -234,7 +234,7 @@
       return <FileQuestion size={16} className="text-zinc-400" />;
     }
 
-    function DecisionDetail({ decision, groupCandidates, viewMode = 'single', onViewModeChange, onUpdate }) {
+    function DecisionDetail({ decision, groupCandidates, viewMode = 'single', onViewModeChange, onUpdate, decisionFilter }) {
       
       // Auto-scroll to selected candidate when viewMode is grouped
       useEffect(() => {
@@ -414,7 +414,7 @@
                     </span>
                   </div>
                   
-                  {(groupCandidates?.sort((a, b) => {
+                  {(groupCandidates?.filter(c => !decisionFilter || c.decision === decisionFilter).sort((a, b) => {
                     const mfgCompare = (a.supplier_manufacturer || '').localeCompare(b.supplier_manufacturer || '');
                     if (mfgCompare !== 0) return mfgCompare;
                     return (a.supplier_part_number || '').localeCompare(b.supplier_part_number || '');
@@ -691,11 +691,12 @@
           <div className="flex-1 bg-zinc-50 flex flex-col overflow-hidden">
             {selectedDecision ? (
               <DecisionDetail 
-                decision={selectedDecision} 
+                decision={decisions.find(d => d.id === selectedId) || decisions[0]} 
                 groupCandidates={selectedGroup}
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
-                onUpdate={(id, updates) => handleUpdate(id, updates)} 
+                onUpdate={handleUpdate}
+                decisionFilter={statusFilter === 'pending' ? decisionFilter : ''}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center text-zinc-400 flex-col gap-4">
