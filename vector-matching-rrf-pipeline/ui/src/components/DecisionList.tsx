@@ -8,11 +8,13 @@ import { cn } from '../lib/utils';
 interface DecisionListProps {
   decisions: AgentDecision[];
   selectedId: string | null;
+  selectedCustomerPart?: string;
+  viewMode?: 'single' | 'grouped';
   onSelect: (id: string) => void;
   decisionFilter?: string;
 }
 
-export function DecisionList({ decisions, selectedId, onSelect, decisionFilter }: DecisionListProps) {
+export function DecisionList({ decisions, selectedId, selectedCustomerPart, viewMode = 'single', onSelect, decisionFilter }: DecisionListProps) {
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [defaultCollapsed, setDefaultCollapsed] = useState<boolean>(false);
 
@@ -70,7 +72,12 @@ export function DecisionList({ decisions, selectedId, onSelect, decisionFilter }
         return (
         <div key={customerPart} className="relative bg-white border-b border-zinc-200 last:border-0">
           <div 
-            className="bg-zinc-100/95 backdrop-blur-sm px-4 py-2 sticky top-0 z-10 border-b border-zinc-200 flex items-center justify-between cursor-pointer hover:bg-zinc-200/50 transition-colors"
+            className={cn(
+               "px-4 py-2 sticky top-0 z-10 border-b flex items-center justify-between cursor-pointer transition-colors",
+               viewMode === 'grouped' && customerPart === selectedCustomerPart
+                 ? "bg-indigo-50/90 backdrop-blur-sm border-indigo-200"
+                 : "bg-zinc-100/95 backdrop-blur-sm border-zinc-200 hover:bg-zinc-200/50"
+            )}
             onClick={(e) => toggleGroup(customerPart, e)}
           >
             <div className="flex items-center gap-1.5">
