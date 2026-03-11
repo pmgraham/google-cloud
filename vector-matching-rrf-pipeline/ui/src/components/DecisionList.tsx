@@ -95,7 +95,11 @@ export function DecisionList({ decisions, selectedId, selectedCustomerPart, view
                   No matches found for this filter.
                 </div>
               ) : (
-                filteredGroup.map((decision) => {
+                filteredGroup.sort((a, b) => {
+                  const mfgCompare = (a.supplier_manufacturer || '').localeCompare(b.supplier_manufacturer || '');
+                  if (mfgCompare !== 0) return mfgCompare;
+                  return (a.supplier_part_number || '').localeCompare(b.supplier_part_number || '');
+                }).map((decision) => {
                   const isSelected = decision.id === selectedId;
                   const isAutoApproved = decision.reasoning?.includes('Auto-approved');
                   
