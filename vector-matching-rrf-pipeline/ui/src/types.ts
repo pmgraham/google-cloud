@@ -7,7 +7,7 @@ export interface PartInfo {
 }
 
 export interface AgentDecision {
-  id: number;
+  id: string;
   customer_part_number: string;
   decision: string;
   is_match: boolean;
