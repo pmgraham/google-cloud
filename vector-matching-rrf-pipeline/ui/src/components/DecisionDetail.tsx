@@ -1,5 +1,4 @@
-// @ts-nocheck
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import { AgentDecision } from '../types';
 import { Check, X, AlertTriangle, ArrowRightLeft, Factory, Tag, DollarSign, Bot } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -13,6 +12,26 @@ interface DecisionDetailProps {
 }
 
 export function DecisionDetail({ decision, groupCandidates, viewMode = 'single', onViewModeChange, onUpdate }: DecisionDetailProps) {
+  
+  // Auto-scroll to selected candidate when viewMode is grouped
+  useEffect(() => {
+    if (viewMode === 'grouped' && decision?.id) {
+      const element = document.getElementById(`candidate-${decision.id}`);
+      if (element) {
+        // Add a small delay to ensure rendering is complete before scrolling
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Add a temporary highlight effect
+          element.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'transition-all', 'duration-500');
+          setTimeout(() => {
+            element.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2');
+          }, 1500);
+        }, 50);
+      }
+    }
+  }, [decision.id, viewMode]);
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header Actions */}
@@ -164,8 +183,9 @@ export function DecisionDetail({ decision, groupCandidates, viewMode = 'single',
                 return (a.supplier_part_number || '').localeCompare(b.supplier_part_number || '');
               }) || []).map(candidate => {
                 const candidateAutoApproved = candidate.reasoning?.includes('Auto-approved');
+                // Use a ref-able ID for scrolling
                 return (
-                  <div key={candidate.id} className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col">
+                  <div id={`candidate-${candidate.id}`} key={candidate.id} className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col scroll-mt-24">
                     <div className="bg-zinc-50/80 border-b border-zinc-200 px-4 py-3 flex items-center justify-between">
                       <div>
                         <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Matched Supplier Part</h3>
