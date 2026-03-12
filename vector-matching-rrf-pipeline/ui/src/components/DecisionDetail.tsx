@@ -1,4 +1,4 @@
-// @ts-nocheck
+// 
 import React, { ReactNode, useEffect } from 'react';
 import { AgentDecision } from '../types';
 import { Check, X, AlertTriangle, HelpCircle, CheckCircle2, AlertCircle, FileQuestion, XCircle, ArrowRightLeft, Factory, Tag, DollarSign, Bot } from 'lucide-react';

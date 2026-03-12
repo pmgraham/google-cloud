@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
@@ -10,6 +11,9 @@ app = FastAPI()
 
 project_id = os.environ.get("PROJECT_ID", "pmgraham-dev-workspace")
 dataset_id = os.environ.get("DATASET_ID", "vector_matching_pipeline")
+
+if not re.match(r"^[a-zA-Z0-9_\-]+$", project_id) or not re.match(r"^[a-zA-Z0-9_\-]+$", dataset_id):
+    raise ValueError("Invalid project_id or dataset_id format.")
 
 client = bigquery.Client(project=project_id)
 
@@ -501,7 +505,16 @@ def update_decision(id: str, updates: DecisionUpdate):
             ]
         )
         
-        q_merge = f"""
+        stmt_update_agent = f"""
+          UPDATE `{project_id}.{dataset_id}.agent_decisions`
+          SET is_human_reviewed = TRUE, updated_at = CURRENT_TIMESTAMP()
+          WHERE customer_part_number = @customerPartNumber
+          AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL));
+        """ if updates.is_human_reviewed else ""
+
+        q_transaction = f"""
+          BEGIN TRANSACTION;
+
           MERGE `{project_id}.{dataset_id}.human_decisions` T
           USING (SELECT 
             @customerPartNumber as customer_part_number, 
@@ -517,18 +530,13 @@ def update_decision(id: str, updates: DecisionUpdate):
             UPDATE SET decision = S.decision, is_match = S.is_match, reasoning = S.reasoning, comments = S.comments, updated_at = CURRENT_TIMESTAMP()
           WHEN NOT MATCHED THEN
             INSERT (customer_part_number, supplier_part_number, decision, is_match, reasoning, comments, created_at, updated_at) 
-            VALUES (S.customer_part_number, S.supplier_part_number, S.decision, S.is_match, S.reasoning, S.comments, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP())
+            VALUES (S.customer_part_number, S.supplier_part_number, S.decision, S.is_match, S.reasoning, S.comments, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
+
+          {stmt_update_agent}
+
+          COMMIT TRANSACTION;
         """
-        client.query(q_merge, job_config=merge_config).result()
-        
-        if updates.is_human_reviewed:
-            q_update = f"""
-              UPDATE `{project_id}.{dataset_id}.agent_decisions`
-              SET is_human_reviewed = TRUE, updated_at = CURRENT_TIMESTAMP()
-              WHERE customer_part_number = @customerPartNumber
-              AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
-            """
-            client.query(q_update, job_config=job_config).result()
+        client.query(q_transaction, job_config=merge_config).result()
             
     if updates.undo_review:
         undo_config = bigquery.QueryJobConfig(
@@ -538,38 +546,28 @@ def update_decision(id: str, updates: DecisionUpdate):
             ]
         )
         
-        q_revert_agent = f"""
+        q_undo_tx = f"""
+            BEGIN TRANSACTION;
+
             UPDATE `{project_id}.{dataset_id}.agent_decisions`
             SET is_human_reviewed = FALSE, updated_at = CURRENT_TIMESTAMP()
             WHERE customer_part_number = @customerPartNumber
-            AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
-        """
-        client.query(q_revert_agent, job_config=undo_config).result()
-        
-        q_check_comments = f"""
-            SELECT comments FROM `{project_id}.{dataset_id}.human_decisions`
+            AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL));
+
+            UPDATE `{project_id}.{dataset_id}.human_decisions`
+            SET decision = NULL, is_match = NULL, reasoning = NULL, updated_at = CURRENT_TIMESTAMP()
             WHERE customer_part_number = @customerPartNumber
             AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
+            AND TRIM(IFNULL(comments, '')) != '';
+
+            DELETE FROM `{project_id}.{dataset_id}.human_decisions`
+            WHERE customer_part_number = @customerPartNumber
+            AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
+            AND TRIM(IFNULL(comments, '')) = '';
+
+            COMMIT TRANSACTION;
         """
-        human_rows = list(client.query(q_check_comments, job_config=undo_config).result())
-        
-        if human_rows:
-            comments = human_rows[0].comments
-            if comments:
-                q_reset_human = f"""
-                    UPDATE `{project_id}.{dataset_id}.human_decisions`
-                    SET decision = NULL, is_match = NULL, reasoning = NULL, updated_at = CURRENT_TIMESTAMP()
-                    WHERE customer_part_number = @customerPartNumber
-                    AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
-                """
-                client.query(q_reset_human, job_config=undo_config).result()
-            else:
-                q_delete_human = f"""
-                    DELETE FROM `{project_id}.{dataset_id}.human_decisions`
-                    WHERE customer_part_number = @customerPartNumber
-                    AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
-                """
-                client.query(q_delete_human, job_config=undo_config).result()
+        client.query(q_undo_tx, job_config=undo_config).result()
         
     return get_decision(id)
 

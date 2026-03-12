@@ -1,4 +1,4 @@
-// @ts-nocheck
+// 
 import React, { ReactNode, useState } from 'react';
 import { AgentDecision } from '../types';
 import { HelpCircle, FileQuestion, ChevronDown, ChevronRight } from 'lucide-react';
