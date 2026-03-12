@@ -40,6 +40,7 @@
     const Tag = getIcon('Tag');
     const DollarSign = getIcon('DollarSign');
     const Bot = getIcon('Bot');
+    const RotateCcw = getIcon('RotateCcw');
 
     function formatDistanceToNow(dateParam) {
       if (!dateParam) return '';
@@ -78,6 +79,29 @@
         return res.json();
       }
     };
+
+    function ReviewNotesEditor({ initialValue, onSave, rows = 3 }) {
+      const [value, setValue] = useState(initialValue || "");
+      
+      useEffect(() => {
+        setValue(initialValue || "");
+      }, [initialValue]);
+
+      return (
+        <textarea 
+          className="w-full text-sm px-3 py-2 rounded-lg border border-zinc-200 bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none shadow-sm"
+          rows={rows}
+          placeholder="Add notes about your decision..."
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={() => {
+            if (value !== (initialValue || "")) {
+              onSave(value);
+            }
+          }}
+        />
+      );
+    }
 
     function DecisionList({ decisions, selectedId, selectedCustomerPart, viewMode, onSelect, decisionFilter, onUpdate }) {
       const [collapsedGroups, setCollapsedGroups] = useState({});
@@ -131,24 +155,24 @@
             </div>
           )}
           <div className="divide-y divide-zinc-200 pb-12 overflow-y-auto">
-          {Object.entries(groupedDecisions).map(([customerPart, group]) => {
-            const isCollapsed = customerPart in collapsedGroups ? collapsedGroups[customerPart] : defaultCollapsed;
-            const filteredGroup = decisionFilter ? group.filter(d => d.decision === decisionFilter) : group;
+          {Object.entries(groupedDecisions).map(([customerPart_, group_], groupIdx) => {
+            const isCollapsed = customerPart_ in collapsedGroups ? collapsedGroups[customerPart_] : defaultCollapsed;
+            const filteredGroup = decisionFilter ? group_.filter(d => d.decision === decisionFilter) : group_;
             
             return (
-            <div key={customerPart} className="relative bg-white border-b border-zinc-200 last:border-0">
+            <div key={`${customerPart_}-${groupIdx}`} className="relative bg-white border-b border-zinc-200 last:border-0">
               <div 
                 className={cn(
                   "px-4 py-2 sticky top-0 z-10 border-b flex items-center justify-between cursor-pointer transition-colors",
-                  viewMode === 'grouped' && customerPart === selectedCustomerPart
+                  viewMode === 'grouped' && customerPart_ === selectedCustomerPart
                     ? "bg-indigo-50/90 backdrop-blur-sm border-indigo-200"
                     : "bg-zinc-100/95 backdrop-blur-sm border-zinc-200 hover:bg-zinc-200/50"
                 )}
-                onClick={(e) => toggleGroup(customerPart, e)}
+                onClick={(e) => toggleGroup(customerPart_, e)}
               >
                 <div className="flex items-center gap-1.5">
                   {isCollapsed ? <ChevronRight size={14} className="text-zinc-400" /> : <ChevronDown size={14} className="text-zinc-400" />}
-                  <span className="text-xs font-semibold text-zinc-600 uppercase tracking-wider">{customerPart}</span>
+                  <span className="text-xs font-semibold text-zinc-600 uppercase tracking-wider">{customerPart_}</span>
                 </div>
                 <span className="bg-white text-zinc-500 px-2 py-0.5 rounded-full text-[10px] font-medium border border-zinc-200/60 shadow-sm">
                   {filteredGroup.length} {filteredGroup.length === 1 ? 'match' : 'matches'}
@@ -165,13 +189,13 @@
                     const mfgCompare = (a.supplier_manufacturer || '').localeCompare(b.supplier_manufacturer || '');
                     if (mfgCompare !== 0) return mfgCompare;
                     return (a.supplier_part_number || '').localeCompare(b.supplier_part_number || '');
-                  }).map((decision) => {
+                  }).map((decision, idx) => {
                   const isSelected = decision.id === selectedId;
                   const isAutoApproved = decision.reasoning?.includes('Auto-approved');
                   
                   return (
                     <button
-                      key={decision.id}
+                      key={`${decision.id}-${idx}`}
                       onClick={() => onSelect(decision.id)}
                       className={cn(
                         "w-full text-left p-4 transition-all hover:bg-zinc-50 focus:outline-none",
@@ -380,19 +404,38 @@
                         <InfoRow icon={<Tag size={16} />} label="Category" value={decision.supplier_category} />
                         <InfoRow icon={<DollarSign size={16} />} label="Price" value={decision.supplier_price ? `$${decision.supplier_price.toFixed(2)}` : undefined} />
                         
-                        {!decision.is_human_reviewed && (
+                        {/* Review Notes */}
+                        <div className="mt-6 pt-4 border-t border-zinc-100">
+                          <label className="block text-xs font-semibold text-zinc-700 mb-2">Review Notes</label>
+                          <ReviewNotesEditor 
+                            rows={3}
+                            initialValue={decision.comments}
+                            onSave={(val) => onUpdate(decision.id, { comments: val })}
+                          />
+                        </div>
+
+                        {!decision.is_human_reviewed ? (
                           <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-end gap-3">
                             <button 
-                              onClick={() => onUpdate({ is_human_reviewed: true, is_match: false, decision: 'Human Rejected' })}
+                              onClick={() => onUpdate(decision.id, { is_human_reviewed: true, is_match: false, decision: 'Human Rejected' })}
                               className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors border border-rose-200"
                             >
                               <X size={16} /> Reject Match
                             </button>
                             <button 
-                              onClick={() => onUpdate({ is_human_reviewed: true, is_match: true, decision: 'Human Confirmed' })}
+                              onClick={() => onUpdate(decision.id, { is_human_reviewed: true, is_match: true, decision: 'Human Confirmed' })}
                               className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
                             >
                               <Check size={16} /> Confirm Match
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-end gap-3">
+                            <button 
+                              onClick={() => onUpdate(decision.id, { undo_review: true })}
+                              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-zinc-600 bg-zinc-50 hover:bg-zinc-100 rounded-lg transition-colors border border-zinc-200"
+                            >
+                              <RotateCcw size={16} /> Undo Review
                             </button>
                           </div>
                         )}
@@ -438,11 +481,11 @@
                     const mfgCompare = (a.supplier_manufacturer || '').localeCompare(b.supplier_manufacturer || '');
                     if (mfgCompare !== 0) return mfgCompare;
                     return (a.supplier_part_number || '').localeCompare(b.supplier_part_number || '');
-                  }) || []).map(candidate => {
+                  }) || []).map((candidate, idx) => {
                     const candidateAutoApproved = candidate.reasoning?.includes('Auto-approved');
                     // Use a ref-able ID for scrolling
                     return (
-                      <div id={`candidate-${candidate.id}`} key={candidate.id} className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col scroll-mt-24">
+                      <div id={`candidate-${candidate.id}`} key={`${candidate.id}-${idx}`} className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col scroll-mt-24">
                         <div className="bg-zinc-50/80 border-b border-zinc-200 px-4 py-3 flex items-center justify-between">
                           <div>
                             <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Matched Supplier Part</h3>
@@ -450,7 +493,7 @@
                               {candidate.supplier_part_number || "No Match Found"}
                               {candidate.is_human_reviewed ? (
                                 <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2 py-0.5 rounded-full font-medium ml-2">Reviewed</span>
-                              ) : candidateAutoApproved && (
+                              ) : (candidate?.reasoning?.includes('Auto-approved')) && (
                                 <span className="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2 py-0.5 rounded-full font-medium ml-2">Auto Approved</span>
                               )}
                             </div>
@@ -481,7 +524,17 @@
                                 <p className="text-xs text-zinc-500 bg-zinc-50 p-3 rounded-lg border border-zinc-100 italic leading-relaxed">"{candidate.reasoning}"</p>
                               </div>
 
-                              {!candidate.is_human_reviewed && (
+                              {/* Review Notes */}
+                              <div className="mt-4">
+                                <label className="block text-xs font-semibold text-zinc-700 mb-1">Review Notes</label>
+                                <ReviewNotesEditor 
+                                  rows={2}
+                                  initialValue={candidate.comments}
+                                  onSave={(val) => onUpdate(candidate.id, { comments: val })}
+                                />
+                              </div>
+
+                              {!candidate.is_human_reviewed ? (
                                 <div className="mt-6 flex items-center justify-end gap-3">
                                   <button 
                                     onClick={() => onUpdate(candidate.id, { is_human_reviewed: true, is_match: false, decision: 'Human Rejected' })}
@@ -494,6 +547,15 @@
                                     className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
                                   >
                                     <Check size={16} /> Confirm Match
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="mt-6 flex items-center justify-end gap-3">
+                                  <button 
+                                    onClick={() => onUpdate(candidate.id, { undo_review: true })}
+                                    className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-zinc-600 bg-zinc-50 hover:bg-zinc-100 rounded-lg transition-colors border border-zinc-200"
+                                  >
+                                    <RotateCcw size={16} /> Undo Review
                                   </button>
                                 </div>
                               )}
@@ -571,8 +633,8 @@
           
           setDecisions(prev => {
             if (isReset) return data;
-            const existingIds = new Set(prev.map(d => d.id));
-            const newItems = data.filter(d => !existingIds.has(d.id));
+            const existingKeys = new Set(prev.map(d => `${d.id}-${d.decision}`));
+            const newItems = data.filter(d => !existingKeys.has(`${d.id}-${d.decision}`));
             return [...prev, ...newItems];
           });
           
@@ -594,7 +656,10 @@
         try {
           const updated = await api.updateDecision(id, updates);
           
-          if (statusFilter === 'pending' && updates.is_human_reviewed) {
+          if (!updated) return;
+          
+          if ((statusFilter === 'pending' && updates.is_human_reviewed) || 
+              (statusFilter === 'reviewed' && updates.undo_review)) {
             const currentIndex = decisions.findIndex(d => d.id === id);
             if (currentIndex < decisions.length - 1) {
               setSelectedId(decisions[currentIndex + 1].id);
@@ -609,6 +674,38 @@
           }
         } catch (error) {
           console.error(error);
+        }
+      };
+
+      const handleSelect = async (id) => {
+        setSelectedId(id);
+        const customerPart = id.split('|')[0];
+        try {
+          const res = await fetch(`/api/decisions/customer/${encodeURIComponent(customerPart)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.length > 0) {
+              setDecisions(prev => {
+                const newDecisions = [...prev];
+                data.forEach(updatedItem => {
+                  const idx = newDecisions.findIndex(d => d.id === updatedItem.id);
+                  if (idx !== -1) {
+                    newDecisions[idx] = { ...newDecisions[idx], ...updatedItem };
+                  } else {
+                    newDecisions.push(updatedItem);
+                  }
+                });
+                return newDecisions;
+              });
+            } else {
+              setSelectedId(null);
+            }
+          } else {
+            setSelectedId(null);
+          }
+        } catch (e) {
+          console.error(e);
+          setSelectedId(null);
         }
       };
 
@@ -689,7 +786,7 @@
                       selectedId={selectedId} 
                       selectedCustomerPart={selectedDecision?.customer_part_number}
                       viewMode={viewMode}
-                      onSelect={setSelectedId} 
+                      onSelect={handleSelect} 
                       decisionFilter={decisionFilter}
                       onUpdate={(id, updates) => handleUpdate(id, updates)}
                     />

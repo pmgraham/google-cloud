@@ -25,4 +25,5 @@ export interface AgentDecision {
   supplier_manufacturer?: string;
   supplier_category?: string;
   supplier_price?: number;
+  comments?: string;
 }
