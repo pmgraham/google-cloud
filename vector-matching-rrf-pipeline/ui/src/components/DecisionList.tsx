@@ -1,9 +1,9 @@
-// 
-import React, { ReactNode, useState } from 'react';
+import { useState, MouseEvent } from 'react';
 import { AgentDecision } from '../types';
-import { HelpCircle, FileQuestion, ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '../lib/utils';
+import { StatusIcon } from './StatusIcon';
 
 interface DecisionListProps {
   decisions: AgentDecision[];
@@ -12,13 +12,22 @@ interface DecisionListProps {
   viewMode?: 'single' | 'grouped';
   onSelect: (id: string) => void;
   decisionFilter?: string;
+  onUpdate: (id: string, updates: Partial<AgentDecision> & { undo_review?: boolean }) => void;
 }
 
-export function DecisionList({ decisions, selectedId, selectedCustomerPart, viewMode = 'single', onSelect, decisionFilter }: DecisionListProps) {
+export function DecisionList({ 
+  decisions, 
+  selectedId, 
+  selectedCustomerPart, 
+  viewMode = 'single', 
+  onSelect, 
+  decisionFilter,
+  onUpdate
+}: DecisionListProps) {
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const [defaultCollapsed, setDefaultCollapsed] = useState<boolean>(false);
 
-  const toggleGroup = (customerPart: string, e: React.MouseEvent) => {
+  const toggleGroup = (customerPart: string, e: MouseEvent) => {
     e.stopPropagation();
     setCollapsedGroups(prev => {
       const current = customerPart in prev ? prev[customerPart] : defaultCollapsed;
@@ -154,17 +163,4 @@ export function DecisionList({ decisions, selectedId, selectedCustomerPart, view
       </div>
     </div>
   );
-}
-
-function StatusIcon({ decision, isMatch }: { decision: string, isMatch: boolean }) {
-  if (decision.includes('High Confidence') && isMatch) {
-    return <CheckCircle2 size={16} className="text-emerald-500" />;
-  }
-  if (decision.includes('Ambiguous')) {
-    return <HelpCircle size={16} className="text-amber-500" />;
-  }
-  if (!isMatch) {
-    return <AlertCircle size={16} className="text-rose-500" />;
-  }
-  return <FileQuestion size={16} className="text-zinc-400" />;
 }

@@ -289,31 +289,34 @@
             const element = document.getElementById(`candidate-${decision.id}`);
             if (element) {
               lastScrolledDecisionRef.current = decision.id;
-              // Add a small delay to ensure rendering is complete before scrolling
-              setTimeout(() => {
-                // Get the scrolling container (the flex-1 overflow-y-auto div)
-                const container = element.closest('.overflow-y-auto');
-                if (container) {
-                  // Calculate the offset to align the candidate card perfectly with the top sticky Customer Part card
-                  // The sticky Element has top-6 (24px) + mt-[40px] (40px) = 64px from top of container
-                  const containerRect = container.getBoundingClientRect();
-                  const elementRect = element.getBoundingClientRect();
-                  const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
+              
+              // Use double requestAnimationFrame to ensure the DOM has painted the new elements
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  // Get the scrolling container (the flex-1 overflow-y-auto div)
+                  const container = element.closest('.overflow-y-auto');
+                  if (container) {
+                    // Calculate the offset to align the candidate card perfectly with the top sticky Customer Part card
+                    // The sticky Element has top-6 (24px) + mt-[40px] (40px) = 64px from top of container
+                    const containerRect = container.getBoundingClientRect();
+                    const elementRect = element.getBoundingClientRect();
+                    const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
+                    
+                    // Scroll the container so the candidate card aligns with the top of the sticky customer card
+                    // We want the element to sit exactly at the sticky point + margin = 64px from container top
+                    container.scrollTo({
+                      top: relativeTop - 64,
+                      behavior: 'smooth'
+                    });
+                  }
                   
-                  // Scroll the container so the candidate card aligns with the top of the sticky customer card
-                  // We want the element to sit exactly at the sticky point + margin = 64px from container top
-                  container.scrollTo({
-                    top: relativeTop - 64,
-                    behavior: 'smooth'
-                  });
-                }
-                
-                // Add a temporary highlight effect
-                element.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'transition-all', 'duration-500');
-                setTimeout(() => {
-                  element.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2');
-                }, 1500);
-              }, 50);
+                  // Add a temporary highlight effect
+                  element.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'transition-all', 'duration-500');
+                  setTimeout(() => {
+                    element.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2');
+                  }, 1500);
+                });
+              });
             }
           }
         }

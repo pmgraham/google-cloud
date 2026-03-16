@@ -12,10 +12,25 @@ app = FastAPI()
 project_id = os.environ.get("PROJECT_ID", "pmgraham-dev-workspace")
 dataset_id = os.environ.get("DATASET_ID", "vector_matching_pipeline")
 
-if not re.match(r"^[a-zA-Z0-9_\-]+$", project_id) or not re.match(r"^[a-zA-Z0-9_\-]+$", dataset_id):
+if not re.fullmatch(r"[a-zA-Z0-9_\-]+", project_id) or not re.fullmatch(r"[a-zA-Z0-9_\-]+", dataset_id):
     raise ValueError("Invalid project_id or dataset_id format.")
 
 client = bigquery.Client(project=project_id)
+default_dataset_ref = f"{project_id}.{dataset_id}"
+
+# SQL Query Cache
+QUERY_CACHE = {}
+
+def preload_queries():
+    sql_dir = os.path.join(os.path.dirname(__file__), "sql")
+    if os.path.exists(sql_dir):
+        for filename in os.listdir(sql_dir):
+            if filename.endswith(".sql"):
+                with open(os.path.join(sql_dir, filename), "r") as f:
+                    QUERY_CACHE[filename] = f.read()
+    print(f"Preloaded {len(QUERY_CACHE)} SQL queries.")
+
+preload_queries()
 
 class DecisionUpdate(BaseModel):
     undo_review: Optional[bool] = None
@@ -25,15 +40,19 @@ class DecisionUpdate(BaseModel):
     reasoning: Optional[str] = None
     comments: Optional[str] = None
 
-def get_search_condition(search: str):
-    if not search:
-        return "1=1"
-    return """(
-      LOWER(customer_part_number) LIKE LOWER(@search) OR 
-      LOWER(supplier_part_number) LIKE LOWER(@search) OR 
-      LOWER(customer_description) LIKE LOWER(@search) OR 
-      LOWER(supplier_description) LIKE LOWER(@search)
-    )"""
+def load_query(filename: str) -> str:
+    if filename in QUERY_CACHE:
+        return QUERY_CACHE[filename]
+    
+    # Fallback to disk if not in cache (e.g. added after startup)
+    path = os.path.join(os.path.dirname(__file__), "sql", filename)
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            content = f.read()
+            QUERY_CACHE[filename] = content
+            return content
+    
+    raise HTTPException(status_code=500, detail=f"Query file {filename} not found.")
 
 @app.get("/api/decisions")
 def get_decisions(status: str = Query('pending'), search: str = Query(None), page: int = Query(1, ge=1)):
@@ -42,190 +61,24 @@ def get_decisions(status: str = Query('pending'), search: str = Query(None), pag
     limit = 50
     offset = (page - 1) * limit
     
-    if status == 'pending':
-        query = f"""
-            SELECT 
-              CONCAT(d.customer_part_number, '|', IFNULL(d.supplier_part_number, '')) as id,
-              d.customer_part_number,
-              d.decision,
-              d.is_match,
-              d.supplier_part_number,
-              d.reasoning,
-              h.comments as comments,
-              d.is_human_reviewed,
-              d.created_at,
-              d.updated_at,
-              q.customer_description as customer_description,
-              CAST(NULL AS STRING) as customer_manufacturer,
-              CAST(NULL AS STRING) as customer_category,
-              q.supplier_description as supplier_description,
-              q.supplier as supplier_manufacturer,
-              q.part_type as supplier_category,
-              CAST(NULL AS FLOAT64) as supplier_price
-            FROM `{project_id}.{dataset_id}.agent_decisions` d
-            LEFT JOIN `{project_id}.{dataset_id}.agent_review_queue` q 
-              ON d.customer_part_number = q.customer_part_number 
-              AND (d.supplier_part_number = q.supplier_part_number OR (d.supplier_part_number IS NULL AND q.supplier_part_number IS NULL))
-            LEFT JOIN `{project_id}.{dataset_id}.human_decisions` h
-              ON d.customer_part_number = h.customer_part_number
-              AND (d.supplier_part_number = h.supplier_part_number OR (d.supplier_part_number IS NULL AND h.supplier_part_number IS NULL))
-            WHERE d.is_human_reviewed = FALSE
-        """
-    elif status == 'reviewed':
-        query = f"""
-            SELECT DISTINCT
-              CONCAT(h.customer_part_number, '|', IFNULL(h.supplier_part_number, '')) as id,
-              h.customer_part_number,
-              h.decision,
-              h.is_match,
-              h.supplier_part_number,
-              h.reasoning,
-              h.comments as comments,
-              TRUE as is_human_reviewed,
-              h.created_at,
-              h.updated_at,
-              q.customer_description as customer_description,
-              CAST(NULL AS STRING) as customer_manufacturer,
-              CAST(NULL AS STRING) as customer_category,
-              q.supplier_description as supplier_description,
-              q.supplier as supplier_manufacturer,
-              q.part_type as supplier_category,
-              CAST(NULL AS FLOAT64) as supplier_price
-            FROM `{project_id}.{dataset_id}.human_decisions` h
-            INNER JOIN `{project_id}.{dataset_id}.agent_decisions` a
-              ON h.customer_part_number = a.customer_part_number 
-              AND (h.supplier_part_number = a.supplier_part_number OR (h.supplier_part_number IS NULL AND a.supplier_part_number IS NULL))
-            LEFT JOIN `{project_id}.{dataset_id}.agent_review_queue` q 
-              ON h.customer_part_number = q.customer_part_number 
-              AND (h.supplier_part_number = q.supplier_part_number OR (h.supplier_part_number IS NULL AND q.supplier_part_number IS NULL))
-            WHERE a.is_human_reviewed = TRUE
-        """
-    elif status == 'auto_approved':
-        query = f"""
-            SELECT 
-              CONCAT(a.customer_part_number, '|', IFNULL(a.supplier_part_number, '')) as id,
-              a.customer_part_number,
-              'MATCH' as decision,
-              TRUE as is_match,
-              a.supplier_part_number,
-              'Auto-approved based on high confidence pipeline score.' as reasoning,
-              h.comments as comments,
-              FALSE as is_human_reviewed,
-              a.created_at as created_at,
-              a.created_at as updated_at,
-              a.customer_description as customer_description,
-              CAST(NULL AS STRING) as customer_manufacturer,
-              CAST(NULL AS STRING) as customer_category,
-              a.supplier_description as supplier_description,
-              a.supplier as supplier_manufacturer,
-              a.part_type as supplier_category,
-              CAST(NULL AS FLOAT64) as supplier_price
-            FROM `{project_id}.{dataset_id}.auto_approved_matches` a
-            LEFT JOIN `{project_id}.{dataset_id}.human_decisions` h
-              ON a.customer_part_number = h.customer_part_number
-              AND (a.supplier_part_number = h.supplier_part_number OR (a.supplier_part_number IS NULL AND h.supplier_part_number IS NULL))
-            WHERE 1=1
-        """
-    else: # all
-        query = f"""
-            SELECT 
-              CONCAT(d.customer_part_number, '|', IFNULL(d.supplier_part_number, '')) as id,
-              d.customer_part_number,
-              d.decision,
-              d.is_match,
-              d.supplier_part_number,
-              d.reasoning,
-              h.comments as comments,
-              d.is_human_reviewed,
-              d.created_at,
-              d.updated_at,
-              q.customer_description as customer_description,
-              CAST(NULL AS STRING) as customer_manufacturer,
-              CAST(NULL AS STRING) as customer_category,
-              q.supplier_description as supplier_description,
-              q.supplier as supplier_manufacturer,
-              q.part_type as supplier_category,
-              CAST(NULL AS FLOAT64) as supplier_price
-            FROM `{project_id}.{dataset_id}.agent_decisions` d
-            LEFT JOIN `{project_id}.{dataset_id}.agent_review_queue` q 
-              ON d.customer_part_number = q.customer_part_number 
-              AND (d.supplier_part_number = q.supplier_part_number OR (d.supplier_part_number IS NULL AND q.supplier_part_number IS NULL))
-            LEFT JOIN `{project_id}.{dataset_id}.human_decisions` h
-              ON d.customer_part_number = h.customer_part_number
-              AND (d.supplier_part_number = h.supplier_part_number OR (d.supplier_part_number IS NULL AND h.supplier_part_number IS NULL))
-            WHERE d.is_human_reviewed = FALSE
-            
-            UNION ALL
-            
-            SELECT 
-              CONCAT(h.customer_part_number, '|', IFNULL(h.supplier_part_number, '')) as id,
-              h.customer_part_number,
-              h.decision,
-              h.is_match,
-              h.supplier_part_number,
-              h.reasoning,
-              h.comments as comments,
-              TRUE as is_human_reviewed,
-              h.created_at,
-              h.updated_at,
-              q.customer_description as customer_description,
-              CAST(NULL AS STRING) as customer_manufacturer,
-              CAST(NULL AS STRING) as customer_category,
-              q.supplier_description as supplier_description,
-              q.supplier as supplier_manufacturer,
-              q.part_type as supplier_category,
-              CAST(NULL AS FLOAT64) as supplier_price
-            FROM `{project_id}.{dataset_id}.human_decisions` h
-            INNER JOIN `{project_id}.{dataset_id}.agent_decisions` a
-              ON h.customer_part_number = a.customer_part_number 
-              AND (h.supplier_part_number = a.supplier_part_number OR (h.supplier_part_number IS NULL AND a.supplier_part_number IS NULL))
-            LEFT JOIN `{project_id}.{dataset_id}.agent_review_queue` q 
-              ON h.customer_part_number = q.customer_part_number 
-              AND (h.supplier_part_number = q.supplier_part_number OR (h.supplier_part_number IS NULL AND q.supplier_part_number IS NULL))
-            WHERE a.is_human_reviewed = TRUE
-              
-            UNION ALL
-            
-            SELECT 
-              CONCAT(a.customer_part_number, '|', IFNULL(a.supplier_part_number, '')) as id,
-              a.customer_part_number,
-              'MATCH' as decision,
-              TRUE as is_match,
-              a.supplier_part_number,
-              'Auto-approved based on high confidence pipeline score.' as reasoning,
-              h.comments as comments,
-              FALSE as is_human_reviewed,
-              a.created_at as created_at,
-              a.created_at as updated_at,
-              a.customer_description as customer_description,
-              CAST(NULL AS STRING) as customer_manufacturer,
-              CAST(NULL AS STRING) as customer_category,
-              a.supplier_description as supplier_description,
-              a.supplier as supplier_manufacturer,
-              a.part_type as supplier_category,
-              CAST(NULL AS FLOAT64) as supplier_price
-            FROM `{project_id}.{dataset_id}.auto_approved_matches` a
-            LEFT JOIN `{project_id}.{dataset_id}.human_decisions` h
-              ON a.customer_part_number = h.customer_part_number
-              AND (a.supplier_part_number = h.supplier_part_number OR (a.supplier_part_number IS NULL AND h.supplier_part_number IS NULL))
-        """
-
-    final_query = f"""
-      SELECT * FROM ({query})
-      WHERE {get_search_condition(search_string)}
-      ORDER BY customer_part_number ASC
-      LIMIT @limit OFFSET @offset
-    """
+    status_to_sql = {
+        'pending': 'get_decisions_pending.sql',
+        'reviewed': 'get_decisions_reviewed.sql',
+        'auto_approved': 'get_decisions_auto_approved.sql',
+        'all': 'get_decisions_all.sql'
+    }
+    sql_file = status_to_sql.get(status, 'get_decisions_all.sql')
+    final_query = load_query(sql_file)
     
     query_params = [
         bigquery.ScalarQueryParameter("limit", "INT64", limit),
         bigquery.ScalarQueryParameter("offset", "INT64", offset),
+        bigquery.ScalarQueryParameter("search", "STRING", search_string)
     ]
-    if search_string:
-        query_params.append(bigquery.ScalarQueryParameter("search", "STRING", search_string))
         
     job_config = bigquery.QueryJobConfig(
-        query_parameters=query_params
+        query_parameters=query_params,
+        default_dataset=default_dataset_ref
     )
     
     query_job = client.query(final_query, job_config=job_config)
@@ -245,95 +98,11 @@ def get_decisions_by_customer(customer_part_number: str):
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
             bigquery.ScalarQueryParameter("customerPartNumber", "STRING", customer_part_number),
-        ]
+        ],
+        default_dataset=default_dataset_ref
     )
     
-    query = f"""
-            SELECT 
-              CONCAT(d.customer_part_number, '|', IFNULL(d.supplier_part_number, '')) as id,
-              d.customer_part_number,
-              d.decision,
-              d.is_match,
-              d.supplier_part_number,
-              d.reasoning,
-              h.comments as comments,
-              d.is_human_reviewed,
-              d.created_at,
-              d.updated_at,
-              q.customer_description as customer_description,
-              CAST(NULL AS STRING) as customer_manufacturer,
-              CAST(NULL AS STRING) as customer_category,
-              q.supplier_description as supplier_description,
-              q.supplier as supplier_manufacturer,
-              q.part_type as supplier_category,
-              CAST(NULL AS FLOAT64) as supplier_price
-            FROM `{project_id}.{dataset_id}.agent_decisions` d
-            LEFT JOIN `{project_id}.{dataset_id}.agent_review_queue` q 
-              ON d.customer_part_number = q.customer_part_number 
-              AND (d.supplier_part_number = q.supplier_part_number OR (d.supplier_part_number IS NULL AND q.supplier_part_number IS NULL))
-            LEFT JOIN `{project_id}.{dataset_id}.human_decisions` h
-              ON d.customer_part_number = h.customer_part_number
-              AND (d.supplier_part_number = h.supplier_part_number OR (d.supplier_part_number IS NULL AND h.supplier_part_number IS NULL))
-            WHERE d.is_human_reviewed = FALSE
-            AND d.customer_part_number = @customerPartNumber
-            
-            UNION ALL
-            
-            SELECT 
-              CONCAT(h.customer_part_number, '|', IFNULL(h.supplier_part_number, '')) as id,
-              h.customer_part_number,
-              h.decision,
-              h.is_match,
-              h.supplier_part_number,
-              h.reasoning,
-              h.comments as comments,
-              TRUE as is_human_reviewed,
-              h.created_at,
-              h.updated_at,
-              q.customer_description as customer_description,
-              CAST(NULL AS STRING) as customer_manufacturer,
-              CAST(NULL AS STRING) as customer_category,
-              q.supplier_description as supplier_description,
-              q.supplier as supplier_manufacturer,
-              q.part_type as supplier_category,
-              CAST(NULL AS FLOAT64) as supplier_price
-            FROM `{project_id}.{dataset_id}.human_decisions` h
-            INNER JOIN `{project_id}.{dataset_id}.agent_decisions` a
-              ON h.customer_part_number = a.customer_part_number 
-              AND (h.supplier_part_number = a.supplier_part_number OR (h.supplier_part_number IS NULL AND a.supplier_part_number IS NULL))
-            LEFT JOIN `{project_id}.{dataset_id}.agent_review_queue` q 
-              ON h.customer_part_number = q.customer_part_number 
-              AND (h.supplier_part_number = q.supplier_part_number OR (h.supplier_part_number IS NULL AND q.supplier_part_number IS NULL))
-            WHERE a.is_human_reviewed = TRUE
-            AND h.customer_part_number = @customerPartNumber
-              
-            UNION ALL
-            
-            SELECT 
-              CONCAT(a.customer_part_number, '|', IFNULL(a.supplier_part_number, '')) as id,
-              a.customer_part_number,
-              'MATCH' as decision,
-              TRUE as is_match,
-              a.supplier_part_number,
-              'Auto-approved based on high confidence pipeline score.' as reasoning,
-              h.comments as comments,
-              FALSE as is_human_reviewed,
-              a.created_at as created_at,
-              a.created_at as updated_at,
-              a.customer_description as customer_description,
-              CAST(NULL AS STRING) as customer_manufacturer,
-              CAST(NULL AS STRING) as customer_category,
-              a.supplier_description as supplier_description,
-              a.supplier as supplier_manufacturer,
-              a.part_type as supplier_category,
-              CAST(NULL AS FLOAT64) as supplier_price
-            FROM `{project_id}.{dataset_id}.auto_approved_matches` a
-            LEFT JOIN `{project_id}.{dataset_id}.human_decisions` h
-              ON a.customer_part_number = h.customer_part_number
-              AND (a.supplier_part_number = h.supplier_part_number OR (a.supplier_part_number IS NULL AND h.supplier_part_number IS NULL))
-            WHERE a.customer_part_number = @customerPartNumber
-    """
-    
+    query = load_query("get_decisions_by_customer.sql")
     query_job = client.query(query, job_config=job_config)
     results = query_job.result()
     
@@ -346,7 +115,6 @@ def get_decisions_by_customer(customer_part_number: str):
         
     return rows
 
-
 @app.get("/api/decisions/{id:path}")
 def get_decision(id: str):
     parts = id.split('|')
@@ -357,98 +125,11 @@ def get_decision(id: str):
         query_parameters=[
             bigquery.ScalarQueryParameter("customerPartNumber", "STRING", customer_part_number),
             bigquery.ScalarQueryParameter("supplierPartNumber", "STRING", supplier_part_number),
-        ]
+        ],
+        default_dataset=default_dataset_ref
     )
     
-    query = f"""
-            SELECT 
-              CONCAT(d.customer_part_number, '|', IFNULL(d.supplier_part_number, '')) as id,
-              d.customer_part_number,
-              d.decision,
-              d.is_match,
-              d.supplier_part_number,
-              d.reasoning,
-              h.comments as comments,
-              d.is_human_reviewed,
-              d.created_at,
-              d.updated_at,
-              q.customer_description as customer_description,
-              CAST(NULL AS STRING) as customer_manufacturer,
-              CAST(NULL AS STRING) as customer_category,
-              q.supplier_description as supplier_description,
-              q.supplier as supplier_manufacturer,
-              q.part_type as supplier_category,
-              CAST(NULL AS FLOAT64) as supplier_price
-            FROM `{project_id}.{dataset_id}.agent_decisions` d
-            LEFT JOIN `{project_id}.{dataset_id}.agent_review_queue` q 
-              ON d.customer_part_number = q.customer_part_number 
-              AND (d.supplier_part_number = q.supplier_part_number OR (d.supplier_part_number IS NULL AND q.supplier_part_number IS NULL))
-            LEFT JOIN `{project_id}.{dataset_id}.human_decisions` h
-              ON d.customer_part_number = h.customer_part_number
-              AND (d.supplier_part_number = h.supplier_part_number OR (d.supplier_part_number IS NULL AND h.supplier_part_number IS NULL))
-            WHERE d.is_human_reviewed = FALSE
-            AND d.customer_part_number = @customerPartNumber
-            AND (d.supplier_part_number = @supplierPartNumber OR (d.supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
-            
-            UNION ALL
-            
-            SELECT 
-              CONCAT(h.customer_part_number, '|', IFNULL(h.supplier_part_number, '')) as id,
-              h.customer_part_number,
-              h.decision,
-              h.is_match,
-              h.supplier_part_number,
-              h.reasoning,
-              h.comments as comments,
-              TRUE as is_human_reviewed,
-              h.created_at,
-              h.updated_at,
-              q.customer_description as customer_description,
-              CAST(NULL AS STRING) as customer_manufacturer,
-              CAST(NULL AS STRING) as customer_category,
-              q.supplier_description as supplier_description,
-              q.supplier as supplier_manufacturer,
-              q.part_type as supplier_category,
-              CAST(NULL AS FLOAT64) as supplier_price
-            FROM `{project_id}.{dataset_id}.human_decisions` h
-            INNER JOIN `{project_id}.{dataset_id}.agent_decisions` a
-              ON h.customer_part_number = a.customer_part_number 
-              AND (h.supplier_part_number = a.supplier_part_number OR (h.supplier_part_number IS NULL AND a.supplier_part_number IS NULL))
-            LEFT JOIN `{project_id}.{dataset_id}.agent_review_queue` q 
-              ON h.customer_part_number = q.customer_part_number 
-              AND (h.supplier_part_number = q.supplier_part_number OR (h.supplier_part_number IS NULL AND q.supplier_part_number IS NULL))
-            WHERE a.is_human_reviewed = TRUE
-            AND h.customer_part_number = @customerPartNumber
-            AND (h.supplier_part_number = @supplierPartNumber OR (h.supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
-              
-            UNION ALL
-            
-            SELECT 
-              CONCAT(a.customer_part_number, '|', IFNULL(a.supplier_part_number, '')) as id,
-              a.customer_part_number,
-              'MATCH' as decision,
-              TRUE as is_match,
-              a.supplier_part_number,
-              'Auto-approved based on high confidence pipeline score.' as reasoning,
-              h.comments as comments,
-              FALSE as is_human_reviewed,
-              a.created_at as created_at,
-              a.created_at as updated_at,
-              a.customer_description as customer_description,
-              CAST(NULL AS STRING) as customer_manufacturer,
-              CAST(NULL AS STRING) as customer_category,
-              a.supplier_description as supplier_description,
-              a.supplier as supplier_manufacturer,
-              a.part_type as supplier_category,
-              CAST(NULL AS FLOAT64) as supplier_price
-            FROM `{project_id}.{dataset_id}.auto_approved_matches` a
-            LEFT JOIN `{project_id}.{dataset_id}.human_decisions` h
-              ON a.customer_part_number = h.customer_part_number
-              AND (a.supplier_part_number = h.supplier_part_number OR (a.supplier_part_number IS NULL AND h.supplier_part_number IS NULL))
-            WHERE a.customer_part_number = @customerPartNumber
-            AND (a.supplier_part_number = @supplierPartNumber OR (a.supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
-    """
-    
+    query = load_query("get_decision_by_id.sql")
     query_job = client.query(query, job_config=job_config)
     rows = list(query_job.result())
     
@@ -471,22 +152,14 @@ def update_decision(id: str, updates: DecisionUpdate):
             query_parameters=[
                 bigquery.ScalarQueryParameter("customerPartNumber", "STRING", customer_part_number),
                 bigquery.ScalarQueryParameter("supplierPartNumber", "STRING", supplier_part_number),
-            ]
+            ],
+            default_dataset=default_dataset_ref
         )
-        q_get = f"""
-            SELECT decision, is_match, reasoning 
-            FROM `{project_id}.{dataset_id}.agent_decisions`
-            WHERE customer_part_number = @customerPartNumber
-            AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
-        """
+        
+        q_get = load_query("get_agent_decision.sql")
         existing = list(client.query(q_get, job_config=job_config).result())
         
-        q_get_human = f"""
-            SELECT decision, is_match, reasoning, comments
-            FROM `{project_id}.{dataset_id}.human_decisions`
-            WHERE customer_part_number = @customerPartNumber
-            AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
-        """
+        q_get_human = load_query("get_human_decision.sql")
         human_existing = list(client.query(q_get_human, job_config=job_config).result())
         
         final_decision = updates.decision if updates.decision is not None else (human_existing[0].decision if human_existing else (existing[0].decision if existing else 'MATCH'))
@@ -502,40 +175,15 @@ def update_decision(id: str, updates: DecisionUpdate):
                 bigquery.ScalarQueryParameter("isMatch", "BOOL", final_match),
                 bigquery.ScalarQueryParameter("reasoning", "STRING", final_reasoning),
                 bigquery.ScalarQueryParameter("comments", "STRING", final_comments),
-            ]
+            ],
+            default_dataset=default_dataset_ref
         )
         
-        stmt_update_agent = f"""
-          UPDATE `{project_id}.{dataset_id}.agent_decisions`
-          SET is_human_reviewed = TRUE, updated_at = CURRENT_TIMESTAMP()
-          WHERE customer_part_number = @customerPartNumber
-          AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL));
-        """ if updates.is_human_reviewed else ""
-
-        q_transaction = f"""
-          BEGIN TRANSACTION;
-
-          MERGE `{project_id}.{dataset_id}.human_decisions` T
-          USING (SELECT 
-            @customerPartNumber as customer_part_number, 
-            @supplierPartNumber as supplier_part_number, 
-            @decision as decision, 
-            @isMatch as is_match, 
-            @reasoning as reasoning,
-            @comments as comments
-          ) S
-          ON T.customer_part_number = S.customer_part_number 
-          AND (T.supplier_part_number = S.supplier_part_number OR (T.supplier_part_number IS NULL AND S.supplier_part_number IS NULL))
-          WHEN MATCHED THEN
-            UPDATE SET decision = S.decision, is_match = S.is_match, reasoning = S.reasoning, comments = S.comments, updated_at = CURRENT_TIMESTAMP()
-          WHEN NOT MATCHED THEN
-            INSERT (customer_part_number, supplier_part_number, decision, is_match, reasoning, comments, created_at, updated_at) 
-            VALUES (S.customer_part_number, S.supplier_part_number, S.decision, S.is_match, S.reasoning, S.comments, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP());
-
-          {stmt_update_agent}
-
-          COMMIT TRANSACTION;
-        """
+        if updates.is_human_reviewed:
+            q_transaction = load_query("update_decision_tx_human_reviewed.sql")
+        else:
+            q_transaction = load_query("update_decision_tx_pending.sql")
+            
         client.query(q_transaction, job_config=merge_config).result()
             
     if updates.undo_review:
@@ -543,30 +191,11 @@ def update_decision(id: str, updates: DecisionUpdate):
             query_parameters=[
                 bigquery.ScalarQueryParameter("customerPartNumber", "STRING", customer_part_number),
                 bigquery.ScalarQueryParameter("supplierPartNumber", "STRING", supplier_part_number),
-            ]
+            ],
+            default_dataset=default_dataset_ref
         )
         
-        q_undo_tx = f"""
-            BEGIN TRANSACTION;
-
-            UPDATE `{project_id}.{dataset_id}.agent_decisions`
-            SET is_human_reviewed = FALSE, updated_at = CURRENT_TIMESTAMP()
-            WHERE customer_part_number = @customerPartNumber
-            AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL));
-
-            UPDATE `{project_id}.{dataset_id}.human_decisions`
-            SET decision = NULL, is_match = NULL, reasoning = NULL, updated_at = CURRENT_TIMESTAMP()
-            WHERE customer_part_number = @customerPartNumber
-            AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
-            AND TRIM(IFNULL(comments, '')) != '';
-
-            DELETE FROM `{project_id}.{dataset_id}.human_decisions`
-            WHERE customer_part_number = @customerPartNumber
-            AND (supplier_part_number = @supplierPartNumber OR (supplier_part_number IS NULL AND @supplierPartNumber IS NULL))
-            AND TRIM(IFNULL(comments, '')) = '';
-
-            COMMIT TRANSACTION;
-        """
+        q_undo_tx = load_query("undo_decision_tx.sql")
         client.query(q_undo_tx, job_config=undo_config).result()
         
     return get_decision(id)

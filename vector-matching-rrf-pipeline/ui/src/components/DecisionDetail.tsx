@@ -1,53 +1,72 @@
-// 
-import React, { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useRef, Fragment } from 'react';
 import { AgentDecision } from '../types';
-import { Check, X, AlertTriangle, HelpCircle, CheckCircle2, AlertCircle, FileQuestion, XCircle, ArrowRightLeft, Factory, Tag, DollarSign, Bot } from 'lucide-react';
+import { HelpCircle, ArrowRightLeft, Factory, Tag, DollarSign, Bot, X, Check, RotateCcw } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { ReviewNotesEditor } from './ReviewNotesEditor';
+import { StatusIcon } from './StatusIcon';
 
 interface DecisionDetailProps {
   decision: AgentDecision;
   groupCandidates?: AgentDecision[];
   viewMode?: 'single' | 'grouped';
   onViewModeChange?: (mode: 'single' | 'grouped') => void;
-  onUpdate: (id: string, updates: Partial<AgentDecision>) => void;
+  onUpdate: (id: string, updates: Partial<AgentDecision> & { undo_review?: boolean }) => void;
   decisionFilter?: string;
+  statusFilter?: string;
 }
 
-export function DecisionDetail({ decision, groupCandidates, viewMode = 'single', onViewModeChange, onUpdate, decisionFilter }: DecisionDetailProps) {
+export function DecisionDetail({ 
+  decision, 
+  groupCandidates, 
+  viewMode = 'single', 
+  onViewModeChange, 
+  onUpdate, 
+  decisionFilter,
+  statusFilter
+}: DecisionDetailProps) {
   
   // Auto-scroll to selected candidate when viewMode is grouped
+  const lastScrolledDecisionRef = useRef<string | null>(null);
+  
   useEffect(() => {
     if (viewMode === 'grouped' && decision?.id) {
-      const element = document.getElementById(`candidate-${decision.id}`);
-      if (element) {
-        // Add a small delay to ensure rendering is complete before scrolling
-        setTimeout(() => {
-          // Get the scrolling container (the flex-1 overflow-y-auto div)
-          const container = element.closest('.overflow-y-auto');
-          if (container) {
-            // Calculate the offset to align the candidate card perfectly with the top sticky Customer Part card
-            // The sticky Element has top-6 (24px) + mt-[40px] (40px) = 64px from top of container
-            const containerRect = container.getBoundingClientRect();
-            const elementRect = element.getBoundingClientRect();
-            const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
-            
-            // Scroll the container so the candidate card aligns with the top of the sticky customer card
-            // We want the element to sit exactly at the sticky point + margin = 64px from container top
-            container.scrollTo({
-              top: relativeTop - 64,
-              behavior: 'smooth'
-            });
-          }
+      if (lastScrolledDecisionRef.current !== decision.id) {
+        const element = document.getElementById(`candidate-${decision.id}`);
+        if (element) {
+          lastScrolledDecisionRef.current = decision.id;
           
-          // Add a temporary highlight effect
-          element.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'transition-all', 'duration-500');
-          setTimeout(() => {
-            element.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2');
-          }, 1500);
-        }, 50);
+          // Use double requestAnimationFrame to ensure the DOM has painted the new elements
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              // Get the scrolling container (the flex-1 overflow-y-auto div)
+              const container = element.closest('.overflow-y-auto');
+              if (container) {
+                // Calculate the offset to align the candidate card perfectly with the top sticky Customer Part card
+                const containerRect = container.getBoundingClientRect();
+                const elementRect = element.getBoundingClientRect();
+                const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
+                
+                // Scroll the container so the candidate card aligns with the top of the sticky customer card
+                // We want the element to sit exactly at the sticky point + margin = 64px from container top
+                container.scrollTo({
+                  top: relativeTop - 64,
+                  behavior: 'smooth'
+                });
+              }
+              
+              // Add a temporary highlight effect
+              element.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'transition-all', 'duration-500');
+              setTimeout(() => {
+                element.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2');
+              }, 1500);
+            });
+          });
+        }
       }
     }
-  }, [decision.id, viewMode]);
+  }, [decision?.id, viewMode, groupCandidates]);
+
+  const isAutoApproved = decision.reasoning?.includes('Auto-approved');
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -59,9 +78,11 @@ export function DecisionDetail({ decision, groupCandidates, viewMode = 'single',
             "text-xs px-2.5 py-1 rounded-full font-medium border",
             decision.is_human_reviewed 
               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-              : "bg-amber-50 text-amber-700 border-amber-200"
+              : isAutoApproved
+                ? "bg-blue-50 text-blue-700 border-blue-200"
+                : "bg-amber-50 text-amber-700 border-amber-200"
           )}>
-            {decision.is_human_reviewed ? 'Reviewed' : 'Pending Review'}
+            {decision.is_human_reviewed ? 'Reviewed' : isAutoApproved ? 'Auto Approved' : 'Pending Review'}
           </span>
         </div>
         
@@ -155,10 +176,46 @@ export function DecisionDetail({ decision, groupCandidates, viewMode = 'single',
                       <InfoRow icon={<Tag size={16} />} label="Description" value={decision.supplier_description} />
                       <InfoRow icon={<Factory size={16} />} label="Manufacturer" value={decision.supplier_manufacturer} />
                       <InfoRow icon={<Tag size={16} />} label="Category" value={decision.supplier_category} />
-                      <InfoRow icon={<DollarSign size={16} />} label="Price" value={decision.supplier_price ? `$${decision.supplier_price?.toFixed(2)}` : undefined} />
+                      <InfoRow icon={<DollarSign size={16} />} label="Price" value={decision.supplier_price ? `$${decision.supplier_price.toFixed(2)}` : undefined} />
+                      
+                      {/* Review Notes */}
+                      <div className="mt-6 pt-4 border-t border-zinc-100">
+                        <label className="block text-xs font-semibold text-zinc-700 mb-2">Review Notes</label>
+                        <ReviewNotesEditor 
+                          rows={3}
+                          initialValue={decision.comments}
+                          onSave={(val) => onUpdate(decision.id, { comments: val })}
+                        />
+                      </div>
+
+                      {!decision.is_human_reviewed ? (
+                        <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-end gap-3">
+                          <button 
+                            onClick={() => onUpdate(decision.id, { is_human_reviewed: true, is_match: false, decision: 'Human Rejected' })}
+                            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors border border-rose-200"
+                          >
+                            <X size={16} /> Reject Match
+                          </button>
+                          <button 
+                            onClick={() => onUpdate(decision.id, { is_human_reviewed: true, is_match: true, decision: 'Human Confirmed' })}
+                            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
+                          >
+                            <Check size={16} /> Confirm Match
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-end gap-3">
+                          <button 
+                            onClick={() => onUpdate(decision.id, { undo_review: true })}
+                            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-zinc-600 bg-zinc-50 hover:bg-zinc-100 rounded-lg transition-colors border border-zinc-200"
+                          >
+                            <RotateCcw size={16} /> Undo Review
+                          </button>
+                        </div>
+                      )}
                     </React.Fragment>
                   ) : (
-                    <div className="h-full flex items-center justify-center text-sm text-zinc-400 italic">
+                    <div className="h-full flex items-center justify-center text-sm text-zinc-400 italic py-8">
                       No supplier part was matched by the agent.
                     </div>
                   )}
@@ -187,119 +244,120 @@ export function DecisionDetail({ decision, groupCandidates, viewMode = 'single',
 
             {/* Right Column: Stacked Candidates */}
             <div className="w-2/3 space-y-6 pb-12">
-              <div className="flex items-center gap-2 mb-6">
-                <h3 className="font-semibold text-lg text-zinc-900">Candidate Matches</h3>
-                <span className="bg-zinc-100 text-zinc-600 px-2.5 py-0.5 rounded-full text-xs font-medium border border-zinc-200">
-                  {groupCandidates?.length || 0}
-                </span>
-              </div>
-              
-              {(groupCandidates?.filter(c => !decisionFilter || c.decision === decisionFilter).sort((a, b) => {
-                const mfgCompare = (a.supplier_manufacturer || '').localeCompare(b.supplier_manufacturer || '');
-                if (mfgCompare !== 0) return mfgCompare;
-                return (a.supplier_part_number || '').localeCompare(b.supplier_part_number || '');
-              }) || []).map(candidate => {
-                const candidateAutoApproved = candidate.reasoning?.includes('Auto-approved');
-                // Use a ref-able ID for scrolling
+              {(() => {
+                const filteredCandidates = (groupCandidates || [])
+                  .filter(c => {
+                    if (statusFilter === 'pending') return !c.is_human_reviewed && !c.reasoning?.includes('Auto-approved');
+                    if (statusFilter === 'reviewed') return c.is_human_reviewed;
+                    if (statusFilter === 'auto_approved') return !c.is_human_reviewed && c.reasoning?.includes('Auto-approved');
+                    return true;
+                  })
+                  .filter(c => !decisionFilter || c.decision === decisionFilter)
+                  .sort((a, b) => {
+                    const mfgCompare = (a.supplier_manufacturer || '').localeCompare(b.supplier_manufacturer || '');
+                    if (mfgCompare !== 0) return mfgCompare;
+                    return (a.supplier_part_number || '').localeCompare(b.supplier_part_number || '');
+                  });
+
                 return (
-                  <div id={`candidate-${candidate.id}`} key={candidate.id} className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col scroll-mt-24">
-                    <div className="bg-zinc-50/80 border-b border-zinc-200 px-4 py-3 flex items-center justify-between">
-                      <div>
-                        <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Matched Supplier Part</h3>
-                        <div className="font-mono text-lg font-medium text-zinc-900 mt-1 flex items-center gap-2">
-                          {candidate.supplier_part_number || "No Match Found"}
-                          {candidate.is_human_reviewed ? (
-                            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2 py-0.5 rounded-full font-medium ml-2">Reviewed</span>
-                          ) : candidateAutoApproved && (
-                            <span className="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2 py-0.5 rounded-full font-medium ml-2">Auto Approved</span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Inline Agent Analysis for Candidate */}
-                      <div className="flex items-center gap-2 text-right">
-                          <div className="flex flex-col items-end">
-                             <div className="flex items-center gap-1.5 mb-1">
-                               {(() => {
-                                 const dec = candidate.decision;
-                                 const isM = candidate.is_match;
-                                 if (!dec) return <FileQuestion size={16} className="text-zinc-400" />;
-                                 if (dec === 'MATCH' || dec === 'Human Confirmed' || (dec.includes('High Confidence') && isM)) {
-                                   return <CheckCircle2 size={16} className="text-emerald-500" />;
-                                 }
-                                 if (dec === 'Human Rejected') {
-                                   return <XCircle size={16} className="text-rose-500" />;
-                                 }
-                                 if (dec.includes('Ambiguous') || dec === 'REQUIRES_HUMAN_REVIEW') {
-                                   return <HelpCircle size={16} className="text-amber-500" />;
-                                 }
-                                 if (!isM) {
-                                   return <AlertCircle size={16} className="text-rose-500" />;
-                                 }
-                                 return <HelpCircle size={16} className="text-amber-500" />;
-                               })()}
-                               <span className="text-xs font-medium text-zinc-700">Agent Analysis</span>
-                             </div>
-                            <span className="text-[10px] font-mono bg-white px-2 py-0.5 rounded border border-zinc-200 text-zinc-500">
-                              {candidate.decision === 'REQUIRES_HUMAN_REVIEW' ? 'Human Review Required' : candidate.decision}
-                            </span>
-                          </div>
-                      </div>
+                  <>
+                    <div className="flex items-center gap-2 mb-6">
+                      <h3 className="font-semibold text-lg text-zinc-900">Candidate Matches</h3>
+                      <span className="bg-zinc-100 text-zinc-600 px-2.5 py-0.5 rounded-full text-xs font-medium border border-zinc-200">
+                        {filteredCandidates.length}
+                      </span>
                     </div>
-                    <div className="p-4 flex-1 space-y-4">
-                      {candidate.supplier_part_number ? (
-                        <React.Fragment>
-                          <InfoRow icon={<Tag size={16} />} label="Description" value={candidate.supplier_description} />
-                          <InfoRow icon={<Factory size={16} />} label="Manufacturer" value={candidate.supplier_manufacturer} />
-                          <InfoRow icon={<Tag size={16} />} label="Category" value={candidate.supplier_category} />
-                          <InfoRow icon={<DollarSign size={16} />} label="Price" value={candidate.supplier_price ? `$${candidate.supplier_price.toFixed(2)}` : undefined} />
-                          
-                          <div className="mt-4 pt-4 border-t border-zinc-100">
-                            <p className="text-xs text-zinc-500 bg-zinc-50 p-3 rounded-lg border border-zinc-100 italic leading-relaxed">"{candidate.reasoning}"</p>
-                          </div>
-
-                          {/* Review Notes */}
-                          <div className="mt-4">
-                            <label className="block text-xs font-semibold text-zinc-700 mb-1">Review Notes</label>
-                            <textarea 
-                              className="w-full text-sm px-3 py-2 rounded-lg border border-zinc-200 bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none shadow-sm"
-                              rows={2}
-                              placeholder="Add notes about your decision..."
-                              defaultValue={candidate.comments || ""}
-                              onBlur={(e) => {
-                                if (e.target.value !== (candidate.comments || "")) {
-                                  onUpdate(candidate.id, { comments: e.target.value });
-                                }
-                              }}
-                            />
-                          </div>
-
-                          {!candidate.is_human_reviewed && (
-                            <div className="mt-6 flex items-center justify-end gap-3">
-                              <button 
-                                onClick={() => onUpdate(candidate.id, { is_human_reviewed: true, is_match: false, decision: 'Human Rejected' })}
-                                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors border border-rose-200"
-                              >
-                                <X size={16} /> Reject Match
-                              </button>
-                              <button 
-                                onClick={() => onUpdate(candidate.id, { is_human_reviewed: true, is_match: true, decision: 'Human Confirmed' })}
-                                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
-                              >
-                                <Check size={16} /> Confirm Match
-                              </button>
+                    
+                    {filteredCandidates.map((candidate, idx) => {
+                      const candidateAutoApproved = candidate.reasoning?.includes('Auto-approved');
+                      return (
+                        <div id={`candidate-${candidate.id}`} key={`${candidate.id}-${idx}`} className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden flex flex-col scroll-mt-24">
+                          <div className="bg-zinc-50/80 border-b border-zinc-200 px-4 py-3 flex items-center justify-between">
+                            <div>
+                              <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Matched Supplier Part</h3>
+                              <div className="font-mono text-lg font-medium text-zinc-900 mt-1 flex items-center gap-2">
+                                {candidate.supplier_part_number || "No Match Found"}
+                                {candidate.is_human_reviewed ? (
+                                  <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] px-2 py-0.5 rounded-full font-medium ml-2">Reviewed</span>
+                                ) : candidateAutoApproved && (
+                                  <span className="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] px-2 py-0.5 rounded-full font-medium ml-2">Auto Approved</span>
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </React.Fragment>
-                      ) : (
-                        <div className="h-full flex items-center justify-center text-sm text-zinc-400 italic py-8">
-                          No supplier part was matched by the agent.
+                            
+                            {/* Inline Agent Analysis for Candidate */}
+                            <div className="flex items-center gap-2 text-right">
+                                <div className="flex flex-col items-end">
+                                   <div className="flex items-center gap-1.5 mb-1">
+                                     <StatusIcon decision={candidate.decision} isMatch={candidate.is_match} />
+                                     <span className="text-xs font-medium text-zinc-700">Agent Analysis</span>
+                                   </div>
+                                  <span className="text-[10px] font-mono bg-white px-2 py-0.5 rounded border border-zinc-200 text-zinc-500">
+                                    {candidate.decision === 'REQUIRES_HUMAN_REVIEW' ? 'Human Review Required' : candidate.decision}
+                                  </span>
+                                </div>
+                            </div>
+                          </div>
+                          <div className="p-4 flex-1 space-y-4">
+                            {candidate.supplier_part_number ? (
+                              <React.Fragment>
+                                <InfoRow icon={<Tag size={16} />} label="Description" value={candidate.supplier_description} />
+                                <InfoRow icon={<Factory size={16} />} label="Manufacturer" value={candidate.supplier_manufacturer} />
+                                <InfoRow icon={<Tag size={16} />} label="Category" value={candidate.supplier_category} />
+                                <InfoRow icon={<DollarSign size={16} />} label="Price" value={candidate.supplier_price ? `$${candidate.supplier_price.toFixed(2)}` : undefined} />
+                                
+                                <div className="mt-4 pt-4 border-t border-zinc-100">
+                                  <p className="text-xs text-zinc-500 bg-zinc-50 p-3 rounded-lg border border-zinc-100 italic leading-relaxed">"{candidate.reasoning}"</p>
+                                </div>
+
+                                {/* Review Notes */}
+                                <div className="mt-4">
+                                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Review Notes</label>
+                                  <ReviewNotesEditor 
+                                    rows={2}
+                                    initialValue={candidate.comments}
+                                    onSave={(val) => onUpdate(candidate.id, { comments: val })}
+                                  />
+                                </div>
+
+                                {!candidate.is_human_reviewed ? (
+                                  <div className="mt-6 flex items-center justify-end gap-3">
+                                    <button 
+                                      onClick={() => onUpdate(candidate.id, { is_human_reviewed: true, is_match: false, decision: 'Human Rejected' })}
+                                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors border border-rose-200"
+                                    >
+                                      <X size={16} /> Reject Match
+                                    </button>
+                                    <button 
+                                      onClick={() => onUpdate(candidate.id, { is_human_reviewed: true, is_match: true, decision: 'Human Confirmed' })}
+                                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
+                                    >
+                                      <Check size={16} /> Confirm Match
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="mt-6 flex items-center justify-end gap-3">
+                                    <button 
+                                      onClick={() => onUpdate(candidate.id, { undo_review: true })}
+                                      className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-zinc-600 bg-zinc-50 hover:bg-zinc-100 rounded-lg transition-colors border border-zinc-200"
+                                    >
+                                      <RotateCcw size={16} /> Undo Review
+                                    </button>
+                                  </div>
+                                )}
+                              </React.Fragment>
+                            ) : (
+                              <div className="h-full flex items-center justify-center text-sm text-zinc-400 italic py-8">
+                                No supplier part was matched by the agent.
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      );
+                    })}
+                  </>
                 );
-              })}
+              })()}
             </div>
           </div>
         )}
