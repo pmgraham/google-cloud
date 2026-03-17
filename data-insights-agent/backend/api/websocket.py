@@ -159,11 +159,14 @@ async def handle_websocket(websocket: WebSocket, session_id: str):
 
             except Exception as e:
                 import traceback
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error("Error in websocket connection: %s", str(e))
                 traceback.print_exc()
 
                 await manager.send_event(
                     session_id,
-                    StreamEvent(event_type="error", data={"error": str(e)})
+                    StreamEvent(event_type="error", data={"error": "An internal error occurred while processing your request. Please try again."})
                 )
 
     except WebSocketDisconnect:

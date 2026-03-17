@@ -137,11 +137,11 @@ def main(request):
                 except Exception as exc:
                     # Catch exceptions from the generate function itself
                     print(f"Error processing call at index {index}: {exc}")
-                    replies[index] = f"ERROR: Processing failed - {str(exc)}"
+                    replies[index] = "ERROR: Processing failed"
 
         return json.dumps({"replies": replies})
 
     except Exception as e:
         # This catches errors in the main function's logic or unexpected issues
         print(f"Unhandled error in main function: {e}")
-        return json.dumps({"errorMessage": str(e)}), 400
+        return json.dumps({"errorMessage": "An internal error occurred"}), 400

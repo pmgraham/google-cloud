@@ -123,7 +123,7 @@ def handle_pubsub():
 
         publisher.publish_event(error_payload)
         logger.exception("Load failed for %s", message.get("file_hash", "unknown"))
-        return (str(e), 500)
+        return ("An internal error occurred during load processing.", 500)
 
 
 if __name__ == "__main__":
