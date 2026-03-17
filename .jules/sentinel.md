@@ -1,0 +1,4 @@
+## 2024-05-28 - [Information Exposure Through an Error Message]
+**Vulnerability:** Found multiple instances where caught exceptions (`str(e)` or `str(exc)`) were concatenated and returned directly to users through web sockets and HTTP responses.
+**Learning:** Returning full exceptions directly to clients can expose internal system information, API limit details, implementation context, and potentially database schemas or query structures depending on where the exception occurs. In Python, formatting an exception into a string or returning it as JSON exposes it directly.
+**Prevention:** Always log the full exception securely on the server-side using `logger.exception()`, `logger.error()`, or `print()`. Then, return a generic error message string to the client like "An internal error occurred."
