@@ -50,6 +50,6 @@
   "vector_search_top_k": 100,
   "rrf_constant": 60,
   "match_rrf_auto_approve_threshold": 0.055,
-  "match_rrf_agent_review_threshold": 0.040,
+  "match_rrf_agent_review_threshold": 0.035,
   "eval_rrf_threshold": 0.015
 }

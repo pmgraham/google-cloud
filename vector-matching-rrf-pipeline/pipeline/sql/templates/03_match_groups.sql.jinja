@@ -99,46 +99,87 @@ lexical_ranked AS (
   FROM lexical_scored
 ),
 
--- Structured field match ratio (soft signal, not a hard gate)
--- Counts how many non-null AI-extracted fields match exactly.
+-- Structured field signal WITH MISMATCH PENALTIES.
+-- +1 = both sides non-null and match
+--  0 = one or both sides null (no signal)
+-- -1 = both sides non-null and DISAGREE (active mismatch)
+-- This is critical: a bolt vs gasket mismatch must be penalized,
+-- not just treated as "absence of a bonus."
 structured_scored AS (
-  SELECT
-    *,
-    (
-      IF(type_a IS NOT NULL AND type_b IS NOT NULL AND LOWER(type_a) = LOWER(type_b), 1.0, 0.0)
-      + IF(size_a IS NOT NULL AND size_b IS NOT NULL AND size_a = size_b, 1.0, 0.0)
-      + IF(material_a IS NOT NULL AND material_b IS NOT NULL AND LOWER(material_a) = LOWER(material_b), 1.0, 0.0)
-    ) / GREATEST(
-      -- Denominator: number of fields where both sides are non-null
-      IF(type_a IS NOT NULL AND type_b IS NOT NULL, 1, 0)
-      + IF(size_a IS NOT NULL AND size_b IS NOT NULL, 1, 0)
-      + IF(material_a IS NOT NULL AND material_b IS NOT NULL, 1, 0),
-      1  -- prevent division by zero when all fields are null
-    ) AS structured_match_ratio
+  SELECT *,
+    -- Per-field scores
+    CASE
+      WHEN type_a IS NULL OR type_b IS NULL THEN 0
+      WHEN LOWER(type_a) = LOWER(type_b) THEN 1
+      ELSE -1
+    END AS type_match_signal,
+
+    CASE
+      WHEN size_a IS NULL OR size_b IS NULL THEN 0
+      WHEN size_a = size_b THEN 1
+      ELSE -1
+    END AS size_match_signal,
+
+    CASE
+      WHEN material_a IS NULL OR material_b IS NULL THEN 0
+      WHEN LOWER(material_a) = LOWER(material_b) THEN 1
+      ELSE -1
+    END AS material_match_signal
+
   FROM lexical_ranked
 ),
 
-rrf_results AS (
-  SELECT
-    *,
-    -- Standard RRF from vector + lexical ranks
-    (1.0 / (vector_rank + {{ rrf_constant }})) + (1.0 / (lexical_rank + {{ rrf_constant }})) AS rrf_score
+-- Combine into a single structural signal normalized to [-1, +1]
+structural_signal AS (
+  SELECT *,
+    -- Count how many fields have signal (both sides non-null)
+    (IF(type_a IS NOT NULL AND type_b IS NOT NULL, 1, 0)
+     + IF(size_a IS NOT NULL AND size_b IS NOT NULL, 1, 0)
+     + IF(material_a IS NOT NULL AND material_b IS NOT NULL, 1, 0)
+    ) AS fields_with_signal,
+
+    -- Sum of match signals
+    (type_match_signal + size_match_signal + material_match_signal) AS raw_structural_score
   FROM structured_scored
+),
+
+normalized_structural AS (
+  SELECT *,
+    -- Normalize: divide by fields_with_signal to get [-1, +1] range.
+    -- If no fields have signal (all nulls), structural_score = 0 (neutral).
+    CASE
+      WHEN fields_with_signal = 0 THEN 0.0
+      ELSE SAFE_DIVIDE(raw_structural_score, fields_with_signal)
+    END AS structural_score
+  FROM structural_signal
+),
+
+rrf_results AS (
+  SELECT *,
+    (1.0 / (vector_rank + {{ rrf_constant }})) + (1.0 / (lexical_rank + {{ rrf_constant }})) AS rrf_score
+  FROM normalized_structural
 )
+
 SELECT
   source_a, pn_a, desc_a, type_a, size_a, material_a,
   source_b, pn_b, desc_b, type_b, size_b, material_b,
-  vector_distance,
-  lexical_distance,
+  vector_distance, lexical_distance,
   rrf_score,
-  structured_match_ratio,
-  -- Composite score: RRF provides the base, structured match boosts or penalizes.
-  -- A part_type mismatch (ratio = 0 when fields are present) will drag the score down.
-  -- Both fields NULL means no structural signal — RRF carries it alone.
-  rrf_score * (1.0 + structured_match_ratio) AS composite_score,
+  structural_score,
+  type_match_signal, size_match_signal, material_match_signal,
+  fields_with_signal,
+
+  -- Composite score: RRF base adjusted by structural signal.
+  -- structural_score ranges [-1, +1]:
+  --   +1 = all compared fields match → composite = rrf * 2.0 (max boost)
+  --    0 = no structural signal      → composite = rrf * 1.0 (neutral)
+  --   -1 = all compared fields clash  → composite = rrf * 0.0 (killed)
+  -- The (1.0 + structural_score) multiplier naturally handles all three cases.
+  rrf_score * (1.0 + structural_score) AS composite_score,
+
   CURRENT_TIMESTAMP() AS created_at
 FROM rrf_results
-WHERE rrf_score >= {{ match_rrf_agent_review_threshold }};
+WHERE rrf_score * (1.0 + structural_score) >= {{ match_rrf_agent_review_threshold }};
 
 -- Split into confidence tiers using composite_score
 CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.auto_approved_matches` AS
