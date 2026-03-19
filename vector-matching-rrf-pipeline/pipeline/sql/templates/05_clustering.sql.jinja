@@ -1,0 +1,80 @@
+-- =============================================================================
+-- 05_clustering.sql (NEW)
+-- =============================================================================
+-- Groups confirmed match pairs into clusters via transitive closure.
+-- If A matches B and B matches C, then {A, B, C} form one cluster.
+-- Uses recursive label propagation in BigQuery.
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS `{{ project_id }}.{{ dataset }}.agent_decisions` (
+    part_number_a STRING NOT NULL,
+    source_a STRING NOT NULL,
+    part_number_b STRING NOT NULL,
+    source_b STRING NOT NULL,
+    decision STRING NOT NULL,
+    is_match BOOLEAN NOT NULL,
+    reasoning STRING NOT NULL,
+    is_human_reviewed BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS `{{ project_id }}.{{ dataset }}.human_decisions` (
+    part_number_a STRING NOT NULL,
+    source_a STRING NOT NULL,
+    part_number_b STRING NOT NULL,
+    source_b STRING NOT NULL,
+    decision STRING,
+    is_match BOOLEAN,
+    reasoning STRING,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.clusters` AS
+
+WITH confirmed_edges AS (
+  SELECT CONCAT(source_a, '||', pn_a) AS node_a, CONCAT(source_b, '||', pn_b) AS node_b
+  FROM `{{ project_id }}.{{ dataset }}.auto_approved_matches`
+  UNION DISTINCT
+  SELECT CONCAT(source_a, '||', part_number_a), CONCAT(source_b, '||', part_number_b)
+  FROM `{{ project_id }}.{{ dataset }}.agent_decisions` WHERE is_match = TRUE
+  UNION DISTINCT
+  SELECT CONCAT(source_a, '||', part_number_a), CONCAT(source_b, '||', part_number_b)
+  FROM `{{ project_id }}.{{ dataset }}.human_decisions` WHERE is_match = TRUE
+),
+
+edges AS (
+  SELECT node_a AS node, node_b AS neighbor FROM confirmed_edges
+  UNION DISTINCT
+  SELECT node_b AS node, node_a AS neighbor FROM confirmed_edges
+),
+
+all_nodes AS (
+  SELECT DISTINCT node FROM edges
+  UNION DISTINCT
+  SELECT DISTINCT neighbor AS node FROM edges
+),
+
+RECURSIVE label_prop AS (
+  SELECT node, node AS root FROM all_nodes
+  UNION ALL
+  SELECT lp.node, LEAST(lp.root, MIN(lp2.root)) AS root
+  FROM label_prop lp
+  JOIN edges e ON lp.node = e.node
+  JOIN label_prop lp2 ON e.neighbor = lp2.node
+  GROUP BY lp.node, lp.root
+  HAVING LEAST(lp.root, MIN(lp2.root)) < lp.root
+),
+
+final_roots AS (
+  SELECT node, MIN(root) AS cluster_root FROM label_prop GROUP BY node
+)
+
+SELECT
+  node,
+  SPLIT(node, '||')[OFFSET(0)] AS source,
+  SPLIT(node, '||')[OFFSET(1)] AS part_number,
+  cluster_root,
+  DENSE_RANK() OVER (ORDER BY cluster_root) AS cluster_id
+FROM final_roots;

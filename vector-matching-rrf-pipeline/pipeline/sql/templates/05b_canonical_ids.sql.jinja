@@ -1,0 +1,59 @@
+-- =============================================================================
+-- 05b_canonical_ids.sql (NEW)
+-- =============================================================================
+-- Assigns synthetic CPN-* canonical IDs per cluster. Singletons get their own.
+-- Output: canonical_parts + part_members tables.
+-- =============================================================================
+
+CREATE OR REPLACE TEMP TABLE _all_memberships AS
+
+WITH clustered AS (
+  SELECT c.cluster_id, c.cluster_root, c.source, c.part_number,
+    p.part_description, p.part_type, p.material, p.size_value, ap.composite_key
+  FROM `{{ project_id }}.{{ dataset }}.clusters` c
+  JOIN `{{ project_id }}.{{ dataset }}.all_parts_enriched` p
+    ON c.source = p.source AND c.part_number = p.part_number
+  JOIN `{{ project_id }}.{{ dataset }}.all_parts` ap
+    ON p.source = ap.source AND p.part_number = ap.part_number
+),
+
+singletons AS (
+  SELECT
+    (SELECT COALESCE(MAX(cluster_id), 0) FROM `{{ project_id }}.{{ dataset }}.clusters`)
+      + ROW_NUMBER() OVER (ORDER BY p.source, p.part_number) AS cluster_id,
+    CONCAT(p.source, '||', p.part_number) AS cluster_root,
+    p.source, p.part_number, p.part_description, p.part_type, p.material, p.size_value,
+    ap.composite_key
+  FROM `{{ project_id }}.{{ dataset }}.all_parts_enriched` p
+  JOIN `{{ project_id }}.{{ dataset }}.all_parts` ap
+    ON p.source = ap.source AND p.part_number = ap.part_number
+  LEFT JOIN `{{ project_id }}.{{ dataset }}.clusters` c
+    ON p.source = c.source AND p.part_number = c.part_number
+  WHERE c.node IS NULL
+)
+
+SELECT * FROM clustered
+UNION ALL
+SELECT * FROM singletons;
+
+CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.canonical_parts` AS
+WITH ranked AS (
+  SELECT *,
+    ROW_NUMBER() OVER (PARTITION BY cluster_id ORDER BY LENGTH(COALESCE(part_description, '')) DESC) AS richness_rank,
+    COUNT(*) OVER (PARTITION BY cluster_id) AS member_count,
+    COUNT(DISTINCT source) OVER (PARTITION BY cluster_id) AS source_count
+  FROM _all_memberships
+)
+SELECT
+  CONCAT('CPN-', UPPER(SUBSTR(TO_HEX(MD5(CAST(cluster_id AS STRING))), 1, 12))) AS canonical_id,
+  cluster_id, part_number AS representative_part_number, source AS representative_source,
+  part_description AS representative_description, part_type AS representative_part_type,
+  material AS representative_material, size_value AS representative_size_value,
+  member_count, source_count, CURRENT_TIMESTAMP() AS created_at
+FROM ranked WHERE richness_rank = 1;
+
+CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.part_members` AS
+SELECT cp.canonical_id, m.source, m.part_number, m.part_description, m.composite_key,
+  CURRENT_TIMESTAMP() AS created_at
+FROM _all_memberships m
+JOIN `{{ project_id }}.{{ dataset }}.canonical_parts` cp ON m.cluster_id = cp.cluster_id;

@@ -1,54 +1,39 @@
--- =============================================================================
--- 07_reporting_overall.sql
--- =============================================================================
--- Purpose:
--- Provides a summary view of the pipeline's overall performance, including
--- base evaluation metrics of the candidate generation process.
--- =============================================================================
-
 CREATE OR REPLACE VIEW `{{ project_id }}.{{ dataset }}.reporting_overall_metrics` AS
-
-WITH total_customer_parts AS (
-  SELECT COUNT(DISTINCT part_number) AS total FROM `{{ project_id }}.{{ dataset }}.customer_parts_embedded`
+WITH total_parts AS (
+  SELECT COUNT(DISTINCT CONCAT(source, part_number)) AS total FROM `{{ project_id }}.{{ dataset }}.all_parts_enriched`
 ),
 auto_matched AS (
-  SELECT COUNT(DISTINCT customer_part_number) AS total FROM `{{ project_id }}.{{ dataset }}.auto_approved_matches`
+  SELECT COUNT(*) AS total_pairs FROM `{{ project_id }}.{{ dataset }}.auto_approved_matches`
 ),
 agent_reviewed AS (
-  SELECT COUNT(DISTINCT customer_part_number) AS total FROM `{{ project_id }}.{{ dataset }}.agent_review_queue`
+  SELECT COUNT(*) AS total_pairs FROM `{{ project_id }}.{{ dataset }}.agent_review_queue`
 ),
-unmatched_parts AS (
-  SELECT COUNT(DISTINCT part_number) AS total 
-  FROM `{{ project_id }}.{{ dataset }}.customer_parts_embedded`
-  WHERE part_number NOT IN (SELECT customer_part_number FROM `{{ project_id }}.{{ dataset }}.auto_approved_matches`)
-    AND part_number NOT IN (SELECT customer_part_number FROM `{{ project_id }}.{{ dataset }}.agent_review_queue`)
-),
-final_matches AS (
-  SELECT COUNT(DISTINCT customer_part_number) AS total FROM `{{ project_id }}.{{ dataset }}.final_part_mapping`
+canonical_stats AS (
+  SELECT COUNT(*) AS total_canonical_ids,
+    COUNTIF(member_count > 1) AS multi_member_clusters,
+    COUNTIF(member_count = 1) AS singletons,
+    AVG(IF(member_count > 1, member_count, NULL)) AS avg_cluster_size,
+    MAX(member_count) AS largest_cluster,
+    AVG(IF(member_count > 1, source_count, NULL)) AS avg_sources_per_cluster
+  FROM `{{ project_id }}.{{ dataset }}.canonical_parts`
 )
-
 SELECT
-  (SELECT total FROM total_customer_parts) AS total_customer_parts,
-  (SELECT total FROM auto_matched) AS total_auto_matched,
-  (SELECT total FROM agent_reviewed) AS total_sent_to_agent,
-  (SELECT total FROM unmatched_parts) AS total_unmatched_no_candidates,
-  (SELECT total FROM final_matches) AS total_with_final_match,
-  
-  -- Base Candidate Generation Precision/Recall Calculations
+  (SELECT total FROM total_parts) AS total_parts,
+  (SELECT total_pairs FROM auto_matched) AS total_auto_approved_pairs,
+  (SELECT total_pairs FROM agent_reviewed) AS total_sent_to_agent,
+  cs.total_canonical_ids, cs.multi_member_clusters, cs.singletons,
+  cs.avg_cluster_size, cs.largest_cluster, cs.avg_sources_per_cluster,
   (SELECT COUNT(*) FROM `{{ project_id }}.{{ dataset }}.evaluation_truth_pairs`) AS total_true_pairs,
   (SELECT COUNT(*) FROM `{{ project_id }}.{{ dataset }}.evaluation_pipeline_pairs`) AS total_predicted_pairs,
-  (SELECT COUNT(*) 
-   FROM `{{ project_id }}.{{ dataset }}.evaluation_pipeline_pairs` p 
-   JOIN `{{ project_id }}.{{ dataset }}.evaluation_truth_pairs` t 
-   ON p.source_a = t.source_a AND p.pn_a = t.pn_a 
-   AND p.source_b = t.source_b AND p.pn_b = t.pn_b) AS true_positives,
-  
-   SAFE_DIVIDE(
-     (SELECT COUNT(*) FROM `{{ project_id }}.{{ dataset }}.evaluation_pipeline_pairs` p JOIN `{{ project_id }}.{{ dataset }}.evaluation_truth_pairs` t ON p.source_a = t.source_a AND p.pn_a = t.pn_a AND p.source_b = t.source_b AND p.pn_b = t.pn_b),
-     (SELECT COUNT(*) FROM `{{ project_id }}.{{ dataset }}.evaluation_pipeline_pairs`)
-   ) AS precision_score,
-   
-   SAFE_DIVIDE(
-     (SELECT COUNT(*) FROM `{{ project_id }}.{{ dataset }}.evaluation_pipeline_pairs` p JOIN `{{ project_id }}.{{ dataset }}.evaluation_truth_pairs` t ON p.source_a = t.source_a AND p.pn_a = t.pn_a AND p.source_b = t.source_b AND p.pn_b = t.pn_b),
-     (SELECT COUNT(*) FROM `{{ project_id }}.{{ dataset }}.evaluation_truth_pairs`)
-   ) AS recall_score;
+  (SELECT COUNT(*) FROM `{{ project_id }}.{{ dataset }}.evaluation_pipeline_pairs` p
+   JOIN `{{ project_id }}.{{ dataset }}.evaluation_truth_pairs` t
+   ON p.source_a = t.source_a AND p.pn_a = t.pn_a AND p.source_b = t.source_b AND p.pn_b = t.pn_b) AS true_positives,
+  SAFE_DIVIDE(
+    (SELECT COUNT(*) FROM `{{ project_id }}.{{ dataset }}.evaluation_pipeline_pairs` p JOIN `{{ project_id }}.{{ dataset }}.evaluation_truth_pairs` t ON p.source_a = t.source_a AND p.pn_a = t.pn_a AND p.source_b = t.source_b AND p.pn_b = t.pn_b),
+    (SELECT COUNT(*) FROM `{{ project_id }}.{{ dataset }}.evaluation_pipeline_pairs`)
+  ) AS precision_score,
+  SAFE_DIVIDE(
+    (SELECT COUNT(*) FROM `{{ project_id }}.{{ dataset }}.evaluation_pipeline_pairs` p JOIN `{{ project_id }}.{{ dataset }}.evaluation_truth_pairs` t ON p.source_a = t.source_a AND p.pn_a = t.pn_a AND p.source_b = t.source_b AND p.pn_b = t.pn_b),
+    (SELECT COUNT(*) FROM `{{ project_id }}.{{ dataset }}.evaluation_truth_pairs`)
+  ) AS recall_score
+FROM canonical_stats cs;

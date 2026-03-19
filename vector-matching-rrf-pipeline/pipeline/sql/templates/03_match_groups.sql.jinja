@@ -25,84 +25,127 @@ JOIN `{{ project_id }}.{{ dataset }}.composites_normalized` n
 JOIN `{{ project_id }}.{{ dataset }}.composites_embedded` emb
   ON p.composite_key = emb.composite_key;
 
--- 2. VECTOR_SEARCH requires physical tables for the base search index.
--- Split customer vs supplier tables.
-CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.supplier_parts_embedded` AS
-SELECT * FROM `{{ project_id }}.{{ dataset }}.all_parts_enriched` WHERE source != 'Customer';
-
-CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.customer_parts_embedded` AS
-SELECT * FROM `{{ project_id }}.{{ dataset }}.all_parts_enriched` WHERE source = 'Customer';
-
--- 3. Execute Hybrid Match: Embeddings + Structured Filter + Reciprocal Rank Fusion (RRF)
-CREATE TEMP TABLE _temp_best_matches AS
+-- 2. All-against-all VECTOR_SEARCH with symmetric deduplication and soft-gate RRF scoring
+CREATE TEMP TABLE _temp_all_pairs AS
 WITH filtered_vector_results AS (
   SELECT
-    query.part_number          AS customer_part_number,
-    query.part_description     AS customer_description,
-    base.source                AS supplier,
-    base.part_number           AS supplier_part_number,
-    base.part_description      AS supplier_description,
-    query.part_type            AS part_type,
-    query.size_value           AS size_value,
+    query.source               AS source_a,
+    query.part_number          AS pn_a,
+    query.part_description     AS desc_a,
+    query.part_type            AS type_a,
+    query.size_value           AS size_a,
+    query.material             AS material_a,
+
+    base.source                AS source_b,
+    base.part_number           AS pn_b,
+    base.part_description      AS desc_b,
+    base.part_type             AS type_b,
+    base.size_value            AS size_b,
+    base.material              AS material_b,
+
     distance                   AS vector_distance
   FROM VECTOR_SEARCH(
-    TABLE `{{ project_id }}.{{ dataset }}.supplier_parts_embedded`,
+    TABLE `{{ project_id }}.{{ dataset }}.all_parts_enriched`,
     'embedding',
-    (SELECT * FROM `{{ project_id }}.{{ dataset }}.customer_parts_embedded`),
+    (SELECT * FROM `{{ project_id }}.{{ dataset }}.all_parts_enriched`),
     'embedding',
     top_k => {{ vector_search_top_k }},
     distance_type => 'COSINE'
   )
-  WHERE (query.part_type IS NULL OR base.part_type IS NULL OR LOWER(query.part_type) = LOWER(base.part_type))
-    AND (query.size_value IS NULL OR base.size_value IS NULL OR query.size_value = base.size_value)
+  -- Exclude self-matches and same-source matches
+  WHERE NOT (query.source = base.source AND query.part_number = base.part_number)
+    AND query.source != base.source
+  -- NO hard gates on part_type or size_value — these move into soft scoring below
 ),
+
+-- Deduplicate symmetric pairs: keep (A,B) where A < B lexicographically
+deduped AS (
+  SELECT DISTINCT
+    IF(CONCAT(source_a, pn_a) < CONCAT(source_b, pn_b), source_a, source_b) AS source_a,
+    IF(CONCAT(source_a, pn_a) < CONCAT(source_b, pn_b), pn_a, pn_b) AS pn_a,
+    IF(CONCAT(source_a, pn_a) < CONCAT(source_b, pn_b), desc_a, desc_b) AS desc_a,
+    IF(CONCAT(source_a, pn_a) < CONCAT(source_b, pn_b), type_a, type_b) AS type_a,
+    IF(CONCAT(source_a, pn_a) < CONCAT(source_b, pn_b), size_a, size_b) AS size_a,
+    IF(CONCAT(source_a, pn_a) < CONCAT(source_b, pn_b), material_a, material_b) AS material_a,
+
+    IF(CONCAT(source_a, pn_a) < CONCAT(source_b, pn_b), source_b, source_a) AS source_b,
+    IF(CONCAT(source_a, pn_a) < CONCAT(source_b, pn_b), pn_b, pn_a) AS pn_b,
+    IF(CONCAT(source_a, pn_a) < CONCAT(source_b, pn_b), desc_b, desc_a) AS desc_b,
+    IF(CONCAT(source_a, pn_a) < CONCAT(source_b, pn_b), type_b, type_a) AS type_b,
+    IF(CONCAT(source_a, pn_a) < CONCAT(source_b, pn_b), size_b, size_a) AS size_b,
+    IF(CONCAT(source_a, pn_a) < CONCAT(source_b, pn_b), material_b, material_a) AS material_b,
+
+    vector_distance
+  FROM filtered_vector_results
+),
+
+-- RRF scoring with vector + edit distance ranks
 vector_ranked AS (
   SELECT
     *,
-    ROW_NUMBER() OVER(PARTITION BY customer_part_number ORDER BY vector_distance ASC) AS vector_rank
-  FROM filtered_vector_results
+    ROW_NUMBER() OVER(PARTITION BY source_a, pn_a ORDER BY vector_distance ASC) AS vector_rank
+  FROM deduped
 ),
 lexical_scored AS (
   SELECT
     *,
-    -- Use Edit Distance on the raw description strings as the lexical match component
-    EDIT_DISTANCE(LOWER(customer_description), LOWER(supplier_description)) AS lexical_distance
+    EDIT_DISTANCE(LOWER(desc_a), LOWER(desc_b)) AS lexical_distance
   FROM vector_ranked
 ),
 lexical_ranked AS (
   SELECT
     *,
-    ROW_NUMBER() OVER(PARTITION BY customer_part_number ORDER BY lexical_distance ASC) AS lexical_rank
+    ROW_NUMBER() OVER(PARTITION BY source_a, pn_a ORDER BY lexical_distance ASC) AS lexical_rank
   FROM lexical_scored
 ),
+
+-- Structured field match ratio (soft signal, not a hard gate)
+-- Counts how many non-null AI-extracted fields match exactly.
+structured_scored AS (
+  SELECT
+    *,
+    (
+      IF(type_a IS NOT NULL AND type_b IS NOT NULL AND LOWER(type_a) = LOWER(type_b), 1.0, 0.0)
+      + IF(size_a IS NOT NULL AND size_b IS NOT NULL AND size_a = size_b, 1.0, 0.0)
+      + IF(material_a IS NOT NULL AND material_b IS NOT NULL AND LOWER(material_a) = LOWER(material_b), 1.0, 0.0)
+    ) / GREATEST(
+      -- Denominator: number of fields where both sides are non-null
+      IF(type_a IS NOT NULL AND type_b IS NOT NULL, 1, 0)
+      + IF(size_a IS NOT NULL AND size_b IS NOT NULL, 1, 0)
+      + IF(material_a IS NOT NULL AND material_b IS NOT NULL, 1, 0),
+      1  -- prevent division by zero when all fields are null
+    ) AS structured_match_ratio
+  FROM lexical_ranked
+),
+
 rrf_results AS (
   SELECT
     *,
-    -- Combine ranks using the standard RRF formula k=60 (or configurable value)
+    -- Standard RRF from vector + lexical ranks
     (1.0 / (vector_rank + {{ rrf_constant }})) + (1.0 / (lexical_rank + {{ rrf_constant }})) AS rrf_score
-  FROM lexical_ranked
+  FROM structured_scored
 )
 SELECT
-  customer_part_number,
-  customer_description,
-  supplier,
-  supplier_part_number,
-  supplier_description,
-  part_type,
-  size_value,
+  source_a, pn_a, desc_a, type_a, size_a, material_a,
+  source_b, pn_b, desc_b, type_b, size_b, material_b,
   vector_distance,
   lexical_distance,
   rrf_score,
+  structured_match_ratio,
+  -- Composite score: RRF provides the base, structured match boosts or penalizes.
+  -- A part_type mismatch (ratio = 0 when fields are present) will drag the score down.
+  -- Both fields NULL means no structural signal — RRF carries it alone.
+  rrf_score * (1.0 + structured_match_ratio) AS composite_score,
   CURRENT_TIMESTAMP() AS created_at
 FROM rrf_results
 WHERE rrf_score >= {{ match_rrf_agent_review_threshold }};
 
--- 4. Split results into Auto-Approved (Slam Dunks) vs Agent Review (Borderline)
+-- Split into confidence tiers using composite_score
 CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.auto_approved_matches` AS
-SELECT * FROM _temp_best_matches 
-WHERE rrf_score >= {{ match_rrf_auto_approve_threshold }};
+SELECT * FROM _temp_all_pairs
+WHERE composite_score >= {{ match_rrf_auto_approve_threshold }};
 
 CREATE OR REPLACE TABLE `{{ project_id }}.{{ dataset }}.agent_review_queue` AS
-SELECT * FROM _temp_best_matches 
-WHERE rrf_score >= {{ match_rrf_agent_review_threshold }} 
-  AND rrf_score < {{ match_rrf_auto_approve_threshold }};
+SELECT * FROM _temp_all_pairs
+WHERE composite_score >= {{ match_rrf_agent_review_threshold }}
+  AND composite_score < {{ match_rrf_auto_approve_threshold }};

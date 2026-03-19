@@ -1,0 +1,23 @@
+-- =============================================================================
+-- 06_final_mapping.sql (REFACTORED: canonical ID based)
+-- =============================================================================
+
+CREATE OR REPLACE VIEW `{{ project_id }}.{{ dataset }}.final_part_mapping` AS
+SELECT cp.canonical_id, cp.representative_part_number, cp.representative_source,
+  cp.representative_description, cp.member_count, cp.source_count,
+  ARRAY_AGG(STRUCT(pm.source, pm.part_number, pm.part_description) ORDER BY pm.source, pm.part_number) AS member_parts
+FROM `{{ project_id }}.{{ dataset }}.canonical_parts` cp
+JOIN `{{ project_id }}.{{ dataset }}.part_members` pm ON cp.canonical_id = pm.canonical_id
+GROUP BY ALL;
+
+CREATE OR REPLACE VIEW `{{ project_id }}.{{ dataset }}.part_crossref` AS
+SELECT pm.source, pm.part_number, pm.part_description, pm.canonical_id,
+  cp.representative_part_number, cp.representative_source, cp.member_count, cp.source_count
+FROM `{{ project_id }}.{{ dataset }}.part_members` pm
+JOIN `{{ project_id }}.{{ dataset }}.canonical_parts` cp ON pm.canonical_id = cp.canonical_id;
+
+CREATE OR REPLACE VIEW `{{ project_id }}.{{ dataset }}.parts_requiring_review` AS
+SELECT ad.source_a, ad.part_number_a, ad.source_b, ad.part_number_b,
+  ad.decision, ad.reasoning, ad.created_at AS decision_time
+FROM `{{ project_id }}.{{ dataset }}.agent_decisions` ad
+WHERE ad.decision != 'MATCH';

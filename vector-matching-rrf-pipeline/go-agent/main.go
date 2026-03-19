@@ -48,35 +48,38 @@ func init() {
 }
 
 type Candidate struct {
-	CandidatePartNumber  string  `bigquery:"candidate_part_number" json:"candidate_part_number"`
-	CandidateDescription string  `bigquery:"candidate_description" json:"candidate_description"`
-	Supplier             string  `bigquery:"supplier" json:"supplier"`
-	PartType             string  `bigquery:"part_type" json:"part_type"`
-	SizeValue            float64 `bigquery:"size_value" json:"size_value"`
+	PartNumber  string  `bigquery:"candidate_part_number" json:"candidate_part_number"`
+	Description string  `bigquery:"candidate_description" json:"candidate_description"`
+	Source      string  `bigquery:"candidate_source" json:"candidate_source"`
+	PartType    string  `bigquery:"part_type" json:"part_type"`
+	SizeValue   float64 `bigquery:"size_value" json:"size_value"`
 }
 
 type QueueRow struct {
-	PartNumber      string      `bigquery:"part_number" json:"customer_part_number"`
-	PartDescription string      `bigquery:"part_description" json:"customer_part_description"`
-	Candidates      []Candidate `bigquery:"candidates" json:"candidates"`
+	Source      string      `bigquery:"source" json:"source"`
+	PartNumber  string      `bigquery:"part_number" json:"part_number"`
+	Description string      `bigquery:"part_description" json:"part_description"`
+	Candidates  []Candidate `bigquery:"candidates" json:"candidates"`
 }
 
 type MatchDecision struct {
-	CustomerPartNumber string `json:"customer_part_number"`
-	SupplierPartNumber string `json:"supplier_part_number"`
-	Decision           string `json:"decision"`
-	Reasoning          string `json:"reasoning"`
+	PartNumberA string `json:"part_number_a"`
+	PartNumberB string `json:"part_number_b"`
+	Decision    string `json:"decision"`
+	Reasoning   string `json:"reasoning"`
 }
 
 type BQDecision struct {
-	CustomerPartNumber string    `json:"customer_part_number" bigquery:"customer_part_number"`
-	Decision           string    `json:"decision" bigquery:"decision"`
-	IsMatch            bool      `json:"is_match" bigquery:"is_match"`
-	SupplierPartNumber string    `json:"supplier_part_number" bigquery:"supplier_part_number"`
-	Reasoning          string    `json:"reasoning" bigquery:"reasoning"`
-	IsHumanReviewed    bool      `json:"is_human_reviewed" bigquery:"is_human_reviewed"`
-	CreatedAt          time.Time `json:"created_at" bigquery:"created_at"`
-	UpdatedAt          time.Time `json:"updated_at" bigquery:"updated_at"`
+	PartNumberA     string    `json:"part_number_a" bigquery:"part_number_a"`
+	SourceA         string    `json:"source_a" bigquery:"source_a"`
+	PartNumberB     string    `json:"part_number_b" bigquery:"part_number_b"`
+	SourceB         string    `json:"source_b" bigquery:"source_b"`
+	Decision        string    `json:"decision" bigquery:"decision"`
+	IsMatch         bool      `json:"is_match" bigquery:"is_match"`
+	Reasoning       string    `json:"reasoning" bigquery:"reasoning"`
+	IsHumanReviewed bool      `json:"is_human_reviewed" bigquery:"is_human_reviewed"`
+	CreatedAt       time.Time `json:"created_at" bigquery:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at" bigquery:"updated_at"`
 }
 
 func main() {
@@ -98,22 +101,20 @@ func run() error {
 
 	log.Println("Querying backlog from BigQuery...")
 	q := bqClient.Query(fmt.Sprintf(`
-		WITH unmatched AS (
-		  SELECT * FROM %s.%s.agent_review_queue
-		)
-		SELECT DISTINCT 
-		  q.customer_part_number as part_number, 
-		  q.customer_description as part_description,
-		  ARRAY_AGG(STRUCT(
-			q.supplier_part_number as candidate_part_number, 
-			COALESCE(q.supplier_description, "") as candidate_description, 
-			COALESCE(q.supplier, "") as supplier, 
-			COALESCE(q.part_type, "") as part_type, 
-			COALESCE(q.size_value, 0.0) as size_value
-		  )) AS candidates
-		FROM unmatched q
-		GROUP BY 1, 2
-	`, projectID, datasetID))
+    SELECT DISTINCT
+      q.source_a AS source,
+      q.pn_a AS part_number,
+      q.desc_a AS part_description,
+      ARRAY_AGG(STRUCT(
+        q.pn_b AS candidate_part_number,
+        COALESCE(q.desc_b, "") AS candidate_description,
+        COALESCE(q.source_b, "") AS candidate_source,
+        COALESCE(q.type_b, "") AS part_type,
+        COALESCE(q.size_b, 0.0) AS size_value
+      )) AS candidates
+    FROM %s.%s.agent_review_queue q
+    GROUP BY 1, 2, 3
+`, projectID, datasetID))
 
 	it, err := q.Read(ctx)
 	if err != nil {
@@ -160,8 +161,8 @@ func run() error {
 		Items: &genai.Schema{
 			Type: genai.TypeObject,
 			Properties: map[string]*genai.Schema{
-				"customer_part_number": {Type: genai.TypeString},
-				"supplier_part_number": {Type: genai.TypeString},
+				"part_number_a": {Type: genai.TypeString},
+				"part_number_b": {Type: genai.TypeString},
 				"decision":             {Type: genai.TypeString, Description: "Must be 'MATCH', 'NO_MATCH', or 'REQUIRES_HUMAN_REVIEW'"},
 				"reasoning":            {Type: genai.TypeString},
 			},
@@ -299,11 +300,11 @@ func singlePassWorker(ctx context.Context, model *genai.GenerativeModel, jobs <-
 	for batch := range jobs {
 		batchJSON, _ := json.MarshalIndent(batch, "", "  ")
 		objective := fmt.Sprintf(`
-		Please investigate the following %d customer parts and their respective supplier candidates: 
-		
+		Please investigate the following %d parts and their respective candidates from other sources:
+
 		%s
-		
-		You must evaluate every single candidate for each customer part in the list.
+
+		You must evaluate every single candidate for each part in the list.
 		`, len(batch), string(batchJSON))
 
 		reqCtx, cancel := context.WithTimeout(ctx, 45*time.Second)
@@ -319,13 +320,13 @@ func singlePassWorker(ctx context.Context, model *genai.GenerativeModel, jobs <-
 				if parseErr := json.Unmarshal([]byte(jsonText), &parsed); parseErr == nil {
 					decisionMap := make(map[string]MatchDecision)
 					for _, d := range parsed {
-						key := fmt.Sprintf("%s|%s", d.CustomerPartNumber, d.SupplierPartNumber)
+						key := fmt.Sprintf("%s|%s", d.PartNumberA, d.PartNumberB)
 						decisionMap[key] = d
 					}
 					isComplete = true
 					for _, b := range batch {
 						for _, c := range b.Candidates {
-							key := fmt.Sprintf("%s|%s", b.PartNumber, c.CandidatePartNumber)
+							key := fmt.Sprintf("%s|%s", b.PartNumber, c.PartNumber)
 							if d, found := decisionMap[key]; !found || d.Decision == "" {
 								isComplete = false
 								break
@@ -354,7 +355,7 @@ func singlePassWorker(ctx context.Context, model *genai.GenerativeModel, jobs <-
 
 		decisionMap := make(map[string]MatchDecision)
 		for _, d := range finalDecisions {
-			key := fmt.Sprintf("%s|%s", d.CustomerPartNumber, d.SupplierPartNumber)
+			key := fmt.Sprintf("%s|%s", d.PartNumberA, d.PartNumberB)
 			if _, exists := decisionMap[key]; !exists {
 				decisionMap[key] = d
 			}
@@ -362,7 +363,7 @@ func singlePassWorker(ctx context.Context, model *genai.GenerativeModel, jobs <-
 
 		for _, b := range batch {
 			for _, c := range b.Candidates {
-				key := fmt.Sprintf("%s|%s", b.PartNumber, c.CandidatePartNumber)
+				key := fmt.Sprintf("%s|%s", b.PartNumber, c.PartNumber)
 
 				decisionStr := "REQUIRES_HUMAN_REVIEW"
 				reasoningStr := "Agent failed to evaluate or omitted this candidate from batch response."
@@ -379,14 +380,16 @@ func singlePassWorker(ctx context.Context, model *genai.GenerativeModel, jobs <-
 				isMatch := (decisionStr == "MATCH")
 
 				rowsToInsert = append(rowsToInsert, &BQDecision{
-					CustomerPartNumber: b.PartNumber,
-					Decision:           decisionStr,
-					IsMatch:            isMatch,
-					SupplierPartNumber: c.CandidatePartNumber,
-					Reasoning:          reasoningStr,
-					IsHumanReviewed:    false,
-					CreatedAt:          now,
-					UpdatedAt:          now,
+					PartNumberA:     b.PartNumber,
+					SourceA:         b.Source,
+					PartNumberB:     c.PartNumber,
+					SourceB:         c.Source,
+					Decision:        decisionStr,
+					IsMatch:         isMatch,
+					Reasoning:       reasoningStr,
+					IsHumanReviewed: false,
+					CreatedAt:       now,
+					UpdatedAt:       now,
 				})
 			}
 		}
@@ -408,14 +411,16 @@ func padRemainingFailures(ctx context.Context, bqClient *bigquery.Client, failed
 		for _, b := range batch {
 			for _, c := range b.Candidates {
 				encoder.Encode(&BQDecision{
-					CustomerPartNumber: b.PartNumber,
-					Decision:           "REQUIRES_HUMAN_REVIEW",
-					IsMatch:            false,
-					SupplierPartNumber: c.CandidatePartNumber,
-					Reasoning:          "Agent completely failed to reliably execute this schema payload natively across 5 consecutive DLQ passes. Explicitly falling back to mandatory human-in-the-loop validation blocks.",
-					IsHumanReviewed:    false,
-					CreatedAt:          now,
-					UpdatedAt:          now,
+					PartNumberA:     b.PartNumber,
+					SourceA:         b.Source,
+					PartNumberB:     c.PartNumber,
+					SourceB:         c.Source,
+					Decision:        "REQUIRES_HUMAN_REVIEW",
+					IsMatch:         false,
+					Reasoning:       "Agent completely failed to reliably execute this schema payload natively across 5 consecutive DLQ passes. Explicitly falling back to mandatory human-in-the-loop validation blocks.",
+					IsHumanReviewed: false,
+					CreatedAt:       now,
+					UpdatedAt:       now,
 				})
 				insertedCount++
 			}

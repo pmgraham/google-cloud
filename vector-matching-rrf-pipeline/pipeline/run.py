@@ -151,6 +151,21 @@ def record_pipeline_finish(config: dict, run_id: str, dry_run: bool) -> None:
     print(f"[Runtime Tracking] Pipeline finished. Run ID: {run_id}")
 
 
+AGENT_BOUNDARY = "05"
+
+
+def split_phases(rendered_queries: list[tuple[str, str]]) -> tuple[list, list]:
+    """Split rendered queries into pre-agent and post-agent phases."""
+    pre_agent = []
+    post_agent = []
+    for name, sql in rendered_queries:
+        if name < AGENT_BOUNDARY:
+            pre_agent.append((name, sql))
+        else:
+            post_agent.append((name, sql))
+    return pre_agent, post_agent
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Render and execute BigQuery SQL templates."
@@ -164,20 +179,30 @@ def main():
         "--run-agent",
         action="store_true",
         default=True,
-        help="Compile and run the Go agent after SQL execution.",
+        help="Compile and run the Go agent after pre-agent SQL execution.",
+    )
+    parser.add_argument(
+        "--skip-agent",
+        action="store_true",
+        default=False,
+        help="Skip the Go agent (useful for re-running post-agent steps only).",
+    )
+    parser.add_argument(
+        "--post-agent-only",
+        action="store_true",
+        default=False,
+        help="Skip pre-agent SQL and Go agent; run only post-agent steps (05+).",
     )
     args = parser.parse_args()
 
     pipeline_dir = os.path.dirname(os.path.abspath(__file__))
     repo_dir = os.path.dirname(pipeline_dir)
 
-    # Priority: customer_schema_local.json > customer_schema.json
     config_path = os.path.join(pipeline_dir, "config", "customer_schema_local.json")
     if not os.path.exists(config_path):
         config_path = os.path.join(pipeline_dir, "config", "customer_schema.json")
 
     template_dir = os.path.join(pipeline_dir, "sql", "templates")
-
     prompt_path = os.path.join(pipeline_dir, "config", "prompt.txt")
 
     config = load_config(config_path)
@@ -196,11 +221,26 @@ def main():
         with open(os.path.join(out_dir, out_name), "w") as f:
             f.write(sql)
 
-    print(f"Rendered {len(rendered_queries)} templates.")
-    execute_queries(rendered_queries, dry_run=args.dry_run)
+    pre_agent, post_agent = split_phases(rendered_queries)
 
-    if not args.dry_run and args.run_agent:
-        run_go_agent(repo_dir, config)
+    print(f"Rendered {len(rendered_queries)} templates ({len(pre_agent)} pre-agent, {len(post_agent)} post-agent).")
+
+    if not args.post_agent_only:
+        print("\n" + "=" * 60)
+        print("PHASE 1: PRE-AGENT SQL")
+        print("=" * 60)
+        execute_queries(pre_agent, dry_run=args.dry_run)
+
+        if not args.dry_run and args.run_agent and not args.skip_agent:
+            print("\n" + "=" * 60)
+            print("PHASE 2: GO AGENT")
+            print("=" * 60)
+            run_go_agent(repo_dir, config)
+
+    print("\n" + "=" * 60)
+    print("PHASE 3: POST-AGENT SQL (clustering, canonical IDs, reporting)")
+    print("=" * 60)
+    execute_queries(post_agent, dry_run=args.dry_run)
 
     record_pipeline_finish(config, run_id, args.dry_run)
 

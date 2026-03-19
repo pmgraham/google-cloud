@@ -49,7 +49,7 @@
   "llm_max_output_tokens": 8192,
   "vector_search_top_k": 100,
   "rrf_constant": 60,
-  "match_rrf_auto_approve_threshold": 0.031,
-  "match_rrf_agent_review_threshold": 0.025,
+  "match_rrf_auto_approve_threshold": 0.055,
+  "match_rrf_agent_review_threshold": 0.040,
   "eval_rrf_threshold": 0.015
 }
