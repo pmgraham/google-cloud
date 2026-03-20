@@ -72,3 +72,7 @@ pipeline/sql/rendered_sql/
 decisions_output_pass_*.json
 failed_batches_pass_*.json
 decisions_output_fallback.json
+
+# Customer specific data
+customer/
+.local
