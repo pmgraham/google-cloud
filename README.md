@@ -16,6 +16,7 @@ Each project within this monorepo is designed to solve specific challenges rangi
 | [**`google-cloud-bigquery-pii-masking-pipeline`**](./google-cloud-bigquery-pii-masking-pipeline) | Real-time PII masking pipeline for BigQuery data using Cloud DLP. | Dataflow, Cloud DLP, BigQuery |
 | [**`bigquery-gemini-with-remote-functions`**](./bigquery-gemini-with-remote-functions) | Implementation of calling Gemini LLM models directly from BigQuery SQL. | BigQuery Remote Functions, Cloud Functions, Gemini |
 | [**`bigquery-fuzzy-match-embeddings-example`**](./bigquery-fuzzy-match-embeddings-example) | Fuzzy record matching and customer deduplication using BigQuery embeddings. | BigQuery ML, Text Embeddings |
+| [**`pdf-parsing-agent`**](./pdf-parsing-agent) | AI-powered PDF parsing agent that extracts text, tables, images, and OCR data from documents. | Google ADK, Gemini, PyMuPDF |
 
 ---
 
@@ -38,6 +39,9 @@ A practical example showing how to extend BigQuery SQL with generative AI capabi
 
 ### 6. BigQuery Fuzzy Match Embeddings
 A specialized example for data deduplication. It uses BigQuery ML to generate embeddings for customer records and calculates similarity scores to find and match inconsistent records (e.g., spelling variations, different formats).
+
+### 7. PDF Parsing Agent
+An AI agent built with Google ADK that intelligently extracts structured content from PDF documents. It analyzes pages to determine document type (text-based vs scanned), then applies the appropriate extraction tools for text, tables, images, and OCR with word-level confidence scoring.
 
 ---
 
